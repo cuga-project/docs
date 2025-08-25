@@ -6,6 +6,7 @@ const withMDX = createMDX();
 const config = {
   reactStrictMode: true,
   output: 'export',
+  distDir: 'docs',
   trailingSlash: true,
 };
 
