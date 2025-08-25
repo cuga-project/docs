@@ -8,6 +8,8 @@ const config = {
   output: 'export',
   distDir: 'docs',
   trailingSlash: true,
+  basePath: '/docs',
+  assetPrefix: '/docs',
 };
 
 export default withMDX(config);
