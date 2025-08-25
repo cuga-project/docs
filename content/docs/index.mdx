@@ -1,13 +1,153 @@
 ---
-title: Hello World
-description: Your first document
+title: IBM CUGA
+description: Computer Using Generalist Agent - an autonomous agent for web automation with intelligent planning
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs, TabsContent, TabsList, TabsTrigger } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 
-## What is Next?
+## What is CUGA?
 
-<Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.vercel.app" />
-</Cards>
+IBM CUGA is an autonomous agent that combines large language models with intelligent task planning and execution capabilities. It performs browser automation and API interactions for complex workflow automation.
+
+<Accordions type="single">
+  <Accordion title="🔑 Key Features">
+    - **Autonomous Operation**: Self-planning and task decomposition
+    - **Web Automation**: Browser-based task execution  
+    - **API Integration**: Seamless API interaction capabilities
+    - **Intelligent Planning**: LLM-powered decision making
+    - **Workflow Persistence**: Save and reuse successful workflows
+    - **Experiment Tracking**: Comprehensive monitoring and analytics
+  </Accordion>
+</Accordions>
+
+## 🔗 Quick Links
+
+- **[Official Website](https://cuga.dev/)** - cuga-website  
+- **[Enablement Materials](https://ibm-my.sharepoint.com/personal/aviy_il_ibm_com/_layouts/15/stream.aspx?id=%2Fpersonal%2Faviy%5Fil%5Fibm%5Fcom%2FDocuments%2FRecordings%2FCUGA%20enablement%20session%2D20250724%5F150107%2DMeeting%20Recording%2Emp4&referrer=StreamWebApp%2EWeb&referrerScenario=AddressBarCopied%2Eview%2E22519f8f%2D7c32%2D45bf%2D92b7%2D5c0789485f1b)** - Enablement session
+
+<Accordions type="single">
+  <Accordion title="💼 Use Cases">
+    CUGA excels in scenarios requiring:
+
+    - **Complex Workflow Automation**: Multi-step processes with decision making
+    - **API Orchestration**: Coordinating multiple API calls with intelligent error handling
+    - **Web Scraping & Automation**: Browser-based data collection and form filling
+    - **Business Process Automation**: Repetitive tasks with AI-powered optimization
+    - **Research & Development**: Experimental workflows requiring adaptive planning
+  </Accordion>
+</Accordions>
+
+<Accordions type="single">
+  <Accordion title="🛠️ Technology Stack">
+    - **Python 3.12**: Core runtime environment
+    - **UV**: Modern Python package management
+    - **FastAPI**: High-performance web framework
+    - **Selenium/Playwright**: Browser automation capabilities
+    - **OpenAI/LiteLLM**: LLM integration for intelligent decision making
+    - **Docker**: Containerized deployment and evaluation
+  </Accordion>
+</Accordions>
+
+## 🚀 Quick Start
+
+```bash
+# Clone & Setup
+git clone git@github.ibm.com:research-rpa/cuga.git
+cd cuga
+uv venv --python=3.12 && source .venv/bin/activate
+uv sync
+
+# Configure
+cp .env.example .env
+# Add your OPENAI_API_KEY to .env
+
+# Test Code Sandbox
+uv run test_sandbox
+
+# Run Demo
+cuga start demo
+```
+
+<Accordions type="single">
+  <Accordion title="📚 Documentation Structure">
+    This documentation is organized into four main sections:
+
+    ### 1. **Getting Started**
+    - Introduction and overview
+    - Quick start guide
+    - Installation instructions
+    - Configuration setup
+
+    ### 2. **Usage**
+    - Basic usage patterns
+    - Demo mode operation
+    - Advanced features like save & reuse
+    - API integration examples
+
+    ### 3. **Evaluation**
+    - Benchmark testing (WebArena, AppWorld)
+    - WxO tools integration
+    - Docker-based parallel evaluation
+    - Experiment tracking and analytics
+
+    ### 4. **Development**
+    - Testing and debugging
+    - Troubleshooting common issues
+    - API reference
+    - Development best practices
+  </Accordion>
+</Accordions>
+
+<Accordions type="single">
+  <Accordion title="📋 Prerequisites">
+    | Tool               | Purpose                | Installation                                                             |
+    | ------------------ | ---------------------- | ------------------------------------------------------------------------ |
+    | UV              | Python project manager | [Install Guide](https://docs.astral.sh/uv/getting-started/installation/) |
+    | Rancher Desktop | Container management   | [Download](https://rancherdesktop.io/)                                   |
+    | OpenAI API Key  | LLM access             | Add to `.env` file                                                       |
+
+    > **CUGA Team**: Use the [ETE LiteLLM](https://ete-litellm.bx.cloud9.ibm.com/ui/) API key
+  </Accordion>
+</Accordions>
+
+## 🎯 Demo Mode
+
+CUGA comes with a pre-configured demo featuring the Digital Sales API:
+
+```bash
+# Start the demo
+cuga start demo
+
+# Try this example query:
+"get my top account by revenue from digital sales"
+```
+
+<Accordions type="single">
+  <Accordion title="📊 Experiment Tracking">
+    Monitor your CUGA experiments with built-in analytics:
+
+    ```bash
+    # View experiment dashboard
+    cuga exp
+
+    # Start dashboard for specific experiment
+    # Click "Start Dashboard" in the interface
+    ```
+  </Accordion>
+</Accordions>
+
+## 📞 Support & Community
+
+- **Email**: sami.marreed@ibm.com
+- **Issues**: [GitHub Issues](https://github.ibm.com/research-rpa/cuga/issues)
+- **Documentation**: [Full Documentation](./docs)
+- **Team Chat**: Available through IBM internal channels
+
+---
+
+<div align="center">
+Made by the CUGA Team at IBM Research
+</div>
