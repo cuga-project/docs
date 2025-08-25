@@ -1,0 +1,348 @@
+---
+title: API Only Mode
+description: Use CUGA in API-only mode for server-side automation without browser interaction
+---
+
+IBM CUGA can operate in API-only mode, focusing purely on API interactions and server-side automation without any browser automation capabilities.
+
+## What is API Only Mode?
+
+API Only mode restricts CUGA to:
+- **API Interactions**: REST, GraphQL, and custom API calls
+- **Server-side Operations**: Database queries, file operations, calculations
+- **Data Processing**: ETL operations, data transformation, analysis
+- **No Browser Automation**: Cannot interact with web pages or browsers
+
+## Configuration
+
+### Enable API Only Mode
+
+Edit your `settings.toml` file:
+
+```toml
+[features]
+mode = "api"  # Set to API-only mode
+
+[api_mode]
+enabled = true
+browser_enabled = false
+web_automation = false
+```
+
+### Environment Variable
+
+```bash
+# Set via environment variable
+export CUGA_MODE="api"
+```
+
+## Getting Started
+
+### 1. Start CUGA in API Mode
+
+```bash
+# Start with API-only mode
+cuga start demo --mode api
+
+# Or set mode and start
+export CUGA_MODE="api"
+cuga start demo
+```
+
+### 2. Verify Mode
+
+```bash
+# Check current mode
+cuga mode current
+
+# Expected output: "api"
+
+# Check configuration
+cuga config show --section features
+```
+
+## Example Queries
+
+### API-Only Queries
+
+These queries work perfectly in API-only mode:
+
+```
+"get my top account by revenue from digital sales"
+"analyze revenue trends for the last quarter"
+"calculate total sales by region"
+"find accounts with revenue above $100,000"
+"get contact information for account ABC123"
+```
+
+### Queries That Won't Work
+
+These queries require browser automation and will fail in API-only mode:
+
+```
+"navigate to the website and click the login button"
+"fill out the form on the current page"
+"scroll down and take a screenshot"
+"click the submit button on the page"
+```
+
+## API Integration Examples
+
+### Digital Sales API
+
+The demo environment includes a pre-configured Digital Sales API:
+
+```bash
+# Start demo in API mode
+cuga start demo --mode api
+
+# Try these API queries:
+"get all accounts from digital sales"
+"find the account with highest revenue"
+"list contacts for account XYZ789"
+"calculate average revenue by industry"
+```
+
+### Custom API Integration
+
+Add your own APIs to the `mcp_servers.yaml`:
+
+```yaml
+# agent/api/config/mcp_servers.yaml
+- myapi:
+    url: https://api.example.com/openapi.json
+    type: openapi
+    auth:
+      type: bearer
+      value: Bearer ${MYAPI_TOKEN}
+```
+
+## 📊 Use Cases
+
+### Perfect for API Only Mode
+
+- **Data Analysis**: Query databases, analyze datasets
+- **API Orchestration**: Coordinate multiple API calls
+- **Backend Automation**: Server-side workflow automation
+- **Data Processing**: ETL operations, data transformation
+- **Business Logic**: Complex calculations and decision making
+
+### Not Suitable for API Only Mode
+
+- **Web Scraping**: Extracting data from websites
+- **Form Filling**: Automating web forms
+- **UI Testing**: Testing web interfaces
+- **Browser Automation**: Any browser-based tasks
+
+## 🔍 Mode Validation
+
+### Check Current Capabilities
+
+```bash
+# View available tools
+cuga tools list
+
+# Check mode restrictions
+cuga mode info api
+
+# Verify browser tools are disabled
+cuga tools list --type browser
+# Should return empty or error
+```
+
+### Test Mode Restrictions
+
+```bash
+# Try a browser operation (should fail)
+"navigate to google.com and search for CUGA"
+
+# Expected error: Browser operations not available in API mode
+```
+
+## 🚨 Limitations
+
+### What's Disabled
+
+- **Browser Automation**: Selenium, Playwright, etc.
+- **Web Scraping**: Page content extraction
+- **Form Interaction**: Web form automation
+- **UI Testing**: Interface testing capabilities
+- **Screenshot Capture**: Page screenshots
+
+### What's Still Available
+
+- **API Calls**: All REST, GraphQL, and custom APIs
+- **Data Processing**: Calculations, transformations, analysis
+- **File Operations**: Read, write, manipulate files
+- **Database Operations**: Query, insert, update, delete
+- **System Operations**: OS-level automation
+
+## 🔄 Switching Modes
+
+### To Hybrid Mode
+
+```bash
+# Switch to hybrid mode
+cuga mode hybrid
+
+# Or edit settings.toml
+[features]
+mode = "hybrid"
+```
+
+### To Browser Only Mode
+
+```bash
+# Switch to browser-only mode
+cuga mode browser
+
+# Or edit settings.toml
+[features]
+mode = "web"
+```
+
+## 📈 Performance Benefits
+
+### API Only Mode Advantages
+
+- **Faster Execution**: No browser overhead
+- **Lower Resource Usage**: Minimal memory and CPU
+- **Server Deployment**: Can run on headless servers
+- **Scalability**: Better for high-volume operations
+- **Reliability**: No browser-related failures
+
+### Resource Usage Comparison
+
+| Mode | Memory | CPU | Network | Storage |
+|------|--------|-----|---------|---------|
+| **API Only** | Low | Low | Low | Low |
+| **Hybrid** | Medium | Medium | Medium | Medium |
+| **Browser Only** | High | High | High | High |
+
+## 🧪 Testing API Only Mode
+
+### Basic Functionality Test
+
+```bash
+# Start in API mode
+cuga start demo --mode api
+
+# Test API query
+curl -X POST http://localhost:8005/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "get top account by revenue"}'
+
+# Expected: Successful API response
+```
+
+### Mode Restriction Test
+
+```bash
+# Try browser operation
+curl -X POST http://localhost:8005/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "navigate to google.com"}'
+
+# Expected: Error about browser operations not available
+```
+
+## 🔧 Configuration Options
+
+### Advanced API Mode Settings
+
+```toml
+[api_mode]
+# Core settings
+enabled = true
+browser_enabled = false
+web_automation = false
+
+# API settings
+max_concurrent_requests = 10
+request_timeout = 30
+retry_attempts = 3
+
+# Performance settings
+cache_enabled = true
+cache_ttl = 300
+connection_pool_size = 20
+
+# Security settings
+ssl_verify = true
+api_key_rotation = false
+audit_logging = true
+```
+
+### Environment Variables
+
+```bash
+# API mode configuration
+export CUGA_API_MODE_ENABLED=true
+export CUGA_BROWSER_ENABLED=false
+export CUGA_WEB_AUTOMATION=false
+
+# API performance tuning
+export CUGA_MAX_CONCURRENT_REQUESTS=10
+export CUGA_REQUEST_TIMEOUT=30
+export CUGA_CACHE_ENABLED=true
+```
+
+## 📚 Best Practices
+
+### API Only Mode Guidelines
+
+1. **Focus on Data**: Concentrate on data processing and API operations
+2. **Optimize Queries**: Use efficient API calls and data structures
+3. **Error Handling**: Implement robust error handling for API failures
+4. **Rate Limiting**: Respect API rate limits and implement backoff
+5. **Caching**: Use caching for frequently accessed data
+
+### Performance Optimization
+
+1. **Batch Operations**: Group multiple API calls when possible
+2. **Async Processing**: Use asynchronous operations for I/O-bound tasks
+3. **Connection Pooling**: Reuse HTTP connections
+4. **Response Caching**: Cache API responses to reduce redundant calls
+5. **Resource Monitoring**: Monitor memory and CPU usage
+
+## 🔍 Troubleshooting
+
+### Common API Mode Issues
+
+| Issue | Solution |
+|-------|----------|
+| 🔴 Browser operations attempted | Verify mode is set to "api" in settings.toml |
+| 🔴 API calls failing | Check API configuration and authentication |
+| 🔴 High memory usage | Monitor for memory leaks in API operations |
+| 🔴 Slow performance | Optimize API calls and enable caching |
+
+### Debug Commands
+
+```bash
+# Check mode status
+cuga mode current
+
+# Verify configuration
+cuga config show --section features
+
+# Test API connectivity
+cuga apis test
+
+# Check available tools
+cuga tools list
+```
+
+## 📚 Next Steps
+
+After mastering API-only mode:
+
+1. **[Hybrid Mode](./hybrid-mode)**: Add browser automation capabilities
+2. **[Browser Only Mode](./browser-only-mode)**: Focus purely on web automation
+3. **[API Integration](./api-integration)**: Extend with custom APIs
+4. **[Save & Reuse](./save-reuse)**: Optimize workflows for API operations
+
+---
+
+<div align="center">
+API mode mastered? Explore [Hybrid Mode](./hybrid-mode) next!
+</div>

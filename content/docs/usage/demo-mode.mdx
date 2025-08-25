@@ -1,0 +1,381 @@
+---
+title: Demo Mode
+description: Learn how to use IBM CUGA in demo mode with the Digital Sales API
+---
+
+Get started with IBM CUGA using the pre-configured demo environment featuring the Digital Sales API.
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Before running demo mode, ensure you have:
+
+- ✅ CUGA installed and configured
+- ✅ Environment variables set up
+- ✅ API key configured
+- ✅ Ports 8001 and 8005 available
+
+### Quick Start
+
+```bash
+# Start the demo
+cuga start demo
+
+# Try this example query:
+"get my top account by revenue from digital sales"
+```
+
+## 🏗️ Demo Architecture
+
+The demo consists of two main components:
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   API Registry  │    │   CUGA Demo     │    │  Digital Sales  │
+│   (Port 8001)   │◄──►│   (Port 8005)   │◄──►│      API        │
+│                 │    │                 │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+### Component Details
+
+| Component | Port | Purpose | Configuration |
+|-----------|------|---------|---------------|
+| **API Registry** | 8001 | Tool registration | `mcp_servers.yaml` |
+| **CUGA Demo** | 8005 | Main application | `settings.toml` |
+| **Digital Sales API** | External | Demo data source | Pre-configured |
+
+## 🎯 Demo Features
+
+### Pre-configured Tools
+
+The demo includes several pre-configured tools:
+
+- **Account Management**: Create, read, update, delete accounts
+- **Revenue Analysis**: Query revenue data and rankings
+- **Contact Management**: Manage customer contacts
+- **Sales Pipeline**: Track sales opportunities
+
+### Available Queries
+
+Try these example queries to explore CUGA's capabilities:
+
+#### Account Queries
+```
+"get my top account by revenue from digital sales"
+"show me the top 5 accounts by revenue"
+"list all accounts with revenue above $100,000"
+"find accounts in the technology sector"
+```
+
+#### Contact Queries
+```
+"get contacts for the top revenue account"
+"show me all contacts in the sales department"
+"find contacts with email addresses"
+```
+
+#### Revenue Queries
+```
+"calculate total revenue for all accounts"
+"show revenue breakdown by industry"
+"find accounts with declining revenue"
+```
+
+## 🚀 Running the Demo
+
+### Step 1: Start Services
+
+```bash
+# Start API Registry first
+cuga start api-registry
+
+# Then start CUGA Demo
+cuga start demo
+```
+
+### Step 2: Verify Services
+
+```bash
+# Check service status
+cuga status
+
+# Expected output:
+# ✅ API Registry Demo: Running (Port 8001)
+# ✅ Cuga Demo: Running (Port 8005)
+```
+
+### Step 3: Access Demo
+
+- **Chat Interface**: http://localhost:8005
+- **API Endpoints**: http://localhost:8005/docs
+- **Health Check**: http://localhost:8005/health
+
+## 💬 Using the Chat Interface
+
+### Basic Interaction
+
+1. **Open Chat Interface**
+   - Navigate to http://localhost:8005
+   - You'll see a chat interface similar to ChatGPT
+
+2. **Ask Questions**
+   - Type natural language queries
+   - CUGA will understand and execute them
+   - Example: "get my top account by revenue"
+
+3. **View Results**
+   - Results appear in the chat
+   - Click on results to expand details
+   - Use the interface to explore data
+
+### Advanced Queries
+
+#### Complex Queries
+```
+"analyze the revenue trends for technology accounts over the last quarter"
+"find accounts with high revenue but low contact engagement"
+"show me a summary of all sales opportunities by stage"
+```
+
+#### Multi-step Queries
+```
+"first get my top account, then show me all contacts for that account"
+"analyze revenue by industry and then drill down into the top performing sector"
+```
+
+## 🔌 API Usage
+
+### REST API Endpoints
+
+The demo provides REST API endpoints for programmatic access:
+
+```bash
+# Health check
+curl http://localhost:8005/health
+
+# Chat endpoint
+curl -X POST http://localhost:8005/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "get my top account by revenue"}'
+
+# Status endpoint
+curl http://localhost:8005/status
+```
+
+### Python Client
+
+```python
+import requests
+
+# Initialize client
+base_url = "http://localhost:8005"
+
+# Send query
+response = requests.post(f"{base_url}/chat", json={
+    "message": "get my top account by revenue from digital sales"
+})
+
+# Process response
+result = response.json()
+print(result["response"])
+```
+
+## 📊 Understanding Results
+
+### Response Format
+
+CUGA responses include:
+
+```json
+{
+  "response": "Here are your top accounts by revenue...",
+  "data": {
+    "accounts": [...],
+    "summary": {...}
+  },
+  "metadata": {
+    "execution_time": 2.5,
+    "tools_used": ["account_query", "revenue_analysis"],
+    "confidence": 0.95
+  }
+}
+```
+
+### Data Interpretation
+
+- **Response**: Human-readable summary
+- **Data**: Structured data for programmatic use
+- **Metadata**: Execution details and confidence scores
+
+## 🔧 Demo Configuration
+
+### Customizing Demo Behavior
+
+Edit `configurations/demo.toml`:
+
+```toml
+[demo]
+# Demo Settings
+enabled = true
+auto_start = true
+port = 8005
+
+# API Configuration
+api_registry_port = 8001
+digital_sales_url = "https://digitalsales.19pc1vtv090u.us-east.codeengine.appdomain.cloud"
+
+# Behavior Settings
+max_results = 10
+default_timeout = 30
+enable_logging = true
+```
+
+### Environment Variables
+
+```bash
+# Demo-specific environment variables
+export CUGA_DEMO_PORT=8005
+export CUGA_API_REGISTRY_PORT=8001
+export CUGA_DEMO_TIMEOUT=30
+```
+
+## 🧪 Testing the Demo
+
+### Basic Functionality Test
+
+```bash
+# Test basic functionality
+curl -X POST http://localhost:8005/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "hello"}'
+
+# Expected: Welcome message and available features
+```
+
+### API Integration Test
+
+```bash
+# Test API connectivity
+curl http://localhost:8005/health
+
+# Expected: {"status": "healthy", "timestamp": "..."}
+```
+
+### End-to-End Test
+
+```bash
+# Test complete workflow
+curl -X POST http://localhost:8005/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "get my top account by revenue"}'
+
+# Expected: Account data with revenue information
+```
+
+## 🔍 Troubleshooting
+
+### Common Demo Issues
+
+| Issue                    | Solution                                    |
+| ------------------------ | ------------------------------------------- |
+| 🔴 Port 8005 in use      | Stop conflicting service or change port     |
+| 🔴 API Registry not found | Start API Registry first                    |
+| 🔴 Digital Sales API down | Check external API status                   |
+| 🔴 Slow responses         | Check network and API key configuration     |
+| 🔴 No results returned    | Verify query format and API connectivity    |
+
+### Debug Commands
+
+```bash
+# Check service status
+cuga status
+
+# View logs
+tail -f logs/demo.log
+
+# Test API connectivity
+curl -v http://localhost:8005/health
+
+# Check port usage
+lsof -i :8005
+lsof -i :8001
+```
+
+### Service Recovery
+
+```bash
+# Restart services
+cuga stop all
+cuga start api-registry
+cuga start demo
+
+# Verify recovery
+cuga status
+curl http://localhost:8005/health
+```
+
+## 📈 Performance Monitoring
+
+### Demo Metrics
+
+Monitor demo performance:
+
+```bash
+# Check response times
+curl -w "@curl-format.txt" -X POST http://localhost:8005/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "get top account"}'
+
+# Monitor resource usage
+top -p $(pgrep -f "cuga.*demo")
+```
+
+### Performance Optimization
+
+```toml
+# Optimize for demo performance
+[demo.performance]
+cache_enabled = true
+cache_ttl = 300
+max_workers = 2
+timeout = 30
+```
+
+## 🔄 Demo Workflows
+
+### Example Workflows
+
+#### Revenue Analysis Workflow
+1. **Query**: "get my top account by revenue"
+2. **Analysis**: "analyze revenue trends for this account"
+3. **Drill-down**: "show me contacts for this account"
+4. **Summary**: "provide a summary of findings"
+
+#### Account Management Workflow
+1. **Discovery**: "find accounts in the technology sector"
+2. **Analysis**: "analyze revenue performance by account size"
+3. **Action**: "identify accounts needing attention"
+4. **Planning**: "suggest next steps for underperforming accounts"
+
+## 📚 Next Steps
+
+After exploring demo mode:
+
+1. **[Control Commands](../control-commands)**: Learn CUGA management commands
+2. **[API Integration](../api-integration)**: Add your own APIs
+3. **[Save & Reuse](../save-reuse)**: Explore workflow persistence
+4. **[Evaluation](../evaluation/appworld)**: Test with benchmarks
+
+## 🆘 Getting Help
+
+- **📧 Email**: sami.marreed@ibm.com
+- **🐛 Issues**: [GitHub Issues](https://github.ibm.com/research-rpa/cuga/issues)
+- **📖 Documentation**: [Full Documentation](./docs)
+
+---
+
+<div align="center">
+Demo working? Explore [Control Commands](../control-commands) next!
+</div>

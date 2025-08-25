@@ -1,0 +1,655 @@
+---
+title: Browser Only Mode
+description: Use CUGA in browser-only mode for pure web automation and browser interaction
+---
+
+IBM CUGA can operate in browser-only mode, focusing purely on web automation, browser interaction, and web page manipulation without API capabilities.
+
+## 🎯 What is Browser Only Mode?
+
+Browser Only mode restricts CUGA to:
+- **🌐 Web Automation**: Navigate, interact with, and manipulate web pages
+- **🖱️ Browser Interaction**: Click, type, scroll, and interact with web elements
+- **📄 Page Manipulation**: Modify HTML content, extract data, fill forms
+- **🔄 Web Workflows**: Multi-step web-based processes and automation
+- **No API Access**: Cannot make direct API calls or backend requests
+
+## ⚙️ Configuration
+
+### Enable Browser Only Mode
+
+Edit your `settings.toml` file:
+
+```toml
+[features]
+mode = "web"  # Set to browser-only mode
+
+[web_mode]
+enabled = true
+browser_enabled = true
+api_enabled = false
+web_automation = true
+```
+
+### Environment Variable
+
+```bash
+# Set via environment variable
+export CUGA_MODE="web"
+```
+
+## 🚀 Getting Started
+
+### 1. Start CUGA in Browser Mode
+
+```bash
+# Start with browser-only mode
+cuga start demo --mode web
+
+# Or set mode and start
+export CUGA_MODE="web"
+cuga start demo
+```
+
+### 2. Verify Mode
+
+```bash
+# Check current mode
+cuga mode current
+
+# Expected output: "web"
+
+# Check configuration
+cuga config show --section features
+```
+
+## 💬 Example Queries
+
+### Browser-Only Queries
+
+These queries work perfectly in browser-only mode:
+
+```
+"navigate to google.com and search for IBM CUGA"
+"fill out the contact form on the current page"
+"click the submit button and wait for confirmation"
+"scroll down and take a screenshot of the page"
+"extract all product prices from the e-commerce page"
+"navigate through the website menu and find the about page"
+```
+
+### Web Automation Examples
+
+```
+"go to the login page and enter my credentials"
+"navigate to the shopping cart and add the first product"
+"fill out the registration form with my information"
+"click on the download button and wait for the file"
+"scroll through the page and find the contact information"
+```
+
+## 🌐 Browser Capabilities
+
+### Navigation
+
+- **Page Navigation**: Navigate to URLs, follow links
+- **Browser Control**: Open, close, switch between tabs/windows
+- **History Management**: Go back, forward, refresh pages
+- **URL Manipulation**: Modify and navigate to different URLs
+
+### Interaction
+
+- **Click Operations**: Click buttons, links, form elements
+- **Text Input**: Type text into forms, search boxes, input fields
+- **Form Handling**: Fill out forms, select options, submit data
+- **Mouse Actions**: Hover, drag, drop, scroll operations
+
+### Content Manipulation
+
+- **HTML Modification**: Change page content, add/remove elements
+- **Data Extraction**: Extract text, images, links, tables
+- **Page Analysis**: Analyze page structure and content
+- **Screenshot Capture**: Take screenshots of pages or elements
+
+## 🔧 Setup for Browser Mode
+
+### Prerequisites
+
+- ✅ CUGA running in browser-only mode
+- ✅ Web browser installed (Chrome, Firefox, Safari)
+- ✅ Browser automation tools enabled
+- ✅ Web pages accessible
+
+### Browser Setup
+
+```bash
+# Ensure browser automation is enabled
+cuga config show --section web_mode
+
+# Verify browser tools
+cuga tools list --type browser
+
+# Check browser connectivity
+cuga browser test --url https://example.com
+```
+
+## 📄 HTML Page Example
+
+### Simple HTML Page for Testing
+
+Create a simple HTML page to test browser automation:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUGA Browser Mode Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-section {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .button {
+            background-color: #2196f3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background-color: #1976d2;
+        }
+        .result {
+            background-color: #e8f5e8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 CUGA Browser Mode Demo</h1>
+    
+    <div class="form-section">
+        <h2>Contact Form</h2>
+        <form id="contact-form">
+            <div>
+                <label for="name">Name:</label><br>
+                <input type="text" id="name" name="name" placeholder="Enter your name">
+            </div>
+            <br>
+            <div>
+                <label for="email">Email:</label><br>
+                <input type="email" id="email" name="email" placeholder="Enter your email">
+            </div>
+            <br>
+            <div>
+                <label for="message">Message:</label><br>
+                <textarea id="message" name="message" rows="4" placeholder="Enter your message"></textarea>
+            </div>
+            <br>
+            <button type="submit" class="button">Submit Form</button>
+            <button type="button" class="button" onclick="clearForm()">Clear Form</button>
+        </form>
+    </div>
+    
+    <div class="form-section">
+        <h2>Navigation Test</h2>
+        <button class="button" onclick="showSection('section1')">Show Section 1</button>
+        <button class="button" onclick="showSection('section2')">Show Section 2</button>
+        <button class="button" onclick="showSection('section3')">Show Section 3</button>
+    </div>
+    
+    <div id="section1" class="result">
+        <h3>Section 1 Content</h3>
+        <p>This is the content for section 1. CUGA can navigate to this section.</p>
+    </div>
+    
+    <div id="section2" class="result">
+        <h3>Section 2 Content</h3>
+        <p>This is the content for section 2. CUGA can interact with this section.</p>
+    </div>
+    
+    <div id="section3" class="result">
+        <h3>Section 3 Content</h3>
+        <p>This is the content for section 3. CUGA can extract data from this section.</p>
+    </div>
+    
+    <div class="form-section">
+        <h2>Try These Browser Operations</h2>
+        <p>Use CUGA to:</p>
+        <ul>
+            <li>"fill out the contact form with test data"</li>
+            <li>"click the submit button on the form"</li>
+            <li>"navigate to section 2 and show its content"</li>
+            <li>"extract all text content from the page"</li>
+            <li>"take a screenshot of the current page"</li>
+        </ul>
+    </div>
+    
+    <script>
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Form submitted! (This is a demo)');
+        });
+        
+        function clearForm() {
+            document.getElementById('contact-form').reset();
+        }
+        
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.result').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+```
+
+### Save and Open the Page
+
+```bash
+# Save the HTML content to a file
+cat > browser_demo_page.html << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUGA Browser Mode Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-section {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .button {
+            background-color: #2196f3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background-color: #1976d2;
+        }
+        .result {
+            background-color: #e8f5e8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 CUGA Browser Mode Demo</h1>
+    
+    <div class="form-section">
+        <h2>Contact Form</h2>
+        <form id="contact-form">
+            <div>
+                <label for="name">Name:</label><br>
+                <input type="text" id="name" name="name" placeholder="Enter your name">
+            </div>
+            <br>
+            <div>
+                <label for="email">Email:</label><br>
+                <input type="email" id="email" name="email" placeholder="Enter your email">
+            </div>
+            <br>
+            <div>
+                <label for="message">Message:</label><br>
+                <textarea id="message" name="message" rows="4" placeholder="Enter your message"></textarea>
+            </div>
+            <br>
+            <button type="submit" class="button">Submit Form</button>
+            <button type="button" class="button" onclick="clearForm()">Clear Form</button>
+        </form>
+    </div>
+    
+    <div class="form-section">
+        <h2>Navigation Test</h2>
+        <button class="button" onclick="showSection('section1')">Show Section 1</button>
+        <button class="button" onclick="showSection('section2')">Show Section 2</button>
+        <button class="button" onclick="showSection('section3')">Show Section 3</button>
+    </div>
+    
+    <div id="section1" class="result">
+        <h3>Section 1 Content</h3>
+        <p>This is the content for section 1. CUGA can navigate to this section.</p>
+    </div>
+    
+    <div id="section2" class="result">
+        <h3>Section 2 Content</h3>
+        <p>This is the content for section 2. CUGA can interact with this section.</p>
+    </div>
+    
+    <div id="section3" class="result">
+        <h3>Section 3 Content</h3>
+        <p>This is the content for section 3. CUGA can extract data from this section.</p>
+    </div>
+    
+    <div class="form-section">
+        <h2>Try These Browser Operations</h2>
+        <p>Use CUGA to:</p>
+        <ul>
+            <li>"fill out the contact form with test data"</li>
+            <li>"click the submit button on the form"</li>
+            <li>"navigate to section 2 and show its content"</li>
+            <li>"extract all text content from the page"</li>
+            <li>"take a screenshot of the current page"</li>
+        </ul>
+    </div>
+    
+    <script>
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Form submitted! (This is a demo)');
+        });
+        
+        function clearForm() {
+            document.getElementById('contact-form').reset();
+        }
+        
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.result').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+EOF
+
+# Open the page in your browser
+open browser_demo_page.html  # macOS
+# OR
+xdg-open browser_demo_page.html  # Linux
+# OR
+start browser_demo_page.html  # Windows
+```
+
+## 🧪 Testing Browser Operations
+
+### 1. Open the Demo Page
+
+```bash
+# Open the HTML page in your browser
+open browser_demo_page.html
+```
+
+### 2. Start CUGA in Browser Mode
+
+```bash
+# Start CUGA with browser-only mode
+cuga start demo --mode web
+```
+
+### 3. Test Browser Operations
+
+Try these queries in the CUGA interface:
+
+```
+"fill out the contact form with test data"
+"click the submit button on the form"
+"navigate to section 2 and show its content"
+"extract all text content from the page"
+"take a screenshot of the current page"
+```
+
+## 🔍 Browser Automation Features
+
+### Element Selection
+
+CUGA can identify and interact with page elements using:
+
+- **CSS Selectors**: `#id`, `.class`, `tag[attribute]`
+- **XPath**: Complex element location expressions
+- **Text Content**: Finding elements by visible text
+- **Element Hierarchy**: Parent-child relationships
+
+### Interaction Methods
+
+```python
+# Example of browser automation operations
+def perform_browser_operations():
+    # Navigate to page
+    browser.navigate("https://example.com")
+    
+    # Find and fill form
+    name_input = browser.find_element("#name")
+    name_input.type("John Doe")
+    
+    # Click button
+    submit_button = browser.find_element("button[type='submit']")
+    submit_button.click()
+    
+    # Wait for result
+    browser.wait_for_element(".result")
+    
+    # Extract data
+    result_text = browser.get_text(".result")
+    return result_text
+```
+
+### Page Manipulation
+
+```javascript
+// Example of how CUGA can modify page content
+function modifyPageContent() {
+    // Add new content
+    const newSection = document.createElement('div');
+    newSection.innerHTML = '<h3>CUGA Added Content</h3><p>This was added by CUGA automation.</p>';
+    document.body.appendChild(newSection);
+    
+    // Modify existing content
+    const title = document.querySelector('h1');
+    title.textContent = '🤖 CUGA Browser Mode Demo - Modified';
+    
+    // Change styles
+    document.body.style.backgroundColor = '#f0f8ff';
+}
+```
+
+## 📊 Use Cases
+
+### Perfect for Browser Only Mode
+
+- **Web Scraping**: Extract data from websites
+- **Form Automation**: Fill out and submit web forms
+- **UI Testing**: Test web interface functionality
+- **Content Management**: Update web page content
+- **Workflow Automation**: Navigate through multi-step web processes
+
+### Example Scenarios
+
+1. **E-commerce Automation**: Navigate product catalogs, add items to cart
+2. **Social Media Management**: Post content, interact with posts
+3. **Web Application Testing**: Test user flows and interface elements
+4. **Data Collection**: Scrape information from multiple web pages
+5. **Content Publishing**: Update blog posts, manage web content
+
+## 🔧 Advanced Configuration
+
+### Browser Mode Settings
+
+```toml
+[web_mode]
+# Core settings
+enabled = true
+browser_enabled = true
+api_enabled = false
+
+# Browser settings
+headless = false
+browser_type = "chrome"  # chrome, firefox, safari
+browser_timeout = 60
+page_load_timeout = 30
+
+# Automation settings
+auto_wait = true
+wait_timeout = 10
+retry_attempts = 3
+screenshot_on_error = true
+
+# Performance settings
+lazy_loading = true
+resource_blocking = false
+image_loading = false
+```
+
+### Browser Optimization
+
+```toml
+[web_mode.performance]
+# Browser optimization
+disable_images = true
+disable_css = false
+disable_javascript = false
+disable_plugins = true
+
+# Memory management
+max_memory_usage = "2GB"
+garbage_collection = "aggressive"
+tab_limit = 5
+
+# Network optimization
+request_interception = true
+response_caching = true
+bandwidth_limit = "10MB/s"
+```
+
+## 🚨 Troubleshooting
+
+### Common Browser Mode Issues
+
+| Issue | Solution |
+|-------|----------|
+| 🔴 Browser not starting | Check browser installation and drivers |
+| 🔴 Page not loading | Verify internet connectivity and URL accessibility |
+| 🔴 Elements not found | Check page structure and element selectors |
+| 🔴 Slow performance | Optimize browser settings and resource usage |
+
+### Debug Commands
+
+```bash
+# Check browser mode status
+cuga mode current
+
+# Verify browser tools
+cuga tools list --type browser
+
+# Test browser connectivity
+cuga browser test --url https://example.com
+
+# Check page interaction
+cuga browser test --page browser_demo_page.html
+```
+
+## 📈 Performance Considerations
+
+### Resource Usage
+
+Browser-only mode uses significant resources:
+
+- **Memory**: Browser rendering and page content
+- **CPU**: Page rendering and JavaScript execution
+- **Network**: Page loading and resource fetching
+- **Storage**: Browser cache and page snapshots
+
+### Optimization Tips
+
+1. **Use Headless Mode**: For production environments without UI
+2. **Limit Concurrent Browsers**: Don't run too many browser instances
+3. **Implement Caching**: Cache page elements and resources
+4. **Monitor Resources**: Keep track of memory and CPU usage
+5. **Clean Up**: Close unused tabs and browser instances
+
+## 🔄 Switching Modes
+
+### To Hybrid Mode
+
+```bash
+# Switch to hybrid mode
+cuga mode hybrid
+
+# Or edit settings.toml
+[features]
+mode = "hybrid"
+```
+
+### To API Only Mode
+
+```bash
+# Switch to API-only mode
+cuga mode api
+
+# Or edit settings.toml
+[features]
+mode = "api"
+```
+
+## 📚 Best Practices
+
+### Browser Automation Guidelines
+
+1. **Element Identification**: Use stable selectors (IDs, data attributes)
+2. **Wait Strategies**: Implement proper wait conditions for dynamic content
+3. **Error Handling**: Handle network issues and page load failures
+4. **Resource Management**: Clean up browser resources after operations
+5. **Testing**: Test automation scripts on different browsers and devices
+
+### Performance Optimization
+
+1. **Minimize Page Loads**: Reuse browser instances when possible
+2. **Efficient Selectors**: Use fast and reliable element selectors
+3. **Batch Operations**: Group related operations together
+4. **Resource Blocking**: Block unnecessary resources (images, ads)
+5. **Memory Management**: Monitor and manage browser memory usage
+
+## 📚 Next Steps
+
+After mastering browser-only mode:
+
+1. **[Hybrid Mode](./hybrid-mode)**: Add API interaction capabilities
+2. **[API Only Mode](./api-only-mode)**: Focus on server-side operations
+3. **[Save & Reuse](./save-reuse)**: Optimize browser automation workflows
+4. **[Advanced Features](./modes)**: Explore execution modes
+
+---
+
+<div align="center">
+Browser mode working? Explore [Hybrid Mode](./hybrid-mode) next!
+</div>

@@ -1,0 +1,494 @@
+---
+title: Execution Modes
+description: Master CUGA's execution modes and advanced features for optimal performance
+---
+
+IBM CUGA provides multiple execution modes optimized for different use cases, from fast development to precise production execution.
+
+## 🎯 Mode Overview
+
+### Available Modes
+
+| Mode | Speed | Accuracy | Use Case | Configuration |
+|------|-------|----------|----------|---------------|
+| **Fast** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | Development, testing | `./configurations/modes/fast.toml` |
+| **Accurate** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Production, critical tasks | `./configurations/modes/accurate.toml` |
+| **Custom** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Tailored workflows | `./configurations/modes/custom.toml` |
+| **Save & Reuse** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Repeated workflows | `./configurations/modes/save_reuse.toml` |
+
+### Mode Selection Criteria
+
+- **Fast Mode**: When speed is critical, accuracy can be slightly lower
+- **Accurate Mode**: When precision is essential, speed can be slower
+- **Custom Mode**: When you need specific behavior not covered by presets
+- **Save & Reuse**: When you have repetitive tasks that benefit from caching
+
+## 🚀 Fast Mode
+
+### Purpose
+Optimized for rapid development, testing, and scenarios where speed is more important than absolute precision.
+
+### Configuration
+
+```toml
+# configurations/modes/fast.toml
+[mode]
+name = "fast"
+description = "Optimized for speed and development"
+version = "1.0"
+
+[agent]
+temperature = 0.1              # Lower temperature for faster decisions
+max_tokens = 2000              # Reduced token limit for speed
+timeout = 60                   # Shorter timeout
+max_retries = 2                # Fewer retry attempts
+
+[execution]
+parallel_tasks = 4             # More parallel execution
+cache_enabled = true           # Enable caching
+cache_ttl = 300               # 5-minute cache TTL
+validation_enabled = false     # Skip validation for speed
+
+[optimization]
+early_termination = true       # Stop when good enough
+approximate_results = true     # Allow approximate results
+fast_fallback = true          # Use fast fallback methods
+```
+
+### Use Cases
+
+- **Development**: Rapid prototyping and testing
+- **Debugging**: Quick iteration cycles
+- **Exploration**: Initial data exploration
+- **Batch Processing**: High-volume, lower-precision tasks
+
+### Performance Characteristics
+
+- **Execution Time**: 2-5x faster than accurate mode
+- **Memory Usage**: 30-50% less memory
+- **Accuracy**: 85-90% of accurate mode
+- **Resource Usage**: Optimized for throughput
+
+## 🎯 Accurate Mode
+
+### Purpose
+Optimized for production environments where precision, reliability, and correctness are paramount.
+
+### Configuration
+
+```toml
+# configurations/modes/accurate.toml
+[mode]
+name = "accurate"
+description = "Optimized for precision and reliability"
+version = "1.0"
+
+[agent]
+temperature = 0.05             # Very low temperature for consistency
+max_tokens = 4000              # Full token allowance
+timeout = 120                  # Longer timeout for complex tasks
+max_retries = 3                # More retry attempts
+
+[execution]
+parallel_tasks = 2             # Fewer parallel tasks for accuracy
+cache_enabled = false          # Disable caching for fresh results
+validation_enabled = true      # Enable validation
+verification_enabled = true    # Enable result verification
+
+[quality]
+double_check = true            # Double-check critical results
+confidence_threshold = 0.95    # High confidence requirement
+error_tolerance = 0.01         # Very low error tolerance
+```
+
+### Use Cases
+
+- **Production**: Live production environments
+- **Critical Tasks**: Business-critical operations
+- **Compliance**: Regulatory and compliance requirements
+- **Financial**: Financial calculations and reporting
+
+### Performance Characteristics
+
+- **Execution Time**: 2-5x slower than fast mode
+- **Memory Usage**: 30-50% more memory
+- **Accuracy**: 98-99% precision
+- **Reliability**: High fault tolerance
+
+## 🔧 Custom Mode
+
+### Purpose
+Tailored configuration for specific use cases that don't fit the standard modes.
+
+### Configuration
+
+```toml
+# configurations/modes/custom.toml
+[mode]
+name = "custom"
+description = "User-defined configuration"
+version = "1.0"
+
+[agent]
+temperature = 0.2              # Custom temperature
+max_tokens = 3000              # Custom token limit
+timeout = 90                   # Custom timeout
+max_retries = 2                # Custom retry count
+
+[execution]
+parallel_tasks = 3             # Custom parallelization
+cache_enabled = true           # Custom caching
+validation_enabled = true      # Custom validation
+
+[features]
+# Custom features
+custom_feature_1 = true
+custom_feature_2 = "value"
+custom_feature_3 = 42
+```
+
+### Use Cases
+
+- **Specialized Workflows**: Domain-specific requirements
+- **Hybrid Needs**: Mix of speed and accuracy requirements
+- **Research**: Experimental configurations
+- **Integration**: Third-party system requirements
+
+### Customization Options
+
+```toml
+[custom]
+# Performance tuning
+performance_profile = "balanced"  # balanced, speed, accuracy
+resource_limits = "medium"        # low, medium, high, unlimited
+
+# Specialized features
+domain_specific = true
+ml_optimization = true
+hardware_acceleration = true
+```
+
+## 💾 Save & Reuse Mode
+
+### Purpose
+Optimized for scenarios with repetitive tasks that benefit from workflow caching and reuse.
+
+### Configuration
+
+```toml
+# configurations/modes/save_reuse.toml
+[mode]
+name = "save_reuse"
+description = "Optimized for workflow persistence and reuse"
+version = "1.0"
+
+[agent]
+temperature = 0.1              # Balanced for learning
+max_tokens = 3000              # Adequate for workflow storage
+timeout = 90                   # Time for workflow processing
+
+[execution]
+parallel_tasks = 3             # Balanced parallelization
+cache_enabled = true           # Essential for reuse
+workflow_storage = true        # Enable workflow storage
+
+[save_reuse]
+enabled = true
+storage_path = "./workflows"
+generalization_enabled = true
+validation_enabled = true
+learning_rate = 0.1            # Workflow learning rate
+```
+
+### Use Cases
+
+- **Repetitive Tasks**: Daily, weekly, or monthly operations
+- **Batch Processing**: Large-scale data processing
+- **Workflow Automation**: Business process automation
+- **Performance Optimization**: Speed up common operations
+
+## 🔄 Mode Switching
+
+### Method 1: Environment Variable
+
+```bash
+# Switch to fast mode
+export CUGA_MODE="fast"
+
+# Switch to accurate mode
+export CUGA_MODE="accurate"
+
+# Switch to custom mode
+export CUGA_MODE="custom"
+
+# Switch to save & reuse mode
+export CUGA_MODE="save_reuse"
+```
+
+### Method 2: Configuration File
+
+Edit `settings.toml`:
+
+```toml
+[features]
+cuga_mode = "fast"  # or "accurate", "custom", "save_reuse"
+```
+
+### Method 3: Command Line
+
+```bash
+# Start with specific mode
+cuga start demo --mode fast
+cuga start demo --mode accurate
+cuga start demo --mode custom
+cuga start demo --mode save_reuse
+```
+
+### Method 4: Runtime Switching
+
+```bash
+# Switch mode while running
+cuga mode fast
+cuga mode accurate
+cuga mode custom
+cuga mode save_reuse
+```
+
+## 📊 Mode Comparison
+
+### Performance Metrics
+
+| Metric | Fast | Accurate | Custom | Save & Reuse |
+|--------|------|----------|--------|--------------|
+| **Speed** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Accuracy** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| **Memory** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| **Reliability** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| **Learning** | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+
+### Resource Usage
+
+| Resource | Fast | Accurate | Custom | Save & Reuse |
+|----------|------|----------|--------|--------------|
+| **CPU** | Low | High | Medium | Medium |
+| **Memory** | Low | High | Medium | Medium |
+| **Storage** | Low | Medium | Medium | High |
+| **Network** | Low | Medium | Medium | Low |
+
+## 🎮 Advanced Features
+
+### Mode-Specific Features
+
+#### Fast Mode Features
+```toml
+[fast_mode]
+early_termination = true       # Stop when good enough
+approximate_results = true     # Allow approximate results
+fast_fallback = true          # Use fast fallback methods
+parallel_optimization = true   # Optimize for parallel execution
+```
+
+#### Accurate Mode Features
+```toml
+[accurate_mode]
+double_check = true            # Double-check results
+verification = true            # Verify all outputs
+audit_trail = true            # Maintain audit trail
+compliance_mode = true        # Enable compliance features
+```
+
+#### Custom Mode Features
+```toml
+[custom_mode]
+domain_specific = true         # Enable domain features
+ml_optimization = true        # ML-based optimization
+hardware_acceleration = true  # Use hardware acceleration
+adaptive_behavior = true      # Adaptive mode switching
+```
+
+#### Save & Reuse Features
+```toml
+[save_reuse_mode]
+workflow_learning = true       # Learn from executions
+pattern_recognition = true     # Recognize patterns
+generalization = true          # Generalize workflows
+performance_tracking = true    # Track performance
+```
+
+### Adaptive Mode Switching
+
+CUGA can automatically switch modes based on:
+
+```toml
+[adaptive]
+enabled = true
+triggers = [
+  "performance_degradation",
+  "error_rate_increase",
+  "resource_constraints",
+  "user_preference_change"
+]
+
+[adaptive.rules]
+if error_rate > 0.1:
+  switch_to = "accurate"
+if execution_time > 30:
+  switch_to = "fast"
+if workflow_available:
+  switch_to = "save_reuse"
+```
+
+## 🧪 Testing Modes
+
+### Mode Testing
+
+```bash
+# Test fast mode
+CUGA_MODE="fast" cuga start demo
+"get top account by revenue"  # Should be fast
+
+# Test accurate mode
+CUGA_MODE="accurate" cuga start demo
+"get top account by revenue"  # Should be precise
+
+# Test custom mode
+CUGA_MODE="custom" cuga start demo
+"get top account by revenue"  # Should use custom settings
+```
+
+### Performance Testing
+
+```bash
+# Benchmark modes
+cuga benchmark --mode fast
+cuga benchmark --mode accurate
+cuga benchmark --mode custom
+
+# Compare modes
+cuga benchmark --compare fast,accurate,custom
+
+# Performance analysis
+cuga benchmark --analyze --mode fast
+```
+
+### Validation Testing
+
+```bash
+# Validate mode configurations
+cuga config validate --mode fast
+cuga config validate --mode accurate
+cuga config validate --mode custom
+
+# Check mode compatibility
+cuga config check --compatibility
+```
+
+## 🔍 Mode Debugging
+
+### Debug Commands
+
+```bash
+# Check current mode
+cuga mode current
+
+# Show mode details
+cuga mode info fast
+cuga mode info accurate
+cuga mode info custom
+
+# Debug mode switching
+cuga mode debug --enable
+```
+
+### Debug Configuration
+
+```toml
+[debug.modes]
+enabled = true
+log_mode_changes = true
+log_performance = true
+log_switching = true
+log_validation = true
+```
+
+## 📚 Mode Selection Guide
+
+### When to Use Fast Mode
+
+- ✅ **Development**: Rapid prototyping and testing
+- ✅ **Debugging**: Quick iteration cycles
+- ✅ **Exploration**: Initial data exploration
+- ✅ **Batch Processing**: High-volume tasks
+- ❌ **Production**: Live production environments
+- ❌ **Critical Tasks**: Business-critical operations
+
+### When to Use Accurate Mode
+
+- ✅ **Production**: Live production environments
+- ✅ **Critical Tasks**: Business-critical operations
+- ✅ **Compliance**: Regulatory requirements
+- ✅ **Financial**: Financial calculations
+- ❌ **Development**: Rapid prototyping
+- ❌ **Testing**: Quick iteration cycles
+
+### When to Use Custom Mode
+
+- ✅ **Specialized Workflows**: Domain-specific requirements
+- ✅ **Hybrid Needs**: Mix of speed and accuracy
+- ✅ **Research**: Experimental configurations
+- ✅ **Integration**: Third-party requirements
+- ❌ **Standard Use**: Standard use cases
+- ❌ **Quick Setup**: When you need immediate results
+
+### When to Use Save & Reuse Mode
+
+- ✅ **Repetitive Tasks**: Daily/weekly operations
+- ✅ **Batch Processing**: Large-scale processing
+- ✅ **Workflow Automation**: Business processes
+- ✅ **Performance**: Speed up common operations
+- ❌ **One-off Tasks**: Single-use operations
+- ❌ **Exploration**: Initial exploration
+
+## 🔄 Mode Migration
+
+### Upgrading Modes
+
+```bash
+# Backup current configuration
+cuga config backup --output current_config.toml
+
+# Upgrade to new mode
+cuga mode upgrade --from fast --to accurate
+
+# Verify upgrade
+cuga mode current
+cuga config validate
+```
+
+### Mode Compatibility
+
+```bash
+# Check compatibility
+cuga mode check --compatibility
+
+# Validate migration path
+cuga mode validate --migration fast-to-accurate
+
+# Rollback if needed
+cuga mode rollback --to fast
+```
+
+## 📚 Next Steps
+
+After mastering execution modes:
+
+1. **[Evaluation](../evaluation/appworld)**: Test with benchmarks
+2. **[Development](../development/testing)**: Test and debug
+3. **[API Integration](../api-integration)**: Extend with custom APIs
+4. **[Save & Reuse](../save-reuse)**: Explore workflow persistence
+
+---
+
+<div align="center">
+Modes mastered? Explore [CUGA Modes](../api-only-mode) next!
+</div>
