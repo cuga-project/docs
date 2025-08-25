@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUGA Browser Mode Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .form-section {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        .button {
+            background-color: #2196f3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #1976d2;
+        }
+        .button:active {
+            transform: translateY(1px);
+        }
+        .result {
+            background-color: #e8f5e8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            display: none;
+            border-left: 4px solid #28a745;
+        }
+        .highlight {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
+        }
+        .status-bar {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        .interaction-log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-info { background-color: #d1ecf1; }
+        .log-success { background-color: #d4edda; }
+        .log-warning { background-color: #fff3cd; }
+        .log-error { background-color: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>🤖 CUGA Browser Mode Demo</h1>
+    
+    <div class="status-bar" id="status-bar">
+        🟢 Ready for CUGA browser automation
+    </div>
+    
+    <div class="form-section">
+        <h2>Contact Form</h2>
+        <form id="contact-form">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label for="message">Message:</label>
+                <textarea id="message" name="message" rows="4" placeholder="Enter your message"></textarea>
+            </div>
+            <button type="submit" class="button">Submit Form</button>
+            <button type="button" class="button" onclick="clearForm()">Clear Form</button>
+        </form>
+    </div>
+    
+    <div class="form-section">
+        <h2>Navigation Test</h2>
+        <button class="button" onclick="showSection('section1')">Show Section 1</button>
+        <button class="button" onclick="showSection('section2')">Show Section 2</button>
+        <button class="button" onclick="showSection('section3')">Show Section 3</button>
+        <button class="button" onclick="hideAllSections()">Hide All Sections</button>
+    </div>
+    
+    <div id="section1" class="result">
+        <h3>Section 1 Content</h3>
+        <p>This is the content for section 1. CUGA can navigate to this section and interact with it.</p>
+        <button class="button" onclick="logInteraction('Section 1 button clicked')">Click Me</button>
+    </div>
+    
+    <div id="section2" class="result">
+        <h3>Section 2 Content</h3>
+        <p>This is the content for section 2. CUGA can interact with this section and extract data.</p>
+        <div class="form-group">
+            <label for="section2-input">Test Input:</label>
+            <input type="text" id="section2-input" placeholder="CUGA can type here">
+        </div>
+        <button class="button" onclick="logInteraction('Section 2 input: ' + document.getElementById('section2-input').value)">Get Input Value</button>
+    </div>
+    
+    <div id="section3" class="result">
+        <h3>Section 3 Content</h3>
+        <p>This is the content for section 3. CUGA can extract data from this section and take screenshots.</p>
+        <table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
+            <tr>
+                <th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2;">Item</th>
+                <th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2;">Value</th>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 8px;">Product A</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">$100</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 8px;">Product B</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">$200</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 8px;">Product C</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">$150</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="form-section">
+        <h2>Try These Browser Operations</h2>
+        <p>Use CUGA to:</p>
+        <ul>
+            <li>"fill out the contact form with test data"</li>
+            <li>"click the submit button on the form"</li>
+            <li>"navigate to section 2 and show its content"</li>
+            <li>"extract all text content from the page"</li>
+            <li>"take a screenshot of the current page"</li>
+            <li>"click the navigation buttons to show different sections"</li>
+            <li>"extract the table data from section 3"</li>
+            <li>"find all buttons on the page and click them"</li>
+        </ul>
+    </div>
+    
+    <div class="form-section">
+        <h2>Browser Capabilities Demo</h2>
+        <p>CUGA in browser-only mode can:</p>
+        <ul>
+            <li><strong>🌐 Web Automation</strong>: Navigate, interact with, and manipulate web pages</li>
+            <li><strong>🖱️ Browser Interaction</strong>: Click, type, scroll, and interact with web elements</li>
+            <li><strong>📄 Page Manipulation</strong>: Modify HTML content, extract data, fill forms</li>
+            <li><strong>🔄 Web Workflows</strong>: Multi-step web-based processes and automation</li>
+        </ul>
+    </div>
+    
+    <div class="interaction-log">
+        <h3>Interaction Log</h3>
+        <div id="log-entries">
+            <div class="log-entry log-info">Page loaded and ready for CUGA automation</div>
+        </div>
+    </div>
+    
+    <script>
+        // Form handling
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            logInteraction('Form submitted with: ' + 
+                'Name: ' + document.getElementById('name').value + ', ' +
+                'Email: ' + document.getElementById('email').value + ', ' +
+                'Message: ' + document.getElementById('message').value, 'success');
+            alert('Form submitted! (This is a demo)');
+        });
+        
+        function clearForm() {
+            document.getElementById('contact-form').reset();
+            logInteraction('Form cleared', 'info');
+        }
+        
+        // Section navigation
+        function showSection(sectionId) {
+            // Hide all sections
+            hideAllSections();
+            
+            // Show selected section
+            document.getElementById(sectionId).style.display = 'block';
+            logInteraction('Section ' + sectionId + ' displayed', 'success');
+        }
+        
+        function hideAllSections() {
+            document.querySelectorAll('.result').forEach(section => {
+                section.style.display = 'none';
+            });
+            logInteraction('All sections hidden', 'info');
+        }
+        
+        // Interaction logging
+        function logInteraction(message, type = 'info') {
+            const logContainer = document.getElementById('log-entries');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry log-' + type;
+            logEntry.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            
+            logContainer.appendChild(logEntry);
+            
+            // Auto-scroll to bottom
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // Limit log entries to prevent memory issues
+            if (logContainer.children.length > 50) {
+                logContainer.removeChild(logContainer.firstChild);
+            }
+        }
+        
+        // Status bar updates
+        function updateStatus(message, type = 'info') {
+            const statusBar = document.getElementById('status-bar');
+            const emoji = type === 'success' ? '🟢' : type === 'warning' ? '🟡' : type === 'error' ? '🔴' : '🟢';
+            statusBar.innerHTML = emoji + ' ' + message;
+            statusBar.className = 'status-bar ' + type;
+        }
+        
+        // Demo functions for CUGA to call
+        function fillFormWithTestData() {
+            document.getElementById('name').value = 'John Doe';
+            document.getElementById('email').value = 'john.doe@example.com';
+            document.getElementById('message').value = 'This is a test message from CUGA automation.';
+            logInteraction('Form filled with test data', 'success');
+            updateStatus('Form filled with test data', 'success');
+        }
+        
+        function clickSubmitButton() {
+            document.querySelector('button[type="submit"]').click();
+            logInteraction('Submit button clicked', 'success');
+        }
+        
+        function extractPageText() {
+            const pageText = document.body.innerText;
+            logInteraction('Page text extracted: ' + pageText.substring(0, 100) + '...', 'info');
+            return pageText;
+        }
+        
+        function extractTableData() {
+            const table = document.querySelector('table');
+            if (table) {
+                const rows = table.querySelectorAll('tr');
+                const data = [];
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td, th');
+                    const rowData = Array.from(cells).map(cell => cell.textContent);
+                    data.push(rowData);
+                });
+                logInteraction('Table data extracted: ' + JSON.stringify(data), 'success');
+                return data;
+            }
+            return null;
+        }
+        
+        function simulateScreenshot() {
+            logInteraction('Screenshot simulation: Page captured', 'success');
+            updateStatus('Screenshot captured', 'success');
+            return 'screenshot_simulated.png';
+        }
+        
+        // Add demo buttons for testing
+        document.addEventListener('DOMContentLoaded', function() {
+            const demoSection = document.createElement('div');
+            demoSection.className = 'highlight';
+            demoSection.innerHTML = `
+                <h3>Demo Controls</h3>
+                <button onclick="fillFormWithTestData()" style="margin: 5px; padding: 8px 16px; background: #28a745; border: none; border-radius: 3px; cursor: pointer; color: white;">Fill Form</button>
+                <button onclick="clickSubmitButton()" style="margin: 5px; padding: 8px 16px; background: #007bff; border: none; border-radius: 3px; cursor: pointer; color: white;">Click Submit</button>
+                <button onclick="extractPageText()" style="margin: 5px; padding: 8px 16px; background: #6f42c1; border: none; border-radius: 3px; cursor: pointer; color: white;">Extract Text</button>
+                <button onclick="extractTableData()" style="margin: 5px; padding: 8px 16px; background: #fd7e14; border: none; border-radius: 3px; cursor: pointer; color: white;">Extract Table</button>
+                <button onclick="simulateScreenshot()" style="margin: 5px; padding: 8px 16px; background: #20c997; border: none; border-radius: 3px; cursor: pointer; color: white;">Simulate Screenshot</button>
+            `;
+            
+            document.body.appendChild(demoSection);
+        });
+        
+        // Expose functions globally for CUGA to use
+        window.CUGABrowserDemo = {
+            fillFormWithTestData,
+            clickSubmitButton,
+            extractPageText,
+            extractTableData,
+            simulateScreenshot,
+            showSection,
+            hideAllSections,
+            clearForm,
+            logInteraction,
+            updateStatus
+        };
+        
+        // Initialize page
+        logInteraction('CUGA Browser Mode Demo page initialized', 'info');
+        updateStatus('Ready for CUGA browser automation', 'success');
+    </script>
+</body>
+</html>

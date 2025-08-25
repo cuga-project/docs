@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUGA API Only Mode Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .api-section {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        .highlight {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        .api-response {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-ready { background-color: #28a745; }
+        .status-loading { background-color: #ffc107; }
+        .status-success { background-color: #17a2b8; }
+        .status-error { background-color: #dc3545; }
+        .query-examples {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .query-examples h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .query-examples code {
+            background-color: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔌 CUGA API Only Mode Demo</h1>
+    
+    <div class="highlight">
+        <h2>Current Page Status</h2>
+        <p>
+            <span class="status-indicator status-ready"></span>
+            This page demonstrates CUGA's API-only mode capabilities.
+        </p>
+    </div>
+    
+    <div class="api-section">
+        <h2>API Response Display</h2>
+        <div id="api-response">
+            <p>No API data yet. Use CUGA to fetch data from the Digital Sales API.</p>
+        </div>
+    </div>
+    
+    <div class="query-examples">
+        <h3>Try These API Queries</h3>
+        <p>These queries work perfectly in API-only mode:</p>
+        <ul>
+            <li><code>"get my top account by revenue from digital sales"</code></li>
+            <li><code>"analyze revenue trends for the last quarter"</code></li>
+            <li><code>"calculate total sales by region"</code></li>
+            <li><code>"find accounts with revenue above $100,000"</code></li>
+            <li><code>"get contact information for account ABC123"</code></li>
+        </ul>
+        
+        <p><strong>Note:</strong> In API-only mode, CUGA cannot interact with this web page. It will only make API calls and return the results in the chat interface.</p>
+    </div>
+    
+    <div class="api-section">
+        <h2>What CUGA Does in API Mode</h2>
+        <p>When you ask CUGA to get data, it will:</p>
+        <ol>
+            <li><strong>Parse your request</strong>: Understand what data you need</li>
+            <li><strong>Make API calls</strong>: Query the Digital Sales API</li>
+            <li><strong>Process the response</strong>: Analyze and format the data</li>
+            <li><strong>Return results</strong>: Provide the information in the chat</li>
+        </ol>
+        
+        <p><strong>What it cannot do:</strong></p>
+        <ul>
+            <li>Navigate to web pages</li>
+            <li>Click buttons or fill forms</li>
+            <li>Take screenshots</li>
+            <li>Interact with browser elements</li>
+        </ul>
+    </div>
+    
+    <div class="highlight">
+        <h2>API Only Mode Benefits</h2>
+        <ul>
+            <li><strong>🚀 Faster Execution</strong>: No browser overhead</li>
+            <li><strong>💾 Lower Resource Usage</strong>: Minimal memory and CPU</li>
+            <li><strong>🖥️ Server Deployment</strong>: Can run on headless servers</li>
+            <li><strong>📈 Better Scalability</strong>: Ideal for high-volume operations</li>
+            <li><strong>🔒 Higher Reliability</strong>: No browser-related failures</li>
+        </ul>
+    </div>
+    
+    <div class="api-section">
+        <h2>Digital Sales API Endpoints</h2>
+        <p>The demo environment includes these API endpoints:</p>
+        <div class="api-response">
+GET /api/accounts - List all accounts
+GET /api/accounts/{id} - Get specific account
+GET /api/accounts/top-revenue - Get top revenue accounts
+GET /api/accounts/by-industry/{industry} - Get accounts by industry
+GET /api/accounts/by-location/{location} - Get accounts by location
+GET /api/analytics/revenue-trends - Get revenue trends
+GET /api/analytics/sales-by-region - Get sales by region
+GET /api/contacts/{account_id} - Get contacts for account
+        </div>
+    </div>
+    
+    <div class="highlight">
+        <h2>Example API Response</h2>
+        <p>When you ask for the top account by revenue, CUGA might return:</p>
+        <div class="api-response">
+{
+  "account": {
+    "id": "ACC001",
+    "name": "Acme Corporation",
+    "revenue": 2500000,
+    "industry": "Technology",
+    "location": "San Francisco, CA",
+    "contacts": [
+      {
+        "name": "John Smith",
+        "email": "john.smith@acme.com",
+        "phone": "+1-555-0123"
+      }
+    ]
+  },
+  "metadata": {
+    "query_time": "2024-01-15T10:30:00Z",
+    "data_source": "Digital Sales API",
+    "total_records": 1
+  }
+}
+        </div>
+    </div>
+    
+    <div class="api-section">
+        <h2>Testing API Only Mode</h2>
+        <p>To test this mode:</p>
+        <ol>
+            <li>Start CUGA with <code>--mode api</code> or set <code>CUGA_MODE="api"</code></li>
+            <li>Ask CUGA one of the example queries above</li>
+            <li>CUGA will make API calls and return the results</li>
+            <li>Note that it cannot modify this web page</li>
+        </ol>
+        
+        <p><strong>Expected behavior:</strong> CUGA will respond with API data in the chat interface, but this web page will remain unchanged.</p>
+    </div>
+    
+    <div class="highlight">
+        <h2>Configuration</h2>
+        <p>To enable API-only mode, set in your <code>settings.toml</code>:</p>
+        <div class="api-response">
+[features]
+mode = "api"
+
+[api_mode]
+enabled = true
+browser_enabled = false
+web_automation = false
+        </div>
+        
+        <p>Or use environment variable:</p>
+        <div class="api-response">
+export CUGA_MODE="api"
+        </div>
+    </div>
+    
+    <script>
+        // This page is static for API-only mode demonstration
+        // In API-only mode, CUGA cannot interact with this page
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('CUGA API Only Mode Demo page loaded');
+            console.log('Note: In API-only mode, CUGA cannot interact with this page');
+        });
+        
+        // Function to simulate what would happen if CUGA could interact with the page
+        function simulateAPIResponse(data) {
+            const responseDiv = document.getElementById('api-response');
+            responseDiv.innerHTML = `
+                <h3>API Response (Simulated)</h3>
+                <div class="api-response">${JSON.stringify(data, null, 2)}</div>
+            `;
+        }
+        
+        // Demo function to show sample data
+        function showSampleData() {
+            const sampleData = {
+                account: {
+                    id: "ACC001",
+                    name: "Acme Corporation",
+                    revenue: 2500000,
+                    industry: "Technology",
+                    location: "San Francisco, CA"
+                },
+                metadata: {
+                    query_time: new Date().toISOString(),
+                    data_source: "Digital Sales API (Demo)",
+                    total_records: 1
+                }
+            };
+            
+            simulateAPIResponse(sampleData);
+        }
+        
+        // Add demo button
+        document.addEventListener('DOMContentLoaded', function() {
+            const demoSection = document.createElement('div');
+            demoSection.className = 'highlight';
+            demoSection.innerHTML = `
+                <h3>Demo Controls</h3>
+                <button onclick="showSampleData()" style="margin: 5px; padding: 8px 16px; background: #28a745; border: none; border-radius: 3px; cursor: pointer; color: white;">Show Sample Data</button>
+                <p><em>Note: This is just a demo. In real API-only mode, CUGA would make actual API calls and return results in the chat interface.</em></p>
+            `;
+            
+            document.body.appendChild(demoSection);
+        });
+    </script>
+</body>
+</html>

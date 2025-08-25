@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUGA Hybrid Mode Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .account-info {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        .highlight {
+            background-color: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        .account-details {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-ready { background-color: #28a745; }
+        .status-loading { background-color: #ffc107; }
+        .status-success { background-color: #17a2b8; }
+        .status-error { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>🤖 CUGA Hybrid Mode Demo</h1>
+    
+    <div class="highlight">
+        <h2>Current Page Status</h2>
+        <p>
+            <span class="status-indicator status-ready"></span>
+            This page is ready for CUGA to add account information.
+        </p>
+    </div>
+    
+    <div class="account-info" id="account-display">
+        <h3>Account Information</h3>
+        <p>No account data yet. Use CUGA to fetch and display account information.</p>
+    </div>
+    
+    <div class="highlight">
+        <h2>Try This Query</h2>
+        <p>Say to CUGA: <strong>"what is the top account by revenue from digital sales and add it to current page"</strong></p>
+    </div>
+    
+    <div class="account-info">
+        <h3>Expected Result</h3>
+        <p>CUGA will:</p>
+        <ol>
+            <li>Query the Digital Sales API</li>
+            <li>Find the top revenue account</li>
+            <li>Add the account details to this page</li>
+            <li>Update the display above</li>
+        </ol>
+    </div>
+    
+    <div class="highlight">
+        <h2>Other Hybrid Queries to Try</h2>
+        <ul>
+            <li>"get customer data from the API and fill out the contact form on this page"</li>
+            <li>"fetch product inventory and update the shopping cart display"</li>
+            <li>"retrieve user profile from the backend and populate the profile page"</li>
+            <li>"get sales analytics and create a chart on the current page"</li>
+        </ul>
+    </div>
+    
+    <div class="account-info">
+        <h3>How It Works</h3>
+        <p>CUGA in hybrid mode can:</p>
+        <ul>
+            <li><strong>🌐 Browser Automation</strong>: Navigate, interact with, and manipulate web pages</li>
+            <li><strong>🔌 API Interactions</strong>: Make API calls to backend services</li>
+            <li><strong>🔄 Combined Workflows</strong>: Use both capabilities in a single task</li>
+            <li><strong>📊 Data Integration</strong>: Fetch data via APIs and display it on web pages</li>
+        </ul>
+    </div>
+    
+    <script>
+        // Function to update account display
+        function updateAccountDisplay(accountData) {
+            const displayElement = document.getElementById('account-display');
+            
+            if (accountData && accountData.name) {
+                displayElement.innerHTML = `
+                    <h3>Account Information</h3>
+                    <div class="account-details">
+                        <h4>${accountData.name}</h4>
+                        <p><strong>Revenue:</strong> $${accountData.revenue ? accountData.revenue.toLocaleString() : 'N/A'}</p>
+                        <p><strong>Industry:</strong> ${accountData.industry || 'N/A'}</p>
+                        <p><strong>Location:</strong> ${accountData.location || 'N/A'}</p>
+                        <p><strong>Last Updated:</strong> ${new Date().toLocaleString()}</p>
+                    </div>
+                `;
+                
+                // Update status
+                const statusElement = document.querySelector('.status-indicator');
+                statusElement.className = 'status-indicator status-success';
+                
+                // Show success message
+                showMessage('Account information successfully added to the page!', 'success');
+            } else {
+                displayElement.innerHTML = `
+                    <h3>Account Information</h3>
+                    <p class="error">Error: No account data received or invalid data format.</p>
+                `;
+                
+                // Update status
+                const statusElement = document.querySelector('.status-indicator');
+                statusElement.className = 'status-indicator status-error';
+                
+                // Show error message
+                showMessage('Failed to add account information. Please check the data format.', 'error');
+            }
+        }
+        
+        // Function to show status messages
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `account-info ${type}`;
+            messageDiv.innerHTML = `<p><strong>${type === 'success' ? '✅' : '❌'}</strong> ${message}</p>`;
+            
+            // Insert after the account display
+            const accountDisplay = document.getElementById('account-display');
+            accountDisplay.parentNode.insertBefore(messageDiv, accountDisplay.nextSibling);
+            
+            // Remove message after 5 seconds
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+        
+        // Function to simulate loading state
+        function showLoadingState() {
+            const statusElement = document.querySelector('.status-indicator');
+            statusElement.className = 'status-indicator status-loading';
+            
+            const displayElement = document.getElementById('account-display');
+            displayElement.innerHTML = `
+                <h3>Account Information</h3>
+                <p>🔄 Loading account data from Digital Sales API...</p>
+            `;
+        }
+        
+        // Function to clear account display
+        function clearAccountDisplay() {
+            const displayElement = document.getElementById('account-display');
+            displayElement.innerHTML = `
+                <h3>Account Information</h3>
+                <p>No account data yet. Use CUGA to fetch and display account information.</p>
+            `;
+            
+            // Reset status
+            const statusElement = document.querySelector('.status-indicator');
+            statusElement.className = 'status-indicator status-ready';
+        }
+        
+        // Add demo buttons for testing
+        document.addEventListener('DOMContentLoaded', function() {
+            const demoSection = document.createElement('div');
+            demoSection.className = 'highlight';
+            demoSection.innerHTML = `
+                <h3>Demo Controls</h3>
+                <button onclick="showLoadingState()" style="margin: 5px; padding: 8px 16px; background: #ffc107; border: none; border-radius: 3px; cursor: pointer;">Show Loading</button>
+                <button onclick="clearAccountDisplay()" style="margin: 5px; padding: 8px 16px; background: #6c757d; border: none; border-radius: 3px; cursor: pointer; color: white;">Clear Display</button>
+                <button onclick="testAccountData()" style="margin: 5px; padding: 8px 16px; background: #28a745; border: none; border-radius: 3px; cursor: pointer; color: white;">Test Data</button>
+            `;
+            
+            document.body.appendChild(demoSection);
+        });
+        
+        // Function to test with sample data
+        function testAccountData() {
+            const sampleData = {
+                name: "Acme Corporation",
+                revenue: 2500000,
+                industry: "Technology",
+                location: "San Francisco, CA"
+            };
+            
+            updateAccountDisplay(sampleData);
+        }
+        
+        // Listen for messages from CUGA (if using postMessage)
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'cuga_account_data') {
+                updateAccountDisplay(event.data.account);
+            }
+        });
+        
+        // Expose functions globally for CUGA to use
+        window.CUGADemo = {
+            updateAccountDisplay,
+            showLoadingState,
+            clearAccountDisplay,
+            testAccountData
+        };
+    </script>
+</body>
+</html>
