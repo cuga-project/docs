@@ -1,0 +1,144 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "catppuccin",
+  "name": "IBM CUGA",
+  "colors": {
+    "primary": "#8AADF4",
+    "light": "#B7BDF8",
+    "dark": "#5B6078"
+  },
+  "favicon": "/logo/cuga3.png",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Getting Started",
+        "groups": [
+          {
+            "group": "Introduction",
+            "pages": [
+              "index",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/model-setup",
+              "configuration/environment",
+              "configuration/settings"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Usage",
+        "groups": [
+          {
+            "group": "Basic Usage",
+            "pages": [
+              "usage/demo-mode",
+              "usage/control-commands",
+              "usage/api-integration"
+            ]
+          },
+          {
+            "group": "Advanced Features",
+            "pages": [
+              "usage/save-reuse",
+              "usage/adding-apis",
+              "usage/modes"
+            ]
+          },
+          {
+            "group": "CUGA Modes",
+            "pages": [
+              "usage/api-only-mode",
+              "usage/hybrid-mode",
+              "usage/browser-only-mode"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Evaluation",
+        "groups": [
+          {
+            "group": "Benchmarks",
+            "pages": [
+              "evaluation/appworld"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Development",
+        "groups": [
+          {
+            "group": "Development",
+            "pages": [
+              "development/testing",
+              "development/troubleshooting",
+              "development/debugging"
+            ]
+          },
+          {
+            "group": "API Reference",
+            "pages": [
+              "api-reference/introduction",
+              "api-reference/endpoints"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "GitHub",
+          "href": "https://github.ibm.com/research-rpa/cuga",
+          "icon": "github"
+        },
+        {
+          "anchor": "CUGA Website",
+          "href": "https://cuga.dev/",
+          "icon": "globe"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/cuga3.png",
+    "dark": "/logo/cuga3.png"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:sami.marreed@ibm.com"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "CUGA Demo",
+      "href": "https://cuga.dev/"
+    }
+  },
+  "contextual": {
+    "options": [
+     "copy",
+     "view",
+     "chatgpt",
+     "claude",
+     "perplexity",
+     "mcp",
+     "cursor",
+     "vscode"
+   ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.ibm.com/research-rpa/cuga"
+    }
+  }
+}
