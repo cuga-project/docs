@@ -1,0 +1,500 @@
+---
+title: AppWorld Evaluation
+description: Run AppWorld benchmark evaluation with IBM CUGA
+---
+
+Learn how to set up and run AppWorld benchmark evaluation with IBM CUGA to test and validate your agent's capabilities.
+
+## 🚀 Overview
+
+### What is AppWorld?
+
+AppWorld is a comprehensive benchmark for evaluating AI agents on real-world web applications. It tests agents' ability to:
+
+- **Navigate** complex web interfaces
+- **Understand** user intentions
+- **Execute** multi-step tasks
+- **Adapt** to dynamic content
+- **Handle** errors and edge cases
+
+### AppWorld Tasks
+
+AppWorld includes tasks across multiple domains:
+
+- **E-commerce**: Shopping, product search, checkout
+- **Productivity**: Document editing, project management
+- **Social Media**: Content creation, interaction
+- **Finance**: Banking, investment, transactions
+- **Travel**: Booking, planning, reservations
+
+## 🛠️ Setup
+
+### Prerequisites
+
+Before running AppWorld evaluation, ensure you have:
+
+- ✅ CUGA installed and configured
+- ✅ Git LFS installed
+- ✅ Sufficient disk space (10GB+)
+- ✅ Ports 8081 and 8001 available
+- ✅ AppWorld environment running
+
+### Step 1: Install Git LFS
+
+```bash
+# Install Git LFS
+git lfs install
+
+# Verify installation
+git lfs version
+```
+
+### Step 2: Clone AppWorld
+
+```bash
+# Clone AppWorld repository
+git clone https://github.com/StonyBrookNLP/appworld
+
+# Navigate to AppWorld directory
+cd appworld
+
+# Install dependencies
+uv run appworld_setup
+```
+
+### Step 3: Configure CUGA
+
+Update your `settings.toml`:
+
+```toml
+[advanced_features]
+benchmark = "appworld"  # Set benchmark to AppWorld
+
+[appworld]
+enabled = true
+environment_url = "http://localhost:8081"
+api_url = "http://localhost:8001"
+```
+
+## 🚀 Running AppWorld
+
+### Step 1: Start AppWorld Environment
+
+```bash
+# Start AppWorld environment and API server
+cuga start appworld
+
+# Verify services are running
+cuga status
+
+# Expected output:
+# ✅ API Registry Appworld: Running (Port 8001)
+# ✅ App World Eval: Running
+```
+
+### Step 2: Verify Services
+
+```bash
+# Check service status
+cuga status
+
+# Verify AppWorld environment
+curl http://localhost:8081/health
+
+# Verify API registry
+curl http://localhost:8001/health
+```
+
+### Step 3: Run API Registry
+
+```bash
+# Run API registry for AppWorld
+uv run registry_appworld
+
+# This registers all AppWorld tools with CUGA
+```
+
+## 📊 Evaluation Configuration
+
+### Evaluation Config File
+
+Create `eval_config.toml` in your root directory:
+
+```toml
+[eval_config]
+headless = true  # Run in headless mode
+
+# Task groups for parallel evaluation
+test_normal_easy = [
+    "09b0ee6_3",
+    "59fae45_2", 
+    "f3f60f0_3",
+    "59fae45_3",
+    "552869a_2",
+    "21abae1_2",
+    "024c982_3"
+]
+
+test_normal_med = [
+    "9ef798c_1",
+    "8749218_1",
+    "ccf4b82_2",
+    "522e5e5_3",
+    "325d6ec_3",
+    "3d9a636_3",
+    "b6d1104_2"
+]
+
+test_normal_hard = [
+    "f861c32_2",
+    "0de03ea_1",
+    "2c544f9_1",
+    "042a9fc_1",
+    "986aa4e_1",
+    "6b6ca61_2",
+    "f323bae_3"
+]
+
+# Custom task groups
+my_custom_tasks = [
+    "task_id_1",
+    "task_id_2",
+    "task_id_3"
+]
+```
+
+### Task Difficulty Levels
+
+| Level | Description | Example Tasks |
+|-------|-------------|---------------|
+| **Easy** | Simple, single-step tasks | Basic navigation, simple forms |
+| **Medium** | Multi-step tasks | Shopping cart, document editing |
+| **Hard** | Complex workflows | Multi-page processes, error handling |
+
+## 🧪 Running Evaluations
+
+### Basic Evaluation
+
+```bash
+# Run evaluation with specific task group
+uv run appworld_eval --eval_key test_normal_easy
+
+# Run with specific task ID
+uv run appworld_eval --task-id 09b0ee6_3
+
+# Run with dataset specification
+uv run appworld_eval --dataset test_normal
+```
+
+### Advanced Evaluation Options
+
+```bash
+# Run with specific difficulty levels
+uv run appworld_eval --specific-task-levels 1,2,3
+
+# Run with custom experiment name
+uv run appworld_eval --experiment-name my_appworld_test
+
+# Continue previous experiment
+uv run appworld_eval --continue-experiment experiment_name
+
+# Run in debug mode
+uv run appworld_eval --debug --eval_key test_normal_easy
+```
+
+### Evaluation Arguments
+
+| Argument | Description | Example |
+|----------|-------------|---------|
+| `--task-id` | Run specific task | `2e9b91e_2` |
+| `--dataset` | Dataset to evaluate | `train`, `dev`, `test_normal` |
+| `--experiment-name` | Name your experiment | `my_experiment` |
+| `--specific-task-levels` | Filter by difficulty | `1`, `2`, `3` |
+| `--continue-experiment` | Resume previous run | `experiment_name` |
+| `--eval_key` | Use predefined task group | `test_normal_easy` |
+
+## 📈 Monitoring Progress
+
+### Experiment Dashboard
+
+```bash
+# Launch experiment dashboard
+cuga exp
+
+# View specific experiment
+cuga exp --experiment my_appworld_test
+
+# Start dashboard for experiment
+# Click "Start Dashboard" in the interface
+```
+
+### Real-time Monitoring
+
+```bash
+# Monitor evaluation progress
+cuga monitor --service appworld
+
+# View evaluation logs
+cuga logs --service appworld --tail
+
+# Check evaluation status
+cuga status --service appworld
+```
+
+### Progress Tracking
+
+The evaluation dashboard shows:
+
+- **Task Progress**: Completed vs. total tasks
+- **Success Rate**: Percentage of successful completions
+- **Execution Time**: Time per task and total
+- **Error Analysis**: Failed tasks and reasons
+- **Performance Metrics**: Speed and accuracy scores
+
+## 📊 Understanding Results
+
+### Evaluation Metrics
+
+AppWorld evaluation provides comprehensive metrics:
+
+#### Success Metrics
+- **Task Completion Rate**: Percentage of successfully completed tasks
+- **Step Success Rate**: Success rate of individual steps within tasks
+- **Error Recovery**: Ability to recover from failures
+
+#### Performance Metrics
+- **Execution Time**: Time to complete each task
+- **Step Efficiency**: Number of steps per task
+- **Resource Usage**: Memory and CPU consumption
+
+#### Quality Metrics
+- **Accuracy**: Correctness of task execution
+- **Robustness**: Handling of edge cases and errors
+- **User Experience**: Naturalness of interaction
+
+### Result Files
+
+Evaluation results are stored in:
+
+```
+experiments/
+└── appworld_eval_YYYYMMDD_HHMMSS/
+    ├── results.json          # Overall results
+    ├── tasks/                # Individual task results
+    │   ├── task_1.json
+    │   ├── task_2.json
+    │   └── ...
+    ├── logs/                 # Execution logs
+    ├── trajectories/         # Task execution paths
+    └── summary.html          # HTML summary report
+```
+
+### Result Analysis
+
+```bash
+# View overall results
+cat experiments/latest/results.json | jq .
+
+# Analyze specific task
+cat experiments/latest/tasks/task_1.json | jq .
+
+# Generate summary report
+cuga eval report --experiment appworld_eval_20240115_143022
+```
+
+## 🔍 Task Analysis
+
+### Task Categories
+
+AppWorld tasks are categorized by:
+
+#### Domain
+- **E-commerce**: Shopping, product management
+- **Productivity**: Office applications, project management
+- **Social**: Social media, communication
+- **Finance**: Banking, investment platforms
+- **Travel**: Booking systems, planning tools
+
+#### Complexity
+- **Level 1**: Single-step, straightforward tasks
+- **Level 2**: Multi-step, moderate complexity
+- **Level 3**: Complex workflows, error handling
+
+#### Interaction Type
+- **Navigation**: Moving between pages/sections
+- **Form Filling**: Input forms, data entry
+- **Search**: Finding information, products
+- **Transaction**: Purchases, bookings, transfers
+
+### Task Examples
+
+#### Easy Task Example
+```
+Task: Navigate to the homepage of an e-commerce site
+Steps: 1) Open browser, 2) Navigate to URL, 3) Verify homepage loaded
+Expected: Homepage displays correctly
+```
+
+#### Medium Task Example
+```
+Task: Search for a product and add it to cart
+Steps: 1) Navigate to search, 2) Enter query, 3) Select product, 4) Add to cart
+Expected: Product appears in shopping cart
+```
+
+#### Hard Task Example
+```
+Task: Complete a multi-step checkout process
+Steps: 1) Review cart, 2) Enter shipping info, 3) Enter payment info, 4) Confirm order
+Expected: Order confirmation received
+```
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| 🔴 AppWorld not starting | Check Docker and port availability |
+| 🔴 API registry errors | Verify mcp_servers_appworld.yaml |
+| 🔴 Task execution failures | Check browser automation setup |
+| 🔴 Memory issues | Increase Docker memory allocation |
+| 🔴 Port conflicts | Stop conflicting services |
+
+### Debug Commands
+
+```bash
+# Check AppWorld status
+cuga status --service appworld
+
+# View AppWorld logs
+cuga logs --service appworld --tail
+
+# Test AppWorld connectivity
+curl -v http://localhost:8081/health
+
+# Check API registry
+curl -v http://localhost:8001/health
+
+# Verify tool registration
+cuga apis list --service appworld
+```
+
+### Environment Issues
+
+```bash
+# Restart AppWorld environment
+cuga stop appworld
+cuga start appworld
+
+# Restart API registry
+uv run registry_appworld
+
+# Check Docker containers
+docker ps | grep appworld
+docker logs appworld_container
+```
+
+## 📈 Performance Optimization
+
+### CUGA Configuration
+
+Optimize CUGA for AppWorld evaluation:
+
+```toml
+[appworld.optimization]
+# Performance settings
+parallel_tasks = 2              # Limit parallel tasks
+memory_limit = "4GB"            # Memory per task
+timeout = 300                   # Task timeout
+
+# Browser settings
+headless = true                 # Run in headless mode
+browser_timeout = 60            # Browser action timeout
+retry_attempts = 3              # Retry failed actions
+
+# Caching
+cache_enabled = true            # Enable result caching
+cache_ttl = 1800               # 30-minute cache
+```
+
+### System Optimization
+
+```bash
+# Increase Docker resources
+# In Docker Desktop: Resources → Memory: 8GB, CPUs: 4
+
+# Optimize system performance
+# Close unnecessary applications
+# Ensure sufficient disk space
+# Monitor system resources
+```
+
+## 🔄 Continuous Evaluation
+
+### Automated Evaluation
+
+```bash
+# Run daily evaluation
+0 2 * * * cd /path/to/cuga && uv run appworld_eval --eval_key daily_test
+
+# Run weekly comprehensive evaluation
+0 3 * * 0 cd /path/to/cuga && uv run appworld_eval --eval_key weekly_full
+
+# Run regression tests
+0 4 * * * cd /path/to/cuga && uv run appworld_eval --eval_key regression
+```
+
+### Result Tracking
+
+```bash
+# Track evaluation trends
+cuga eval trends --days 30
+
+# Compare experiments
+cuga eval compare experiment1 experiment2
+
+# Generate performance reports
+cuga eval report --format html --output performance_report.html
+```
+
+## 📚 Best Practices
+
+### Evaluation Strategy
+
+1. **Start Small**: Begin with easy tasks to validate setup
+2. **Gradual Complexity**: Progress from easy to hard tasks
+3. **Consistent Environment**: Use same environment for all evaluations
+4. **Regular Monitoring**: Monitor progress and address issues promptly
+5. **Result Analysis**: Analyze results to identify improvement areas
+
+### Task Selection
+
+1. **Representative Sample**: Choose tasks that represent real-world usage
+2. **Difficulty Distribution**: Include tasks across all difficulty levels
+3. **Domain Coverage**: Cover multiple application domains
+4. **Edge Cases**: Include tasks that test error handling
+5. **User Scenarios**: Focus on realistic user workflows
+
+### Performance Monitoring
+
+1. **Resource Usage**: Monitor CPU, memory, and disk usage
+2. **Execution Time**: Track task completion times
+3. **Success Rates**: Monitor task success rates
+4. **Error Analysis**: Analyze failure patterns
+5. **Trend Analysis**: Track performance over time
+
+## 📚 Next Steps
+
+After running AppWorld evaluation:
+
+1. **[WebArena Evaluation](../webarena)**: Test with another benchmark
+2. **[WxO Tools Evaluation](../wxo-tools)**: Integrate with Watson Orchestrate
+3. **[Docker Parallel Evaluation](../docker-parallel)**: Scale evaluation with containers
+4. **[Development](../development/testing)**: Test and debug based on results
+
+---
+
+<div align="center">
+AppWorld evaluated? Move to [WebArena Evaluation](../webarena)!
+</div>
