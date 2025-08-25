@@ -3,6 +3,10 @@ title: Installation Guide
 description: Complete installation instructions for IBM CUGA
 ---
 
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { CodeBlock } from 'fumadocs-ui/components/codeblock';
 
 # Installation Guide
 
@@ -31,18 +35,18 @@ CUGA requires Python 3.12 or higher and works on Windows, macOS, and Linux syste
 Before installing CUGA, ensure you have these tools:
 
 <Steps>
-  <Steps.Step title="Python 3.12+">
+  <Step title="Python 3.12+">
     Install Python 3.12 or higher from python.org
-  </Steps.Step>
-  <Steps.Step title="UV Package Manager">
+  </Step>
+  <Step title="UV Package Manager">
     Install UV for modern Python dependency management
-  </Steps.Step>
-  <Steps.Step title="Git">
+  </Step>
+  <Step title="Git">
     Install Git for version control and cloning
-  </Steps.Step>
-  <Steps.Step title="API Keys">
+  </Step>
+  <Step title="API Keys">
     Obtain necessary API keys for LLM services
-  </Steps.Step>
+  </Step>
 </Steps>
 
 ### Installing UV
@@ -78,29 +82,29 @@ UV provides faster dependency resolution and better virtual environment manageme
     <p>Recommended for most users. Install CUGA directly on your system.</p>
     
     <Steps>
-      <Steps.Step title="Clone Repository">
+      <Step title="Clone Repository">
         ```bash
         git clone git@github.ibm.com:research-rpa/cuga.git
         cd cuga
         ```
-      </Steps.Step>
-      <Steps.Step title="Create Environment">
+      </Step>
+      <Step title="Create Environment">
         ```bash
         uv venv --python=3.12
         source .venv/bin/activate  # Windows: .venv\Scripts\activate
         ```
-      </Steps.Step>
-      <Steps.Step title="Install Dependencies">
+      </Step>
+      <Step title="Install Dependencies">
         ```bash
         uv sync
         ```
-      </Steps.Step>
-      <Steps.Step title="Configure Environment">
+      </Step>
+      <Step title="Configure Environment">
         ```bash
         cp .env.example .env
         # Edit .env with your API keys
         ```
-      </Steps.Step>
+      </Step>
     </Steps>
   </TabsContent>
   

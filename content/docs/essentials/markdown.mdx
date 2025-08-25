@@ -4,6 +4,8 @@ description: 'Text, title, and styling in standard markdown'
 icon: 'text-size'
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
+
 ## Titles
 
 Best used for section headers.
@@ -20,11 +22,11 @@ Best used for subsection headers.
 ### Subtitles
 ```
 
-<Tip>
+<Callout>
 
 Each **title** and **subtitle** creates an anchor and also shows up on the table of contents on the right.
 
-</Tip>
+</Callout>
 
 ## Text formatting
 
@@ -77,12 +79,12 @@ To create a blockquote, add a `>` in front of a paragraph.
 > The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
 ```
 
-### LaTeX
+### Mathematical Expressions
 
-Mintlify supports [LaTeX](https://www.latex-project.org) through the Latex component.
-
-<Latex>8 x (vk x H1 - H2) = (0,1)</Latex>
+For mathematical expressions, you can use standard markdown or HTML:
 
 ```md
-<Latex>8 x (vk x H1 - H2) = (0,1)</Latex>
+8 × (vk × H₁ - H₂) = (0,1)
 ```
+
+**Note**: For complex mathematical expressions, consider using a math library or converting to images.
