@@ -8,9 +8,8 @@ const config = {
   output: 'export',
   distDir: 'docs',
   trailingSlash: true,
-  // Configure for GitHub Pages deployment
-  basePath: '/cuga-docs',
-  assetPrefix: '/cuga-docs',
+  // For GitHub Pages serving from /docs folder, no basePath needed
+  // The repository path is handled by GitHub Pages automatically
 };
 
 export default withMDX(config);
