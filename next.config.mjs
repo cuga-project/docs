@@ -9,8 +9,8 @@ const config = {
   distDir: 'docs',
   trailingSlash: true,
   // Configure for GitHub Pages deployment from /docs folder
-  basePath: '/Sami-Marreed/cuga-docs',
-  assetPrefix: '/Sami-Marreed/cuga-docs',
+  basePath: '/research-rpa/cuga-docs',
+  assetPrefix: '/research-rpa/cuga-docs',
   images: {
     unoptimized: true, // Required for static export
   },
