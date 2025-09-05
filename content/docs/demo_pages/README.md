@@ -1,11 +1,11 @@
 ---
 title: CUGA Demo Pages
-description: HTML demo pages for testing IBM CUGA in different modes
+description: HTML demo pages for testing CUGA in different modes
 ---
 
 # 🧪 CUGA Demo Pages
 
-This directory contains HTML demo pages for testing IBM CUGA in different modes.
+This directory contains HTML demo pages for testing CUGA in different modes.
 
 ## 📄 Available Demo Pages
 

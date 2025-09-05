@@ -1,9 +1,9 @@
 ---
-title: IBM Computer Using Generalist Agent (CUGA)
+title: Computer Using Generalist Agent (CUGA)
 description: An autonomous agent capable of performing web actions with intelligent planning and task decomposition
 ---
 
-# IBM Computer Using Generalist Agent (CUGA)
+# Computer Using Generalist Agent (CUGA)
 
 <div align="center">
 
@@ -16,7 +16,7 @@ _An autonomous agent capable of performing web actions with intelligent planning
 
 ## What is CUGA?
 
-IBM CUGA is a sophisticated autonomous agent that combines the power of large language models with intelligent task planning and execution capabilities. It can perform both browser automation and API interactions, making it a versatile tool for complex workflow automation.
+CUGA is a sophisticated autonomous agent that combines the power of large language models with intelligent task planning and execution capabilities. It can perform both browser automation and API interactions, making it a versatile tool for complex workflow automation.
 
 ### Key Features
 
