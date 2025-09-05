@@ -14,11 +14,11 @@ export function baseOptions(): BaseLayoutProps {
       title: (
         <div className="flex items-center gap-2">
           <img 
-            src="/logo/cuga3.png" 
+            src="/research-rpa/cuga-docs/logo/logo-dark.png" 
             alt="CUGA Logo" 
             className="w-6 h-6 rounded"
           />
-          <span>IBM CUGA</span>
+          <span>CUGA</span>
         </div>
       ),
     },

@@ -7,7 +7,7 @@
     "light": "#B7BDF8",
     "dark": "#5B6078"
   },
-  "favicon": "/logo/cuga3.png",
+  "favicon": "/research-rpa/cuga-docs/logo/cuga3.png",
   "navigation": {
     "tabs": [
       {
@@ -108,8 +108,8 @@
     }
   },
   "logo": {
-    "light": "/logo/cuga3.png",
-    "dark": "/logo/cuga3.png"
+    "light": "/research-rpa/cuga-docs/logo/cuga3.png",
+    "dark": "/research-rpa/cuga-docs/logo/cuga3.png"
   },
   "navbar": {
     "links": [
