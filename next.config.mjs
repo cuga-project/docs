@@ -8,8 +8,8 @@ const config = {
   output: 'export',
   distDir: 'docs',
   trailingSlash: true,
-  basePath: '/docs',
-  assetPrefix: '/docs',
+  // Remove basePath and assetPrefix for GitHub Pages deployment from /docs folder
+  // GitHub Pages will serve from /docs automatically
 };
 
 export default withMDX(config);
