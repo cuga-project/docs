@@ -7,7 +7,7 @@
     "light": "#B7BDF8",
     "dark": "#5B6078"
   },
-  "favicon": "/research-rpa/cuga-docs/logo/cuga3.png",
+  "favicon": "/research-rpa/cuga-docs/logo/logo-dark.png",
   "navigation": {
     "tabs": [
       {
@@ -108,8 +108,8 @@
     }
   },
   "logo": {
-    "light": "/research-rpa/cuga-docs/logo/cuga3.png",
-    "dark": "/research-rpa/cuga-docs/logo/cuga3.png"
+    "light": "/research-rpa/cuga-docs/logo/logo-light.png",
+    "dark": "/research-rpa/cuga-docs/logo/logo-dark.png"
   },
   "navbar": {
     "links": [
