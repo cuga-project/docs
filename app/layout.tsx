@@ -18,10 +18,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               defaultOpenLevel: 2,
               collapsible: false
             }}
-            footer={{
-              links: config.footer.links,
-              text: config.footer.text,
-            }}
           >
             {children}
           </DocsLayout>
