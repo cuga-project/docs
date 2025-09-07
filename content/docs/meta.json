@@ -25,23 +25,7 @@
     "---🛠️ Testing & Debugging---",
     "development/testing",
     "development/troubleshooting",
-    "development/debugging",
-    "---📚 API Documentation---",
-    "api-reference/introduction",
-    "api-reference/endpoints",
-    "---🤖 AI Tool Integrations---",
-    "ai-tools/claude-code",
-    "ai-tools/cursor",
-    "ai-tools/windsurf",
-    "---📝 Documentation Writing---",
-    "essentials/code",
-    "essentials/images",
-    "essentials/markdown",
-    "essentials/navigation",
-    "---🧩 Reusable Components---",
-    "essentials/reusable-snippets",
-    "essentials/settings",
-    "snippets/snippet-intro"
+    "development/debugging"
   ]
 }
 

@@ -1,5 +1,6 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { BookIcon, CodeIcon, FlaskConicalIcon, SettingsIcon, RocketIcon } from 'lucide-react';
+import { config, getAssetPath } from './config';
 
 /**
  * Shared layout configurations
@@ -14,11 +15,16 @@ export function baseOptions(): BaseLayoutProps {
       title: (
         <div className="flex items-center gap-2">
           <img 
-            src="/research-rpa/cuga-docs/logo/logo-dark.png" 
+            src={getAssetPath(config.logos.light)}
             alt="CUGA Logo" 
-            className="w-6 h-6 rounded"
+            className="w-6 h-6 rounded block dark:hidden"
           />
-          <span>CUGA</span>
+          <img 
+            src={getAssetPath(config.logos.dark)}
+            alt="CUGA Logo" 
+            className="w-6 h-6 rounded hidden dark:block"
+          />
+          <span>{config.site.name}</span>
         </div>
       ),
     },
@@ -26,15 +32,15 @@ export function baseOptions(): BaseLayoutProps {
     links: [
       {
         text: 'GitHub',
-        url: 'https://github.ibm.com/research-rpa/cuga',
+        url: config.urls.github,
         external: true,
       },
       {
         text: 'Website',
-        url: 'https://cuga.dev/',
+        url: config.urls.website,
         external: true,
       }
     ],
-    githubUrl: 'https://github.ibm.com/research-rpa/cuga',
+    githubUrl: config.urls.github,
   };
 }
