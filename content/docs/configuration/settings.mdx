@@ -1,9 +1,9 @@
 ---
 title: Settings Configuration
-description: Configure CUGA behavior, modes, and advanced features
+description: Configure CUGA reasoning modes and custom instructions
 ---
 
-Fine-tune CUGA's behavior through comprehensive configuration options, including execution modes, agent behavior, and advanced features.
+Fine-tune CUGA's behavior through three distinct reasoning modes and custom instruction configurations for optimal performance across different use cases.
 
 ## 🎯 Configuration Overview
 
@@ -11,147 +11,168 @@ CUGA uses TOML configuration files for flexible and readable settings management
 
 ```
 configurations/
-├── settings.litellm.toml      # Default ETE configuration
-├── settings.openai.toml       # OpenAI configuration
-├── settings.watsonx.toml      # WatsonX configuration
-├── settings.azure.toml        # Azure configuration
-└── modes/
-    ├── fast.toml              # Fast mode settings
-    ├── accurate.toml          # Accurate mode settings
-    └── custom.toml            # Custom mode settings
+├── models/
+│   ├── settings.litellm.toml      # Default ETE configuration
+│   ├── settings.openai.toml       # OpenAI configuration
+│   ├── settings.watsonx.toml      # WatsonX configuration
+│   └── settings.azure.toml        # Azure configuration
+├── modes/
+│   ├── fast.toml              # Fast mode settings
+│   ├── balanced.toml          # Balanced mode settings
+│   └── accurate.toml          # Accurate mode settings
+└── instructions/
+    └── default/
+        ├── api_planner.md     # Custom API planner instructions
+        ├── task_decomposition.md   # Custom task decomposition instructions
+        └── code_agent.md  # Custom code agent instructions
 ```
 
-## 🚀 Execution Modes
+### Custom Configuration Directory
+
+You can specify a custom configuration directory using the environment variable:
+
+```bash
+# Set custom configuration directory
+export CUGA_CONFIGURATIONS_DIR="/path/to/your/configurations"
+```
+
+This allows you to organize your configurations in any directory structure you prefer.
+
+## 🚀 Reasoning Modes
 
 ### Mode Selection
 
-CUGA offers three execution modes optimized for different use cases:
+CUGA offers three reasoning modes optimized for different use cases:
 
-| Mode       | Speed | Accuracy | Use Case                    |
-|------------|-------|----------|-----------------------------|
-| **Fast**   | ⭐⭐⭐⭐⭐ | ⭐⭐⭐    | Development, testing        |
+| Mode        | Speed | Accuracy | Use Case                    |
+|-------------|-------|----------|-----------------------------|
+| **Fast**    | ⭐⭐⭐⭐⭐ | ⭐⭐⭐    | Development, testing        |
+| **Balanced** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | General purpose, workflows  |
 | **Accurate** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Production, critical tasks  |
-| **Custom** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Tailored workflows          |
 
 ### Fast Mode Configuration
 
 ```toml
 # configurations/modes/fast.toml
-[mode]
-name = "fast"
-description = "Optimized for speed and development"
-
-[agent]
-temperature = 0.1
-max_tokens = 2000
-timeout = 60
-
-[execution]
-max_retries = 2
-parallel_tasks = 4
-cache_enabled = true
+[features]
+chat = true
+task_decomposition = false
+local_sandbox = true
+thoughts = false
+code_output_summary = false
+code_generation = "fast"
+code_output_reflection = false
+save_reuse = false
+forced_apps = []
+final_answer = true
 ```
+
+**Fast Mode Features:**
+- **Speed Optimized**: Minimal task decomposition for quick execution
+- **Direct Execution**: Bypasses complex reasoning chains
+- **Local Sandbox**: Uses local execution environment
+- **No Reflection**: Skips output validation for speed
+- **Quick Code Generation**: Fast code generation without extensive validation
+
+### Balanced Mode Configuration
+
+```toml
+# configurations/modes/balanced.toml
+[features]
+chat = false
+task_decomposition = true
+local_sandbox = true
+thoughts = false
+code_output_summary = false
+code_generation = "fast"
+code_output_reflection = true
+save_reuse = false
+forced_apps = []
+final_answer = true
+```
+
+**Balanced Mode Features:**
+- **Task Decomposition**: Breaks complex tasks into manageable steps
+- **Reflection Enabled**: Validates code output for quality
+- **Local Sandbox**: Uses local execution environment
+- **No Chat Interface**: Focuses on API-based execution
+- **Fast Code Generation**: Quick code generation with validation
 
 ### Accurate Mode Configuration
 
 ```toml
 # configurations/modes/accurate.toml
-[mode]
-name = "accurate"
-description = "Optimized for precision and reliability"
-
-[agent]
-temperature = 0.05
-max_tokens = 4000
-timeout = 120
-
-[execution]
-max_retries = 3
-parallel_tasks = 2
-cache_enabled = false
-validation_enabled = true
-```
-
-### Custom Mode Configuration
-
-```toml
-# configurations/modes/custom.toml
-[mode]
-name = "custom"
-description = "User-defined configuration"
-
-[agent]
-temperature = 0.2
-max_tokens = 3000
-timeout = 90
-
-[execution]
-max_retries = 2
-parallel_tasks = 3
-cache_enabled = true
-validation_enabled = true
-```
-
-## 🔧 Core Settings
-
-### Agent Configuration
-
-```toml
-[agent]
-# LLM Settings
-temperature = 0.1              # 0.0 to 1.0 (lower = more deterministic)
-max_tokens = 4000              # Maximum tokens per response
-top_p = 0.9                    # Nucleus sampling parameter
-frequency_penalty = 0.0        # Reduce repetition
-presence_penalty = 0.0         # Encourage new topics
-
-# Execution Settings
-timeout = 120                  # Seconds per task
-max_retries = 3                # Retry attempts on failure
-retry_delay = 5                # Seconds between retries
-
-# Memory Settings
-memory_enabled = true          # Enable conversation memory
-memory_size = 1000             # Number of interactions to remember
-memory_ttl = 3600              # Memory time-to-live in seconds
-```
-
-### Feature Configuration
-
-```toml
 [features]
-# Execution Mode
-mode = "hybrid"                # api, chat, or hybrid
-cuga_mode = "accurate"         # fast, accurate, or custom
-
-# API Integration
-api_enabled = true             # Enable API mode
-chat_enabled = true            # Enable chat mode
-browser_enabled = true         # Enable browser automation
-
-# Advanced Features
-save_reuse_enabled = true      # Enable workflow persistence
-experiment_tracking = true     # Enable experiment logging
-parallel_execution = true      # Enable parallel task execution
+chat = false
+task_decomposition = true
+local_sandbox = true
+thoughts = true
+code_output_summary = true
+code_generation = "accurate"
+code_output_reflection = true
+save_reuse = true
+forced_apps = []
+final_answer = true
 ```
 
-### Advanced Features
+**Accurate Mode Features:**
+- **Full Task Decomposition**: Comprehensive task breakdown
+- **Thought Process**: Enables detailed reasoning chains
+- **Code Output Summary**: Provides detailed execution summaries
+- **Accurate Code Generation**: High-quality code with extensive validation
+- **Save & Reuse**: Enables workflow persistence
+- **Multiple Reflections**: Multiple validation passes for accuracy
 
-```toml
-[advanced_features]
-# Benchmark Configuration
-benchmark = "appworld"         # webarena, appworld, or custom
+## 📝 Custom Instructions
 
-# Performance Settings
-cache_size = 1000              # Number of cached responses
-max_workers = 4                # Maximum parallel workers
-connection_pool_size = 10      # HTTP connection pool size
+### File System Configuration
 
-# Security Settings
-ssl_verify = true              # Verify SSL certificates
-api_key_rotation = false       # Enable automatic API key rotation
-audit_logging = true           # Log all API interactions
+CUGA supports custom instructions through markdown files in the configuration directory:
+
 ```
+configurations/instructions/default/
+├── api_code_planner.md     # API code planning instructions
+├── plan_controller.md      # Plan controller instructions
+├── task_decomposition.md   # Task decomposition instructions
+├── api_planner.md          # API planning instructions
+├── answer.md               # Final answer instructions
+├── shortlister.md          # Shortlister instructions
+└── code_agent.md           # Code generation instructions
+```
+
+### Custom Instruction Structure
+
+Each instruction file should contain markdown content that defines the behavior for specific components:
+
+```markdown
+# API Planner Instructions
+
+## Role
+You are an expert API planner responsible for breaking down complex tasks into API calls.
+
+## Guidelines
+- Always validate API endpoints before use
+- Consider rate limits and authentication
+- Provide clear error handling strategies
+- Document expected responses
+
+## Examples
+- For data retrieval: Use GET requests with proper query parameters
+- For data modification: Use POST/PUT requests with validation
+```
+
+### Instruction File Naming
+
+Custom instruction files follow the pattern:
+- `./configurations/instructions/default/api_code_planner.md`
+- `./configurations/instructions/default/plan_controller.md`
+- `./configurations/instructions/default/task_decomposition.md`
+- `./configurations/instructions/default/api_planner.md`
+- `./configurations/instructions/default/answer.md`
+- `./configurations/instructions/default/shortlister.md`
+- `./configurations/instructions/default/code_agent.md`
+
+
 
 ## 🎮 Mode Switching
 
@@ -159,13 +180,13 @@ audit_logging = true           # Log all API interactions
 
 ```bash
 # Switch to fast mode
-export CUGA_MODE="fast"
+export DYNACONF_FEATURES__CUGA_MODE="fast"
+
+# Switch to balanced mode
+export DYNACONF_FEATURES__CUGA_MODE="balanced"
 
 # Switch to accurate mode
-export CUGA_MODE="accurate"
-
-# Switch to custom mode
-export CUGA_MODE="custom"
+export DYNACONF_FEATURES__CUGA_MODE="accurate"
 ```
 
 ### Method 2: Settings File
@@ -174,271 +195,9 @@ Edit `settings.toml`:
 
 ```toml
 [features]
-cuga_mode = "fast"  # or "accurate" or "custom"
+cuga_mode = "balanced"  # or "fast" or "accurate"
 ```
 
-### Method 3: Command Line
-
-```bash
-# Start with specific mode
-cuga start demo --mode fast
-cuga start demo --mode accurate
-cuga start demo --mode custom
-```
-
-## 🔄 Dynamic Configuration
-
-### Runtime Configuration Changes
-
-CUGA supports dynamic configuration updates:
-
-```python
-# Update configuration at runtime
-from cuga.config import Config
-
-config = Config()
-config.update({
-    'agent.temperature': 0.2,
-    'execution.max_retries': 5
-})
-```
-
-### Configuration Validation
-
-```bash
-# Validate configuration
-cuga config validate
-
-# Check current settings
-cuga config show
-
-# Reset to defaults
-cuga config reset
-```
-
-## 📊 Performance Tuning
-
-### Memory Optimization
-
-```toml
-[performance]
-# Memory Management
-max_memory_usage = "8GB"       # Maximum memory usage
-garbage_collection = "auto"    # GC strategy
-memory_pool_size = 1000        # Object pool size
-
-# Caching
-cache_strategy = "lru"         # LRU, LFU, or FIFO
-cache_ttl = 3600              # Cache time-to-live
-cache_max_size = 10000        # Maximum cache entries
-```
-
-### Execution Optimization
-
-```toml
-[execution]
-# Parallel Processing
-max_concurrent_tasks = 4       # Maximum parallel tasks
-task_queue_size = 100          # Task queue capacity
-worker_timeout = 300           # Worker timeout in seconds
-
-# Resource Management
-cpu_limit = 4                  # CPU core limit
-memory_limit = "8GB"           # Memory limit per task
-disk_quota = "1GB"             # Disk usage limit
-```
-
-## 🧪 Testing Configuration
-
-### Configuration Testing
-
-```bash
-# Test current configuration
-uv run test_sandbox
-
-# Test specific mode
-CUGA_MODE="fast" uv run test_sandbox
-CUGA_MODE="accurate" uv run test_sandbox
-
-# Validate configuration files
-cuga config validate --file settings.litellm.toml
-```
-
-### Performance Testing
-
-```bash
-# Benchmark current settings
-cuga benchmark --mode fast
-cuga benchmark --mode accurate
-
-# Compare modes
-cuga benchmark --compare fast,accurate,custom
-```
-
-## 🔍 Configuration Debugging
-
-### Debug Mode
-
-Enable debug logging:
-
-```toml
-[logging]
-level = "DEBUG"
-format = "detailed"
-output = "file"
-file_path = "logs/cuga_debug.log"
-
-[debug]
-enabled = true
-verbose = true
-trace_execution = true
-log_prompts = true
-```
-
-### Configuration Inspection
-
-```bash
-# Show current configuration
-cuga config show
-
-# Show specific section
-cuga config show --section agent
-cuga config show --section features
-
-# Export configuration
-cuga config export --format json
-cuga config export --format yaml
-```
-
-## 🚨 Error Handling
-
-### Retry Configuration
-
-```toml
-[retry]
-# General Retry Settings
-max_retries = 3                # Maximum retry attempts
-retry_delay = 5                # Base delay in seconds
-backoff_multiplier = 2.0       # Exponential backoff multiplier
-max_delay = 60                 # Maximum delay between retries
-
-# Specific Error Handling
-retry_on_timeout = true        # Retry on timeout errors
-retry_on_rate_limit = true     # Retry on rate limit errors
-retry_on_network_error = true  # Retry on network errors
-```
-
-### Fallback Configuration
-
-```toml
-[fallback]
-# Model Fallback
-primary_model = "gpt-4"
-fallback_model = "gpt-3.5-turbo"
-fallback_on_error = true
-
-# Provider Fallback
-primary_provider = "openai"
-fallback_provider = "litellm"
-fallback_on_failure = true
-```
-
-## 📚 Configuration Examples
-
-### Development Configuration
-
-```toml
-# settings.dev.toml
-[features]
-mode = "hybrid"
-cuga_mode = "fast"
-
-[agent]
-temperature = 0.3
-max_tokens = 2000
-timeout = 60
-
-[execution]
-max_retries = 2
-parallel_tasks = 4
-cache_enabled = true
-
-[logging]
-level = "DEBUG"
-```
-
-### Production Configuration
-
-```toml
-# settings.prod.toml
-[features]
-mode = "api"
-cuga_mode = "accurate"
-
-[agent]
-temperature = 0.05
-max_tokens = 4000
-timeout = 120
-
-[execution]
-max_retries = 3
-parallel_tasks = 2
-cache_enabled = false
-validation_enabled = true
-
-[logging]
-level = "INFO"
-```
-
-### Evaluation Configuration
-
-```toml
-# settings.eval.toml
-[features]
-mode = "api"
-cuga_mode = "accurate"
-
-[advanced_features]
-benchmark = "appworld"
-experiment_tracking = true
-
-[execution]
-max_retries = 5
-parallel_tasks = 1
-validation_enabled = true
-
-[logging]
-level = "DEBUG"
-trace_execution = true
-```
-
-## 🔄 Configuration Migration
-
-### Version Compatibility
-
-```bash
-# Check configuration version
-cuga config version
-
-# Migrate configuration
-cuga config migrate --from v1.0 --to v2.0
-
-# Backup configuration
-cuga config backup --output config_backup.toml
-```
-
-### Import/Export
-
-```bash
-# Export configuration
-cuga config export --output my_config.toml
-
-# Import configuration
-cuga config import --file my_config.toml
-
-# Merge configurations
-cuga config merge --base default.toml --override custom.toml
-```
 
 ## 📚 Next Steps
 
