@@ -3,166 +3,170 @@ title: Model Configuration
 description: Configure different LLM providers for CUGA
 ---
 
-CUGA supports multiple LLM providers, allowing you to choose the best option for your needs and budget.
+CUGA supports multiple LLM providers with flexible configuration options. You can configure models through TOML files or override specific settings using environment variables.
 
-## 🌐 Supported Providers
+## Supported Platforms
 
-| Provider | Best For | Cost | Setup Complexity |
-|----------|----------|------|------------------|
-| **ETE LiteLLM** | IBM Teams | Free | ⭐ Easy |
-| **OpenAI** | General Use | Pay-per-use | ⭐⭐ Medium |
-| **IBM WatsonX** | Enterprise | Variable | ⭐⭐⭐ Complex |
-| **Azure OpenAI** | Azure Users | Pay-per-use | ⭐⭐ Medium |
+- **OpenAI** - GPT models via OpenAI API (also supports LiteLLM via base URL override)
+- **IBM WatsonX** - IBM's enterprise LLM platform
+- **Azure OpenAI** - Microsoft's Azure OpenAI service
+- **RITS** - Internal IBM research platform
 
-## 🏢 ETE LiteLLM (Recommended for IBM Teams)
+## Configuration Priority
 
-The default and recommended configuration for IBM team members.
+1. **Environment Variables** (highest priority)
+2. **TOML Configuration** (medium priority)
+3. **Default Values** (lowest priority)
 
-### Setup Instructions
+### Option 1: OpenAI 🌐
 
-1. **Access Portal**
-   - Visit [ETE LiteLLM Portal](https://ete-litellm.bx.cloud9.ibm.com/ui/)
-   - Login with your IBM credentials
+**Setup Instructions:**
 
-2. **Generate API Key**
-   - Navigate to the API keys section
-   - Generate a new API key
-   - Copy the key (starts with `ete-`)
-
-3. **Configure Environment**
+1. Create an account at [platform.openai.com](https://platform.openai.com)
+2. Generate an API key from your [API keys page](https://platform.openai.com/api-keys)
+3. Add to your `.env` file:
    ```bash
-   # Edit .env file
-   OPENAI_API_KEY=ete-your-key-here
-   AGENT_SETTING_CONFIG="settings.litellm.toml"
+   # For OpenAI:
+   # AGENT_SETTING_CONFIG="settings.openai.toml" #Could be replaced by the settings in ./configurations/models
+   # OPENAI_API_KEY="XXXXXX"
+   # OPENAI_API_VERSION="2024-08-01-preview"
    ```
 
-4. **Verify Configuration**
+**Default Values:**
+- Model: `gpt-4o`
+- API Version: OpenAI's default API Version
+- Base URL: OpenAI's default endpoint
+
+### Option 2: IBM WatsonX 🔵
+
+**Setup Instructions:**
+
+1. Access [IBM WatsonX](https://www.ibm.com/watsonx)
+2. Create a project and get your credentials:
+   - Project ID
+   - API Key
+   - Region/URL
+3. Add to your `.env` file:
    ```bash
-   uv run test_sandbox
+   # For WatsonX
+   # AGENT_SETTING_CONFIG="settings.watsonx.toml" #Could be replaced by the settings in ./configurations/models
+   # WATSONX_PROJECT_ID="XXXXXX"
+   # WATSONX_URL="https://us-south.ml.cloud.ibm.com"
+   # WATSONX_APIKEY="XXXXXX"
    ```
 
-### Benefits
+**Default Values:**
+- Model: `meta-llama/llama-4-maverick-17b-128e-instruct-fp8`
 
-- ✅ **Free for IBM employees**
-- ✅ **High performance and reliability**
-- ✅ **IBM security compliance**
-- ✅ **Seamless integration**
+### Option 3: Azure OpenAI
 
-## 🌐 OpenAI
+**Setup Instructions:**
 
-Popular choice for general use with excellent model quality.
-
-### Setup Instructions
-
-1. **Create Account**
-   - Visit [platform.openai.com](https://platform.openai.com)
-   - Sign up or log in to your account
-
-2. **Generate API Key**
-   - Navigate to [API Keys](https://platform.openai.com/api-keys)
-   - Click "Create new secret key"
-   - Copy the key (starts with `sk-`)
-
-3. **Configure Environment**
+1. Add to your `.env` file:
    ```bash
-   # Edit .env file
-   OPENAI_API_KEY=sk-your-key-here
-   AGENT_SETTING_CONFIG="settings.openai.toml"
+   # For Azure Openai
+   # AGENT_SETTING_CONFIG="settings.azure.toml" #Could be replaced by the settings in ./configurations/models
+   # AZURE_OPENAI_API_KEY="XXXXXX"
+   # AZURE_OPENAI_ENDPOINT="XXXXXX"
    ```
 
-4. **Verify Configuration**
+### LiteLLM Support
+
+CUGA supports LiteLLM through the OpenAI configuration by overriding the base URL:
+
+1. Add to your `.env` file:
    ```bash
-   uv run test_sandbox
+   # For LiteLLM:
+   # AGENT_SETTING_CONFIG="settings.openai.toml" #Could be replaced by the settings in ./configurations/models
+   # OPENAI_API_KEY="XXXXXX"
+   # OPENAI_BASE_URL="XXXXXX"
    ```
 
-### Cost Considerations
+## Configuration Files
 
-- **GPT-4**: ~$0.03 per 1K input tokens, ~$0.06 per 1K output tokens
-- **GPT-3.5-turbo**: ~$0.0015 per 1K input tokens, ~$0.002 per 1K output tokens
+CUGA uses TOML configuration files located in `src/cuga/configurations/models/`:
 
-## 🔵 IBM WatsonX
+- `settings.openai.toml` - OpenAI configuration (also supports LiteLLM via base URL override)
+- `settings.watsonx.toml` - WatsonX configuration  
+- `settings.azure.toml` - Azure OpenAI configuration
 
-Enterprise-grade AI platform with IBM's latest models.
+Each file contains agent-specific model settings that can be overridden by environment variables.
 
-### Setup Instructions
-
-1. **Access WatsonX**
-   - Visit [IBM WatsonX](https://www.ibm.com/watsonx)
-   - Create a new project or access existing one
-
-2. **Get Credentials**
-   - **Project ID**: Found in project settings
-   - **API Key**: Generate in project credentials
-   - **Region/URL**: Your deployment region
-
-3. **Configure Environment**
-   ```bash
-   # Edit .env file
-   WATSONX_API_KEY=your-watsonx-api-key
-   WATSONX_PROJECT_ID=your-project-id
-   WATSONX_URL=https://us-south.ml.cloud.ibm.com
-   AGENT_SETTING_CONFIG="settings.watsonx.toml"
-   ```
-
-4. **Verify Configuration**
-   ```bash
-   uv run test_sandbox
-   ```
-
-### Benefits
-
-- ✅ **Enterprise security**
-- ✅ **IBM's latest AI models**
-- ✅ **Compliance features**
-- ✅ **Scalable infrastructure**
-
-## ☁️ Azure OpenAI
-
-Microsoft's managed OpenAI service for Azure users.
-
-### Setup Instructions
-
-1. **Azure Setup**
-   - Access [Azure Portal](https://portal.azure.com)
-   - Create or access Azure OpenAI resource
-   - Get endpoint URL and API key
-
-2. **Configure Environment**
-   ```bash
-   # Edit .env file
-   AGENT_SETTING_CONFIG="settings.azure.toml"
-   AZURE_OPENAI_API_KEY="<your azure apikey>"
-   AZURE_OPENAI_ENDPOINT="<your azure endpoint>"
-   OPENAI_API_VERSION="2024-08-01-preview"
-   ```
-
-3. **Verify Configuration**
-   ```bash
-   uv run test_sandbox
-   ```
-
-### Benefits
-
-- ✅ **Azure integration**
-- ✅ **Enterprise security**
-- ✅ **Managed service**
-- ✅ **Compliance certifications**
-
-## ⚙️ Configuration Files
-
-### Settings Structure
+### Settings Structure 
 
 ```
 configurations/
-├── settings.litellm.toml      # Default ETE configuration
-├── settings.openai.toml       # OpenAI configuration
-├── settings.watsonx.toml      # WatsonX configuration
-├── settings.azure.toml        # Azure configuration
-└── modes/
-    ├── fast.toml              # Fast mode settings
-    ├── accurate.toml          # Accurate mode settings
-    └── custom.toml            # Custom mode settings
+└── models/
+    ├── settings.litellm.toml      # Default ETE configuration
+    ├── settings.openai.toml       # OpenAI configuration
+    ├── settings.watsonx.toml      # WatsonX configuration
+    └── settings.azure.toml        # Azure configuration
 ```
+
+### Settings File Content Structure
+
+Each settings file contains configuration for different CUGA agents. You can configure each agent independently with different models and parameters:
+
+#### OpenAI Configuration Example
+
+```toml
+[agent.task_decomposition.model]
+platform = "openai"
+temperature = 0.1
+max_tokens = 1000
+
+[agent.planner.model]
+platform = "openai"
+temperature = 0.1
+max_tokens = 5000
+
+[agent.chat.model]
+platform = "openai"
+temperature = 0.1
+max_tokens = 5000
+
+[agent.shortlister.model]
+platform = "openai"
+temperature = 0.1
+max_tokens = 7000
+```
+
+#### WatsonX Configuration Example
+
+```toml
+[agent.shortlister.model]
+platform = "watsonx"
+model_name = "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
+temperature = 0.1
+max_tokens = 7000
+
+[agent.planner.model]
+platform = "watsonx"
+model_name = "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
+temperature = 0.1
+max_tokens = 5000
+
+[agent.chat.model]
+platform = "watsonx"
+model_name = "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
+temperature = 0.1
+max_tokens = 5000
+```
+
+#### Agent Types
+
+CUGA uses different specialized agents for different tasks:
+
+- **`task_decomposition`**: Breaks down complex tasks into smaller, manageable steps
+- **`planner`**: Creates execution plans and strategies
+- **`chat`**: Handles conversational interactions and responses
+- **`shortlister`**: Prioritizes and filters tasks or options
+
+Each agent can be configured with:
+- **`platform`**: The LLM provider (openai, watsonx, azure)
+- **`model_name`**: Specific model to use (optional, uses platform default if not specified)
+- **`temperature`**: Controls randomness (0.0 = deterministic, 1.0 = very random)
+- **`max_tokens`**: Maximum number of tokens in the response
 
 ### Example Configuration Files
 
@@ -176,7 +180,6 @@ max_tokens = 4000
 
 [litellm]
 base_url = "https://ete-litellm.bx.cloud9.ibm.com"
-api_key = "${OPENAI_API_KEY}"
 ```
 
 #### settings.openai.toml
@@ -186,9 +189,6 @@ provider = "openai"
 model = "gpt-4"
 temperature = 0.1
 max_tokens = 4000
-
-[openai]
-api_key = "${OPENAI_API_KEY}"
 ```
 
 ## 🔄 Switching Between Providers
@@ -202,8 +202,8 @@ export AGENT_SETTING_CONFIG="settings.openai.toml"
 # Switch to WatsonX
 export AGENT_SETTING_CONFIG="settings.watsonx.toml"
 
-# Switch back to ETE (default)
-export AGENT_SETTING_CONFIG="settings.litellm.toml"
+# Switch to Azure
+export AGENT_SETTING_CONFIG="settings.azure.toml"
 ```
 
 ### Method 2: Edit .env File
@@ -212,73 +212,6 @@ export AGENT_SETTING_CONFIG="settings.litellm.toml"
 # Edit .env file
 AGENT_SETTING_CONFIG="settings.openai.toml"
 ```
-
-### Method 3: Command Line
-
-```bash
-# Start with specific config
-cuga start demo --config settings.openai.toml
-```
-
-## 🧪 Testing Configuration
-
-### Basic Test
-
-```bash
-uv run test_sandbox
-```
-
-### Model-Specific Test
-
-```bash
-# Test with specific configuration
-AGENT_SETTING_CONFIG="settings.openai.toml" uv run test_sandbox
-```
-
-### Demo Test
-
-```bash
-# Start demo with current configuration
-cuga start demo
-
-# Try a simple query
-"get my top account by revenue from digital sales"
-```
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-| Issue                    | Solution                                    |
-| ------------------------ | ------------------------------------------- |
-| 🔴 API key invalid       | Verify key format and permissions           |
-| 🔴 Rate limit exceeded   | Check usage limits and billing              |
-| 🔴 Model not found       | Verify model name in configuration          |
-| 🔴 Network timeout       | Check firewall and proxy settings           |
-| 🔴 Authentication failed | Verify API key and endpoint URL             |
-
-### Debug Commands
-
-```bash
-# Check current configuration
-echo $AGENT_SETTING_CONFIG
-
-# Verify environment variables
-cat .env | grep -E "(OPENAI_API_KEY|WATSONX|AZURE)"
-
-# Test API connectivity
-curl -H "Authorization: Bearer $OPENAI_API_KEY" \
-     https://api.openai.com/v1/models
-```
-
-## 📊 Performance Comparison
-
-| Provider | Speed | Cost | Reliability | Support |
-|----------|-------|------|-------------|---------|
-| ETE LiteLLM | ⭐⭐⭐⭐⭐ | Free | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| OpenAI | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| WatsonX | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| Azure | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
 
 ## 📚 Next Steps
 
