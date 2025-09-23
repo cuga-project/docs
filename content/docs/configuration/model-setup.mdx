@@ -15,6 +15,9 @@ CUGA supports multiple LLM providers with flexible configuration options. You ca
 ## Configuration Priority
 
 1. **Environment Variables** (highest priority)
+   - `MODEL_NAME` - Override the model name
+   - `AGENT_SETTING_CONFIG` - Override the configuration file
+   - Provider-specific API keys and endpoints
 2. **TOML Configuration** (medium priority)
 3. **Default Values** (lowest priority)
 
@@ -37,6 +40,12 @@ CUGA supports multiple LLM providers with flexible configuration options. You ca
 - API Version: OpenAI's default API Version
 - Base URL: OpenAI's default endpoint
 
+**Environment Variable Override:**
+You can override the model name using:
+```bash
+MODEL_NAME="gpt-4-turbo"
+```
+
 ### Option 2: IBM WatsonX 🔵
 
 **Setup Instructions:**
@@ -58,6 +67,12 @@ CUGA supports multiple LLM providers with flexible configuration options. You ca
 **Default Values:**
 - Model: `meta-llama/llama-4-maverick-17b-128e-instruct-fp8`
 
+**Environment Variable Override:**
+You can override the model name using:
+```bash
+MODEL_NAME="meta-llama/llama-3.1-8b-instruct"
+```
+
 ### Option 3: Azure OpenAI
 
 **Setup Instructions:**
@@ -70,6 +85,12 @@ CUGA supports multiple LLM providers with flexible configuration options. You ca
    # AZURE_OPENAI_ENDPOINT="XXXXXX"
    ```
 
+**Environment Variable Override:**
+You can override the model name using:
+```bash
+MODEL_NAME="gpt-4o"
+```
+
 ### LiteLLM Support
 
 CUGA supports LiteLLM through the OpenAI configuration by overriding the base URL:
@@ -81,6 +102,12 @@ CUGA supports LiteLLM through the OpenAI configuration by overriding the base UR
    # OPENAI_API_KEY="XXXXXX"
    # OPENAI_BASE_URL="XXXXXX"
    ```
+
+**Environment Variable Override:**
+You can override the model name using:
+```bash
+MODEL_NAME="gpt-4-turbo"
+```
 
 ## Configuration Files
 
