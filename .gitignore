@@ -5,7 +5,7 @@
 .contentlayer
 .content-collections
 .source
-
+.cursor
 # test & build
 /coverage
 /.next/
