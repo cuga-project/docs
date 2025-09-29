@@ -6,10 +6,14 @@ This is a Next.js application generated with
 Run development server:
 
 ```bash
+# install dependecies
+npm install
 npm run dev
 # or
+pnpm install
 pnpm dev
 # or
+yarn install
 yarn dev
 ```
 

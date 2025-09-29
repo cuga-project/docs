@@ -12,6 +12,24 @@
 /build
 *.tsbuildinfo
 
+# Fumadocs build outputs
+/docs/build/
+/docs/cache/
+/docs/server/
+/docs/static/
+/docs/trace
+/docs/types/
+/docs/app-build-manifest.json
+/docs/build-manifest.json
+/docs/fallback-build-manifest.json
+/docs/prerender-manifest.json
+/docs/routes-manifest.json
+/docs/postcss.js
+/docs/postcss.js.map
+/docs/webpack-loaders.js
+/docs/webpack-loaders.js.map
+/docs/package.json
+
 # misc
 .DS_Store
 *.pem

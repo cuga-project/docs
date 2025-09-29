@@ -1,5 +1,5 @@
 {
-  "pages": [
+  "old-pages": [
     "---🚀 Installation & Setup---",
     "index",
     "quickstart",
@@ -26,6 +26,33 @@
     "development/testing",
     "development/troubleshooting",
     "development/debugging"
+  ],
+  "pages": [
+    "---🚀 Getting Started---",
+    "index",
+    "quickstart",
+    "installation",
+    "---🎨 CUGA Overview---",
+    "architecture",
+    "---⚙️ Configuration---",
+    "usage/demo-mode",
+    "usage/control-commands",
+    "usage/api-integration",
+    "---🎯 Examples---",
+    "examples/cuga-as-mcp",
+    "examples/cuga-with-runtime-tools",
+    "examples/digital-sales-openapi",
+    "---🎯 Customization---",
+    "bring-your-own-data",
+    "---🔧 Advanced Automation Features---",
+    "usage/save-reuse",
+    "usage/adding-apis",
+    "usage/modes",
+    "---🛠️ Testing & Debugging---",
+    "development/testing",
+    "development/troubleshooting",
+    "development/debugging"
+
   ]
 }
 
