@@ -21,6 +21,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             tree={source.pageTree}
             sidebar={{
               defaultOpenLevel: 2,
+              enabled: true,
               collapsible: false,
               banner: undefined,
             }}
