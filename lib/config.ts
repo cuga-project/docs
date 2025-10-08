@@ -10,7 +10,7 @@ export const config = {
   
   // Site information
   site: {
-    name: 'IBM CUGA',
+    name: 'CUGA AGENT',
     description: 'Computer Using Generalist Agent - built for reliability and trust',
   },
   
