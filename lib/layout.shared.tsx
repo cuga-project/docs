@@ -1,7 +1,7 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { BookOpenIcon, BuildingIcon, PlugIcon, SettingsIcon, RocketIcon, WrenchIcon } from 'lucide-react';
 import { config, getAssetPath } from './config';
-
+import { GithubInfo } from 'fumadocs-ui/components/github-info';
 /**
  * Shared layout configurations
  *
@@ -31,9 +31,10 @@ export function baseOptions(): BaseLayoutProps {
     // see https://fumadocs.dev/docs/ui/navigation/links
     links: [
       {
-        text: 'GitHub',
-        url: config.urls.github,
-        external: true,
+        type: 'custom',
+        children: (
+          <GithubInfo owner="cuga-project" repo="cuga-agent"  />
+        ),
       },
       {
         text: 'Website',
