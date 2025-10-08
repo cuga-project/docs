@@ -1,0 +1,310 @@
+---
+title: Special Instructions Configuration
+description: Configure CUGA's specialized instructions for different components
+---
+
+CUGA's special instructions system allows you to customize the behavior of different components by editing markdown files that are automatically integrated into the agent's internal prompts.
+
+## How It Works
+
+Each `.md` file contains specialized instructions that are automatically integrated into the CUGA's internal prompts when that component is active. Simply edit the markdown files to customize behavior for each node type.
+
+**Available instruction sets:** `answer`, `api_planner`, `code_agent`, `plan_controller`, `reflection`, `shortlister`, `task_decomposition`
+
+## Configuration Structure
+
+```
+configurations/
+└── instructions/
+    ├── instructions.toml
+    ├── default/
+    │   ├── answer.md
+    │   ├── api_planner.md
+    │   ├── code_agent.md
+    │   ├── plan_controller.md
+    │   ├── reflection.md
+    │   ├── shortlister.md
+    │   └── task_decomposition.md
+    └── [other instruction sets]/
+```
+
+## Basic Configuration
+
+Edit `configurations/instructions/instructions.toml`:
+
+```toml
+[instructions]
+instruction_set = "default"  # or any instruction set above
+```
+
+## Instruction Sets
+
+### Default Instruction Set
+
+The default instruction set provides standard behavior for all CUGA components:
+
+- **answer.md**: Instructions for generating final answers
+- **api_planner.md**: Instructions for API planning and execution
+- **code_agent.md**: Instructions for code generation and execution
+- **plan_controller.md**: Instructions for task planning and control
+- **reflection.md**: Instructions for self-reflection and improvement
+- **shortlister.md**: Instructions for task prioritization
+- **task_decomposition.md**: Instructions for breaking down complex tasks
+
+### Custom Instruction Sets
+
+Create custom instruction sets for specific use cases:
+
+```bash
+# Create a new instruction set
+mkdir -p configurations/instructions/enterprise
+
+# Copy default instructions as starting point
+cp -r configurations/instructions/default/* configurations/instructions/enterprise/
+
+# Edit the instructions
+vim configurations/instructions/enterprise/answer.md
+```
+
+## Instruction File Format
+
+### Basic Structure
+
+Each instruction file should follow this format:
+
+```markdown
+# Component Name Instructions
+
+## Purpose
+Brief description of what this component does.
+
+## Behavior Guidelines
+- Specific behavior instructions
+- Do's and don'ts
+- Examples of good behavior
+
+## Output Format
+Expected output format and structure.
+
+## Error Handling
+How to handle errors and edge cases.
+```
+
+### Example: answer.md
+
+```markdown
+# Answer Component Instructions
+
+## Purpose
+Generate clear, accurate, and helpful final answers to user queries.
+
+## Behavior Guidelines
+- Always provide complete and accurate information
+- Use clear, professional language
+- Include relevant context and examples
+- Acknowledge limitations when appropriate
+
+## Output Format
+- Start with a direct answer to the question
+- Provide supporting details
+- Include examples when helpful
+- End with next steps or recommendations
+
+## Error Handling
+- If information is incomplete, clearly state what's missing
+- If an error occurs, explain what happened and suggest alternatives
+- Always maintain a helpful and professional tone
+```
+
+## Advanced Configuration
+
+### Dynamic Instruction Loading
+
+```toml
+[instructions]
+# Load instructions based on context
+context_aware = true
+context_mapping = {
+    "enterprise" = "enterprise_instructions",
+    "development" = "dev_instructions",
+    "testing" = "test_instructions"
+}
+```
+
+### Instruction Validation
+
+```toml
+[instructions.validation]
+enabled = true
+validate_syntax = true
+check_completeness = true
+required_sections = ["Purpose", "Behavior Guidelines", "Output Format"]
+```
+
+### Instruction Caching
+
+```toml
+[instructions.caching]
+enabled = true
+cache_duration = 3600  # 1 hour
+auto_refresh = true
+```
+
+## Creating Custom Instructions
+
+### Step 1: Create Instruction Set
+
+```bash
+# Create new instruction set directory
+mkdir -p configurations/instructions/my_custom_set
+
+# Create instruction files
+touch configurations/instructions/my_custom_set/answer.md
+touch configurations/instructions/my_custom_set/api_planner.md
+# ... create other component files
+```
+
+### Step 2: Write Instructions
+
+Edit each instruction file with specific guidance:
+
+```markdown
+# My Custom Answer Instructions
+
+## Purpose
+Generate answers tailored for my specific use case.
+
+## Behavior Guidelines
+- Always include company-specific terminology
+- Reference internal processes when relevant
+- Use formal business language
+- Include compliance considerations
+
+## Output Format
+- Executive summary first
+- Detailed analysis
+- Action items
+- Compliance notes
+
+## Error Handling
+- Escalate complex issues to appropriate teams
+- Include risk assessment
+- Provide alternative approaches
+```
+
+### Step 3: Configure Usage
+
+```toml
+[instructions]
+instruction_set = "my_custom_set"
+```
+
+## Instruction Best Practices
+
+### Writing Effective Instructions
+
+1. **Be Specific**: Provide clear, actionable guidance
+2. **Use Examples**: Include concrete examples of good behavior
+3. **Consider Context**: Tailor instructions to your use case
+4. **Test Thoroughly**: Validate instructions with real scenarios
+
+### Common Patterns
+
+#### Answer Instructions
+- Focus on clarity and completeness
+- Include formatting guidelines
+- Specify tone and style requirements
+
+#### Planning Instructions
+- Emphasize systematic approach
+- Include risk assessment steps
+- Specify validation requirements
+
+#### Code Instructions
+- Include coding standards
+- Specify error handling patterns
+- Include testing requirements
+
+## Testing Instructions
+
+### Validation Commands
+
+```bash
+# Validate instruction syntax
+cuga instructions validate
+
+# Test instruction set
+cuga instructions test --set my_custom_set
+
+# Check instruction completeness
+cuga instructions check --set my_custom_set
+```
+
+### Testing Workflow
+
+1. **Create Test Scenarios**: Define test cases for each component
+2. **Run Tests**: Execute tests with different instruction sets
+3. **Compare Results**: Analyze differences in behavior
+4. **Refine Instructions**: Update based on test results
+
+## Troubleshooting
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| Instructions not loading | Check file paths and syntax |
+| Behavior not changing | Verify instruction set configuration |
+| Syntax errors | Validate markdown format |
+| Performance issues | Check instruction complexity |
+
+### Debug Commands
+
+```bash
+# Check current instruction set
+cuga instructions current
+
+# List available instruction sets
+cuga instructions list
+
+# Show instruction content
+cuga instructions show --component answer
+
+# Reload instructions
+cuga instructions reload
+```
+
+## Enterprise Considerations
+
+### Compliance and Governance
+
+- **Version Control**: Track instruction changes
+- **Approval Process**: Require review for instruction updates
+- **Audit Trail**: Log instruction usage and changes
+- **Backup**: Regular backup of instruction sets
+
+### Security
+
+- **Access Control**: Limit who can modify instructions
+- **Validation**: Prevent malicious instruction content
+- **Monitoring**: Track instruction usage patterns
+- **Encryption**: Secure instruction storage
+
+## Next Steps
+
+After configuring special instructions:
+
+1. **[Task Modes](./task-modes)**: Configure execution modes
+2. **[Usage Modes](../usage/modes)**: Learn about execution modes
+3. **[API Integration](../usage/api-integration)**: Extend with custom APIs
+4. **[Development](../development/testing)**: Test your configuration
+
+---
+
+<div align="center">
+Instructions configured? Explore [Task Modes](./task-modes) next!
+</div>
+
+
+
+

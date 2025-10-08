@@ -1,0 +1,12 @@
+{
+  "title": "Guides & Examples",
+  "icon": "BookOpen",
+  "defaultOpen": false,
+  "pages": [
+    "openapi-integration",
+    "mcp-server",
+    "runtime-tools",
+    "hybrid-demo",
+    "save-reuse"
+  ]
+}

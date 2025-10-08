@@ -1,0 +1,406 @@
+---
+title: Environment Configuration
+description: Configure environment variables and system settings for CUGA
+---
+
+Configure your system environment to work optimally with CUGA, including environment variables, system paths, and container management.
+
+## 🔧 Environment Variables
+
+### Required Variables
+
+These variables must be set for CUGA to function properly:
+
+```bash
+# LLM Configuration (Required)
+OPENAI_API_KEY=your-api-key-here
+
+# CUGA Configuration (Required)
+AGENT_SETTING_CONFIG="settings.litellm.toml"
+```
+
+### Optional Variables
+
+Additional configuration for advanced features:
+
+```bash
+# Model Configuration
+AGENT_SETTING_CONFIG="settings.litellm.toml"  # Default
+OPENAI_API_VERSION="2024-08-01-preview"      # For Azure
+
+# Evaluation Endpoints
+WEBARENA_URL=http://localhost:8080
+APPWORLD_URL=http://localhost:8081
+
+# WxO Integration
+MCP_SERVERS_FILE=mcp_servers_wxo.yaml
+
+# Logging and Debugging
+LOG_LEVEL=INFO
+DEBUG_MODE=false
+```
+
+## 🐍 Python Environment
+
+### Virtual Environment Setup
+
+CUGA requires Python 3.12+ in a virtual environment:
+
+```bash
+# Create virtual environment
+uv venv --python=3.12
+
+# Activate environment
+source .venv/bin/activate  # macOS/Linux
+# OR
+.venv\Scripts\activate     # Windows
+
+# Verify Python version
+python --version  # Should show Python 3.12.x
+```
+
+### Environment Persistence
+
+To automatically activate the environment:
+
+#### macOS/Linux
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+echo 'source /path/to/cuga/.venv/bin/activate' >> ~/.zshrc
+
+# Reload shell
+source ~/.zshrc
+```
+
+#### Windows
+```bash
+# Add to PowerShell profile
+echo '& "/path/to/cuga/.venv/Scripts/Activate.ps1"' >> $PROFILE
+
+# Reload PowerShell
+. $PROFILE
+```
+
+## 🐳 Docker Environment
+
+### Rancher Desktop Setup
+
+1. **Install Rancher Desktop**
+   - Download from [rancherdesktop.io](https://rancherdesktop.io/)
+   - Install and launch the application
+
+2. **Verify Installation**
+   ```bash
+   docker --version
+   docker ps
+   ```
+
+3. **Configure Resources**
+   - Open Rancher Desktop preferences
+   - Allocate at least 4GB RAM
+   - Allocate at least 20GB disk space
+
+### Docker Compose (Optional)
+
+For advanced container management:
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+services:
+  cuga:
+    build: .
+    ports:
+      - "8005:8005"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AGENT_SETTING_CONFIG=${AGENT_SETTING_CONFIG}
+    volumes:
+      - ./data:/app/data
+```
+
+## 🔑 API Key Management
+
+### Secure Storage
+
+Never commit API keys to version control:
+
+```bash
+# Add to .gitignore
+echo ".env" >> .gitignore
+echo "*.key" >> .gitignore
+echo "credentials/" >> .gitignore
+```
+
+### Environment File Template
+
+```bash
+# Copy template
+cp .env.example .env
+
+# Edit with your keys
+nano .env
+```
+
+### Multiple API Keys
+
+For testing different providers:
+
+```bash
+# Create provider-specific files
+cp .env .env.openai
+cp .env .env.watsonx
+cp .env .env.ete
+
+# Switch between them
+export $(cat .env.openai | xargs)
+# OR
+source .env.openai
+```
+
+## 🌐 Network Configuration
+
+### Proxy Settings
+
+If you're behind a corporate proxy:
+
+```bash
+# Set proxy environment variables
+export HTTP_PROXY=http://proxy.company.com:8080
+export HTTPS_PROXY=http://proxy.company.com:8080
+export NO_PROXY=localhost,127.0.0.1
+
+# For pip/uv
+export PIP_PROXY=http://proxy.company.com:8080
+```
+
+### Firewall Configuration
+
+Ensure these ports are accessible:
+
+| Port | Service | Purpose |
+|------|---------|---------|
+| 8001 | API Registry | Tool registration |
+| 8005 | CUGA Demo | Main application |
+| 8080 | WebArena | Evaluation environment |
+| 8081 | AppWorld | Evaluation environment |
+
+### SSL/TLS Configuration
+
+For secure connections:
+
+```bash
+# Set SSL verification
+export CURL_CA_BUNDLE=/path/to/ca-bundle.crt
+export REQUESTS_CA_BUNDLE=/path/to/ca-bundle.crt
+
+# Disable SSL verification (not recommended for production)
+export CURL_INSECURE=1
+export REQUESTS_VERIFY=false
+```
+
+## 📁 File System Configuration
+
+### Directory Structure
+
+CUGA expects this directory structure:
+
+```
+cuga/
+├── .venv/                    # Virtual environment
+├── configurations/           # Configuration files
+├── data/                     # Data storage
+├── logs/                     # Log files
+├── experiments/              # Experiment results
+└── .env                      # Environment variables
+```
+
+### Permissions
+
+Ensure proper file permissions:
+
+```bash
+# Set directory permissions
+chmod 755 configurations/
+chmod 755 data/
+chmod 755 logs/
+
+# Set file permissions
+chmod 600 .env
+chmod 644 *.toml
+```
+
+### Data Persistence
+
+Configure data storage locations:
+
+```bash
+# Set data directory
+export CUGA_DATA_DIR=/path/to/data
+
+# Set log directory
+export CUGA_LOG_DIR=/path/to/logs
+
+# Set experiment directory
+export CUGA_EXP_DIR=/path/to/experiments
+```
+
+## 🔧 System Configuration
+
+### Memory Management
+
+CUGA can be memory-intensive:
+
+```bash
+# Check available memory
+free -h  # Linux
+vm_stat   # macOS
+wmic computersystem get TotalPhysicalMemory  # Windows
+
+# Set memory limits for Docker
+docker run --memory=8g cuga
+```
+
+### CPU Configuration
+
+For optimal performance:
+
+```bash
+# Check CPU cores
+nproc  # Linux
+sysctl -n hw.ncpu  # macOS
+echo %NUMBER_OF_PROCESSORS%  # Windows
+
+# Set CPU limits for Docker
+docker run --cpus=4 cuga
+```
+
+### Disk Space
+
+Monitor disk usage:
+
+```bash
+# Check disk space
+df -h
+
+# Clean up old data
+rm -rf logs/*.old
+rm -rf experiments/*.old
+```
+
+## 🚀 Performance Optimization
+
+### Environment Variables
+
+```bash
+# Python optimization
+export PYTHONOPTIMIZE=1
+export PYTHONUNBUFFERED=1
+
+# CUGA optimization
+export CUGA_CACHE_SIZE=1000
+export CUGA_MAX_WORKERS=4
+export CUGA_TIMEOUT=300
+```
+
+### System Tuning
+
+#### Linux
+```bash
+# Increase file descriptor limits
+echo "* soft nofile 65536" >> /etc/security/limits.conf
+echo "* hard nofile 65536" >> /etc/security/limits.conf
+
+# Optimize network settings
+echo "net.core.somaxconn = 65535" >> /etc/sysctl.conf
+sysctl -p
+```
+
+#### macOS
+```bash
+# Increase file descriptor limits
+echo "kern.maxfiles=65536" >> /etc/sysctl.conf
+echo "kern.maxfilesperproc=65536" >> /etc/sysctl.conf
+```
+
+## 🔍 Environment Validation
+
+### Health Check Script
+
+Create a validation script:
+
+```bash
+#!/bin/bash
+# validate_env.sh
+
+echo "🔍 Validating CUGA Environment..."
+
+# Check Python
+echo "Python: $(python --version)"
+echo "Virtual Env: $VIRTUAL_ENV"
+
+# Check environment variables
+echo "API Key: ${OPENAI_API_KEY:0:10}..."
+echo "Config: $AGENT_SETTING_CONFIG"
+
+# Check Docker
+echo "Docker: $(docker --version)"
+
+# Check ports
+echo "Port 8005: $(lsof -i :8005 2>/dev/null | wc -l) processes"
+
+echo "✅ Environment validation complete!"
+```
+
+### Automated Testing
+
+```bash
+# Run validation
+chmod +x validate_env.sh
+./validate_env.sh
+
+# Run CUGA tests
+uv run test_sandbox
+cuga status
+```
+
+## 🐛 Troubleshooting
+
+### Common Environment Issues
+
+| Issue                    | Solution                                    |
+| ------------------------ | ------------------------------------------- |
+| 🔴 Environment not active | Run `source .venv/bin/activate`            |
+| 🔴 API key not found     | Check `.env` file and environment variables |
+| 🔴 Port already in use   | Stop conflicting services or change ports   |
+| 🔴 Permission denied     | Check file permissions and ownership        |
+| 🔴 Docker not running    | Start Rancher Desktop or Docker Desktop     |
+
+### Debug Commands
+
+```bash
+# Check environment
+env | grep -E "(CUGA|OPENAI|WATSONX|AZURE)"
+
+# Check processes
+ps aux | grep cuga
+lsof -i :8005
+
+# Check logs
+tail -f logs/cuga.log
+```
+
+## 📚 Next Steps
+
+After configuring your environment:
+
+1. **[Settings Configuration](./settings)**: Fine-tune CUGA behavior
+2. **[Demo Mode](../usage/demo-mode)**: Test your setup
+3. **[API Integration](../usage/adding-apis)**: Add your own APIs
+4. **[Evaluation](../evaluation/appworld)**: Run benchmarks
+
+---
+
+<div align="center">
+Environment configured? Move to [Settings Configuration](./settings)!
+</div>

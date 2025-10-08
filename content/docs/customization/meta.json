@@ -1,0 +1,15 @@
+{
+  "title": "Customization",
+  "icon": "Settings",
+  "defaultOpen": false,
+  "pages": [
+    "overview",
+    "llm-config",
+    "environment",
+    "modes",
+    "task-modes",
+    "special-instructions",
+    "tools",
+    "cli-sdk"
+  ]
+}

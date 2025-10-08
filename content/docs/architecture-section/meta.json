@@ -1,0 +1,10 @@
+{
+  "title": "Architecture",
+  "icon": "Building",
+  "defaultOpen": false,
+  "pages": [
+    "overview",
+    "components"
+  ]
+}
+

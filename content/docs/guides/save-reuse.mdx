@@ -1,0 +1,203 @@
+---
+title: Save & Reuse
+description: Learn how to save and reuse successful workflows with CUGA
+---
+
+CUGA's workflow persistence feature allows you to save successful task executions and reuse them for similar future requests, dramatically improving performance and consistency.
+
+## 🚀 Overview
+
+### What is Save & Reuse?
+
+Save & Reuse is CUGA's intelligent workflow persistence system that:
+
+- **Remembers** successful task executions
+- **Generalizes** workflows for similar requests
+- **Accelerates** future executions
+- **Maintains** execution quality and consistency
+
+### Benefits
+
+- ⚡ **Faster Execution**: Reuse proven workflows instead of planning from scratch
+- 🎯 **Consistent Results**: Maintain quality across similar requests
+- 🔄 **Scalability**: Handle more requests with the same resources
+- 📊 **Learning**: Continuously improve from successful executions
+
+## ⚙️ Setup
+
+### Enable Save & Reuse
+
+#### 1. Configuration
+
+Change `settings.toml`:
+
+```toml
+[features]
+cuga_mode = "save_reuse_fast"  # or "save_reuse_accurate"
+
+[save_reuse]
+enabled = true
+storage_path = "./workflows"
+generalization_enabled = true
+validation_enabled = true
+```
+
+#### 2. Environment Variables
+
+```bash
+# Enable save & reuse mode
+export CUGA_MODE="save_reuse_fast"
+
+# Set storage location
+export CUGA_WORKFLOW_STORAGE="./workflows"
+```
+
+#### 3. Start Demo
+
+```bash
+# Start with save & reuse enabled
+cuga start demo
+```
+
+## 🎯 How It Works
+
+### Workflow Lifecycle
+
+```
+1. First Request → 2. Execute & Learn → 3. Save Workflow → 4. Reuse & Improve
+     ↓                    ↓                    ↓                    ↓
+  New Task           Task Execution       Workflow Storage    Future Requests
+  (Planning)         (Learning)          (Persistence)       (Acceleration)
+```
+
+### Learning Process
+
+1. **Task Execution**: CUGA executes a new task
+2. **Pattern Recognition**: Identifies successful execution patterns
+3. **Generalization**: Creates reusable workflow templates
+4. **Storage**: Saves workflows with metadata
+5. **Retrieval**: Finds and applies relevant workflows for similar requests
+
+## 🧪 Demo Walkthrough
+
+### Step 1: First Run (Learning)
+
+Start with a new query to establish the workflow:
+
+```bash
+# Start demo
+cuga start demo
+
+# First query (new workflow)
+"get top account by revenue"
+```
+
+**What Happens:**
+- CUGA plans and executes the task
+- Learns the execution pattern
+- Prompts for workflow approval
+- Saves the successful workflow
+
+### Step 2: Workflow Approval
+
+When the task completes, CUGA will prompt:
+
+```
+✅ Task completed successfully!
+💾 Save this workflow for future use? (y/n)
+📝 Provide additional examples to improve generalization:
+```
+
+**Provide Examples:**
+```
+"get top 2 accounts by revenue"
+"show me the top 3 accounts by revenue"
+"find top 5 accounts by revenue"
+```
+
+### Step 3: Workflow Storage
+
+CUGA will process and save the workflow:
+
+```
+🔄 Processing workflow...
+📊 Generalizing patterns...
+💾 Workflow saved successfully!
+🎯 Ready for reuse!
+```
+
+### Step 4: Verify Reuse
+
+Test the saved workflow with a similar query:
+
+```bash
+# Similar query (should use saved workflow)
+"get top 4 accounts by revenue"
+```
+
+**Expected Result:**
+- Faster execution
+- Uses saved workflow
+- Consistent results
+- No planning phase needed
+
+## 🔧 Configuration Options
+
+### Save & Reuse Modes
+
+| Mode | Description | Use Case |
+|------|-------------|----------|
+| `save_reuse_fast` | Optimized for speed | Development, testing |
+| `save_reuse_accurate` | Optimized for precision | Production, critical tasks |
+
+
+## 🔍 Troubleshooting
+
+### Common Issues
+
+| Issue                    | Solution                                    |
+| ------------------------ | ------------------------------------------- |
+| 🔴 Workflows not saving  | Check save_reuse.enabled setting            |
+| 🔴 No workflow reuse     | Verify generalization settings               |
+| 🔴 Poor generalization   | Provide more diverse examples               |
+| 🔴 Workflow conflicts    | Check workflow validation settings          |
+| 🔴 Storage errors        | Verify storage path permissions             |
+
+
+## 📚 Best Practices
+
+### Workflow Design
+
+1. **Clear Intent**: Use descriptive, specific queries
+2. **Consistent Patterns**: Follow similar query structures
+3. **Parameter Variation**: Test with different parameters
+4. **Error Handling**: Include error scenarios in examples
+
+### Generalization
+
+1. **Diverse Examples**: Provide varied but related examples
+2. **Parameter Flexibility**: Use variable parameters when possible
+3. **Pattern Recognition**: Help CUGA identify common patterns
+4. **Validation**: Test generalized workflows thoroughly
+
+### Maintenance
+
+1. **Regular Review**: Periodically review saved workflows
+2. **Performance Monitoring**: Track workflow performance
+3. **Cleanup**: Remove outdated or unused workflows
+4. **Backup**: Regular backup of workflow storage
+
+## 📚 Next Steps
+
+After mastering save & reuse:
+
+1. **[Advanced Features](../usage/modes)**: Explore execution modes
+2. **[Evaluation](../evaluation/appworld)**: Test with benchmarks
+3. **[Development](../development/testing)**: Test and debug
+4. **[API Integration](../api-integration)**: Extend with custom APIs
+
+---
+
+<div align="center">
+Workflows saved? Explore [Advanced Features](../usage/modes) next!
+</div>

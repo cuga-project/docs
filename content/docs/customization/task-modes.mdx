@@ -1,0 +1,246 @@
+---
+title: Task Mode Configuration
+description: Configure CUGA's task execution modes - API, Web, and Hybrid
+---
+
+CUGA supports three distinct task execution modes, each optimized for different use cases. Choose the mode that best fits your workflow requirements.
+
+## 🎯 Available Task Modes
+
+| Mode     | Description                                                                 |
+|----------|-----------------------------------------------------------------------------|
+| `api`    | API-only mode - executes API tasks  _(default)_                             |
+| `web`    | Web-only mode - executes web tasks using browser extension                  |
+| `hybrid` | Hybrid mode - executes both API tasks and web tasks using browser extension |
+
+## How Task Modes Work
+
+### API Mode (`mode = 'api'`)
+- Opens tasks in a regular web browser
+- Best for API/Tools-focused workflows and testing
+- Optimized for server-side operations
+- Minimal resource usage
+
+### Web Mode (`mode = 'web'`)
+- Interface inside a browser extension (available next to browser)
+- Optimized for web-specific tasks and interactions
+- Direct access to web page content and controls
+- Perfect for web automation workflows
+
+### Hybrid Mode (`mode = 'hybrid'`)
+- Opens inside browser extension like web mode
+- Can execute both API/Tools tasks and web page tasks simultaneously
+- Starts from configurable URL defined in `demo_mode.start_url`
+- Most versatile mode for complex workflows combining web and API operations
+
+## Configuration
+
+### Basic Configuration
+
+Edit `./src/cuga/settings.toml`:
+
+```toml
+[demo_mode]
+start_url = "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login"  # Starting URL for hybrid mode
+
+[advanced_features]
+mode = 'api'  # 'api', 'web', or 'hybrid'
+```
+
+### Environment Variable
+
+```bash
+# Set task mode via environment variable
+export CUGA_TASK_MODE="hybrid"
+```
+
+### Command Line Override
+
+```bash
+# Start with specific task mode
+cuga start demo --task-mode hybrid
+cuga start demo --task-mode web
+cuga start demo --task-mode api
+```
+
+## Mode-Specific Settings
+
+### API Mode Configuration
+
+```toml
+[api_mode]
+enabled = true
+browser_enabled = false
+api_enabled = true
+web_automation = false
+
+[api_mode.performance]
+max_concurrent_requests = 10
+request_timeout = 30
+retry_attempts = 3
+```
+
+### Web Mode Configuration
+
+```toml
+[web_mode]
+enabled = true
+browser_enabled = true
+api_enabled = false
+web_automation = true
+
+[web_mode.browser]
+headless = false
+browser_timeout = 60
+page_load_timeout = 30
+```
+
+### Hybrid Mode Configuration
+
+```toml
+[hybrid_mode]
+enabled = true
+browser_enabled = true
+api_enabled = true
+web_automation = true
+
+[hybrid_mode.integration]
+auto_page_update = true
+content_injection = true
+style_preservation = true
+```
+
+## Advanced Configuration
+
+### Mode Switching
+
+```toml
+[features]
+# Primary mode selection
+mode = "hybrid"
+
+# Fallback modes
+fallback_modes = ["api", "web"]
+
+# Mode-specific features
+api_mode_enabled = true
+web_mode_enabled = true
+hybrid_mode_enabled = true
+```
+
+### Performance Tuning
+
+```toml
+[performance]
+# Mode-specific performance settings
+api_mode_workers = 4
+web_mode_workers = 2
+hybrid_mode_workers = 3
+
+# Resource limits
+max_memory_per_mode = "2GB"
+cpu_limit_per_mode = 2
+```
+
+## Use Case Examples
+
+### API Mode Use Cases
+
+- **Data Processing**: Batch processing of API data
+- **Backend Integration**: Server-to-server communication
+- **Testing**: API endpoint validation
+- **Automation**: Scheduled API tasks
+
+### Web Mode Use Cases
+
+- **Web Scraping**: Data extraction from websites
+- **Form Automation**: Filling out web forms
+- **UI Testing**: Web application testing
+- **Content Management**: Website content updates
+
+### Hybrid Mode Use Cases
+
+- **Data Integration**: Fetch data via API and display on web pages
+- **Workflow Automation**: Combine web and API operations
+- **User Experience**: Enhance web interfaces with real-time data
+- **Business Processes**: End-to-end automation workflows
+
+## Mode Selection Guide
+
+### Choose API Mode When:
+- Working primarily with backend services
+- Need high performance and low resource usage
+- Building server-side automation
+- Testing API integrations
+
+### Choose Web Mode When:
+- Working with web applications
+- Need browser automation capabilities
+- Building web scraping solutions
+- Testing web interfaces
+
+### Choose Hybrid Mode When:
+- Need both web and API capabilities
+- Building complex workflows
+- Creating integrated solutions
+- Maximizing functionality
+
+## Troubleshooting
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| Mode not switching | Check configuration file syntax |
+| Browser not starting | Verify browser automation setup |
+| API calls failing | Check API configuration |
+| Performance issues | Adjust mode-specific settings |
+
+### Debug Commands
+
+```bash
+# Check current mode
+cuga mode current
+
+# List available modes
+cuga mode list
+
+# Test mode configuration
+cuga mode test
+
+# Switch mode at runtime
+cuga mode switch hybrid
+```
+
+## Best Practices
+
+### Mode Selection
+1. **Start Simple**: Begin with API mode for basic tasks
+2. **Add Complexity**: Move to web mode for UI interactions
+3. **Combine When Needed**: Use hybrid mode for complex workflows
+4. **Test Thoroughly**: Validate each mode before production use
+
+### Configuration Management
+1. **Version Control**: Track configuration changes
+2. **Environment Specific**: Use different configs for dev/prod
+3. **Documentation**: Document mode-specific settings
+4. **Monitoring**: Track mode performance and usage
+
+## Next Steps
+
+After configuring task modes:
+
+1. **[Usage Modes](../usage/modes)**: Learn about execution modes
+2. **[Hybrid Mode](../usage/hybrid-mode)**: Master hybrid workflows
+3. **[API Integration](../usage/api-integration)**: Extend with custom APIs
+4. **[Save & Reuse](../usage/save-reuse)**: Optimize workflows
+
+---
+
+<div align="center">
+Task modes configured? Explore [Usage Modes](../usage/modes) next!
+</div>
+
+
+
+

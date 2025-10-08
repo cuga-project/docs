@@ -1,0 +1,155 @@
+---
+title: Execution Modes
+description: Master CUGA's execution modes and advanced features for optimal performance
+---
+
+CUGA provides multiple execution modes optimized for different use cases, from fast development to precise production execution.
+
+## 🎯 Mode Overview
+
+### Available Modes
+
+| Mode | Speed | Accuracy | Use Case | Configuration |
+|------|-------|----------|----------|---------------|
+| **Fast** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | Development, testing | `./configurations/modes/fast.toml` |
+| **Accurate** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Production, critical tasks | `./configurations/modes/accurate.toml` |
+| **Custom** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Tailored workflows | `./configurations/modes/custom.toml` |
+| **Save & Reuse** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Repeated workflows | `./configurations/modes/save_reuse.toml` |
+
+### Mode Selection Criteria
+
+- **Fast Mode**: When speed is critical, accuracy can be slightly lower
+- **Accurate Mode**: When precision is essential, speed can be slower
+- **Custom Mode**: When you need specific behavior not covered by presets
+- **Save & Reuse**: When you have repetitive tasks that benefit from caching
+
+## 🚀 Fast Mode
+
+### Purpose
+Optimized for rapid development, testing, and scenarios where speed is more important than absolute precision.
+
+### Configuration
+
+```toml
+# configurations/modes/fast.toml
+[mode]
+name = "fast"
+description = "Optimized for speed and development"
+version = "1.0"
+
+[agent]
+temperature = 0.1              # Lower temperature for faster decisions
+max_tokens = 2000              # Reduced token limit for speed
+timeout = 60                   # Shorter timeout
+max_retries = 2                # Fewer retry attempts
+
+[execution]
+parallel_tasks = 4             # More parallel execution
+cache_enabled = true           # Enable caching
+cache_ttl = 300               # 5-minute cache TTL
+validation_enabled = false     # Skip validation for speed
+
+[optimization]
+early_termination = true       # Stop when good enough
+approximate_results = true     # Allow approximate results
+fast_fallback = true          # Use fast fallback methods
+```
+
+### Use Cases
+
+- **Development**: Rapid prototyping and testing
+- **Debugging**: Quick iteration cycles
+- **Exploration**: Initial data exploration
+- **Batch Processing**: High-volume, lower-precision tasks
+
+### Performance Characteristics
+
+- **Execution Time**: 2-5x faster than accurate mode
+- **Memory Usage**: 30-50% less memory
+- **Accuracy**: 85-90% of accurate mode
+- **Resource Usage**: Optimized for throughput
+
+## 🎯 Accurate Mode
+
+### Purpose
+Optimized for production environments where precision, reliability, and correctness are paramount.
+
+### Configuration
+
+```toml
+# configurations/modes/accurate.toml
+[mode]
+name = "accurate"
+description = "Optimized for precision and reliability"
+version = "1.0"
+
+[agent]
+temperature = 0.05             # Very low temperature for consistency
+max_tokens = 4000              # Full token allowance
+timeout = 120                  # Longer timeout for complex tasks
+max_retries = 3                # More retry attempts
+
+[execution]
+parallel_tasks = 2             # Fewer parallel tasks for accuracy
+cache_enabled = false          # Disable caching for fresh results
+validation_enabled = true      # Enable validation
+verification_enabled = true    # Enable result verification
+
+[quality]
+double_check = true            # Double-check critical results
+confidence_threshold = 0.95    # High confidence requirement
+error_tolerance = 0.01         # Very low error tolerance
+```
+
+### Use Cases
+
+- **Production**: Live production environments
+- **Critical Tasks**: Business-critical operations
+- **Compliance**: Regulatory and compliance requirements
+- **Financial**: Financial calculations and reporting
+
+### Performance Characteristics
+
+- **Execution Time**: 2-5x slower than fast mode
+- **Memory Usage**: 30-50% more memory
+- **Accuracy**: 98-99% precision
+- **Reliability**: High fault tolerance
+
+
+
+## 📊 Mode Comparison
+
+### Performance Metrics
+
+| Metric | Fast | Accurate | Custom | Save & Reuse |
+|--------|------|----------|--------|--------------|
+| **Speed** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Accuracy** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| **Memory** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| **Reliability** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| **Learning** | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+
+### Resource Usage
+
+| Resource | Fast | Accurate | Custom | Save & Reuse |
+|----------|------|----------|--------|--------------|
+| **CPU** | Low | High | Medium | Medium |
+| **Memory** | Low | High | Medium | Medium |
+| **Storage** | Low | Medium | Medium | High |
+| **Network** | Low | Medium | Medium | Low |
+
+
+## 📚 Next Steps
+
+After mastering execution modes:
+
+1. **[Evaluation](../evaluation/appworld)**: Test with benchmarks
+2. **[Development](../development/testing)**: Test and debug
+3. **[API Integration](../api-integration)**: Extend with custom APIs
+4. **[Save & Reuse](../save-reuse)**: Explore workflow persistence
+
+---
+
+<div align="center">
+Modes mastered? Explore [CUGA Modes](../api-only-mode) next!
+</div>
