@@ -1,5 +1,5 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import { BookIcon, CodeIcon, FlaskConicalIcon, SettingsIcon, RocketIcon } from 'lucide-react';
+import { BookOpenIcon, BuildingIcon, PlugIcon, SettingsIcon, RocketIcon, WrenchIcon } from 'lucide-react';
 import { config, getAssetPath } from './config';
 
 /**
@@ -17,12 +17,12 @@ export function baseOptions(): BaseLayoutProps {
           <img 
             src={getAssetPath(config.logos.light)}
             alt="CUGA Logo" 
-            className="w-6 h-6 rounded block dark:hidden"
+            className="h-6 rounded block dark:hidden"
           />
           <img 
             src={getAssetPath(config.logos.dark)}
             alt="CUGA Logo" 
-            className="w-6 h-6 rounded hidden dark:block"
+            className="h-6 rounded hidden dark:block"
           />
           <span>{config.site.name}</span>
         </div>
@@ -42,5 +42,16 @@ export function baseOptions(): BaseLayoutProps {
       }
     ],
     githubUrl: config.urls.github,
+    i18n: false,
   };
 }
+
+// Icon mapping for sidebar folders
+export const iconMap = {
+  Rocket: RocketIcon,
+  Settings: SettingsIcon,
+  BookOpen: BookOpenIcon,
+  Plug: PlugIcon,
+  Building: BuildingIcon,
+  Wrench: WrenchIcon,
+};
