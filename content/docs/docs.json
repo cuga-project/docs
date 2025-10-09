@@ -22,11 +22,16 @@
             ]
           },
           {
-            "group": "Configuration",
+            "group": "Customization",
             "pages": [
-              "configuration/model-setup",
-              "configuration/environment",
-              "configuration/settings"
+              "customization/overview",
+              "customization/llm-config",
+              "customization/environment",
+              "customization/modes",
+              "customization/task-modes",
+              "customization/special-instructions",
+              "customization/tools",
+              "customization/cli-sdk"
             ]
           }
         ]

@@ -1,15 +1,26 @@
 ---
-title: Special Instructions Configuration
+title: Special Instructions
 description: Configure CUGA's specialized instructions for different components
 ---
 
-CUGA's special instructions system allows you to customize the behavior of different components by editing markdown files that are automatically integrated into the agent's internal prompts.
+import {
+    Tabs,
+    TabsList,
+    TabsTrigger,
+    TabsContent,
+} from 'fumadocs-ui/components/tabs';
+
+You can customize the behavior of different components by editing markdown files that are automatically integrated into the agent's internal prompts.
 
 ## How It Works
 
-Each `.md` file contains specialized instructions that are automatically integrated into the CUGA's internal prompts when that component is active. Simply edit the markdown files to customize behavior for each node type.
+CUGA can be configured with **instruction sets** - folders containing the special instructions for the system.
+Each folder contains multiple `.md` files - one per component - which contains specialized instructions that is automatically integrated into the internal
+prompts of that component when activated.
 
-**Available instruction sets:** `answer`, `api_planner`, `code_agent`, `plan_controller`, `reflection`, `shortlister`, `task_decomposition`
+You can simply update the default instruction set, or create additional instruction sets.
+
+**The following components can be customized with special instructions:** `answer`, `api_planner`, `code_agent`, `plan_controller`, `reflection`, `shortlister`, `task_decomposition`
 
 ## Configuration Structure
 
@@ -43,28 +54,46 @@ instruction_set = "default"  # or any instruction set above
 
 The default instruction set provides standard behavior for all CUGA components:
 
-- **answer.md**: Instructions for generating final answers
-- **api_planner.md**: Instructions for API planning and execution
-- **code_agent.md**: Instructions for code generation and execution
-- **plan_controller.md**: Instructions for task planning and control
-- **reflection.md**: Instructions for self-reflection and improvement
-- **shortlister.md**: Instructions for task prioritization
-- **task_decomposition.md**: Instructions for breaking down complex tasks
+-   **answer.md**: Instructions for generating final answers
+-   **api_planner.md**: Instructions for API planning and execution
+-   **code_agent.md**: Instructions for code generation and execution
+-   **plan_controller.md**: Instructions for task planning and control
+-   **reflection.md**: Instructions for self-reflection and improvement
+-   **shortlister.md**: Instructions for task prioritization
+-   **task_decomposition.md**: Instructions for breaking down complex tasks
 
 ### Custom Instruction Sets
 
 Create custom instruction sets for specific use cases:
 
-```bash
-# Create a new instruction set
-mkdir -p configurations/instructions/enterprise
+<Tabs defaultValue="mac">
+  <TabsList>
+    <TabsTrigger value="mac">Mac</TabsTrigger>
+    <TabsTrigger value="windows">Windows</TabsTrigger>
+  </TabsList>
 
-# Copy default instructions as starting point
-cp -r configurations/instructions/default/* configurations/instructions/enterprise/
+  <TabsContent value="mac">
+    ```bash
+    # Create a new instruction set
+    mkdir -p configurations/instructions/enterprise
 
-# Edit the instructions
-vim configurations/instructions/enterprise/answer.md
-```
+    # Copy default instructions as starting point
+    cp -r configurations/instructions/default/* configurations/instructions/enterprise/
+    ```
+
+  </TabsContent>
+
+  <TabsContent value="windows">
+    ```powershell
+    # Create a new instruction set
+    mkdir configurations\instructions\enterprise
+
+    # Copy default instructions as starting point
+    xcopy configurations\instructions\default\* configurations\instructions\enterprise\ /E /I
+    ```
+
+  </TabsContent>
+</Tabs>
 
 ## Instruction File Format
 
@@ -76,17 +105,21 @@ Each instruction file should follow this format:
 # Component Name Instructions
 
 ## Purpose
+
 Brief description of what this component does.
 
 ## Behavior Guidelines
-- Specific behavior instructions
-- Do's and don'ts
-- Examples of good behavior
+
+-   Specific behavior instructions
+-   Do's and don'ts
+-   Examples of good behavior
 
 ## Output Format
+
 Expected output format and structure.
 
 ## Error Handling
+
 How to handle errors and edge cases.
 ```
 
@@ -96,24 +129,28 @@ How to handle errors and edge cases.
 # Answer Component Instructions
 
 ## Purpose
+
 Generate clear, accurate, and helpful final answers to user queries.
 
 ## Behavior Guidelines
-- Always provide complete and accurate information
-- Use clear, professional language
-- Include relevant context and examples
-- Acknowledge limitations when appropriate
+
+-   Always provide complete and accurate information
+-   Use clear, professional language
+-   Include relevant context and examples
+-   Acknowledge limitations when appropriate
 
 ## Output Format
-- Start with a direct answer to the question
-- Provide supporting details
-- Include examples when helpful
-- End with next steps or recommendations
+
+-   Start with a direct answer to the question
+-   Provide supporting details
+-   Include examples when helpful
+-   End with next steps or recommendations
 
 ## Error Handling
-- If information is incomplete, clearly state what's missing
-- If an error occurs, explain what happened and suggest alternatives
-- Always maintain a helpful and professional tone
+
+-   If information is incomplete, clearly state what's missing
+-   If an error occurs, explain what happened and suggest alternatives
+-   Always maintain a helpful and professional tone
 ```
 
 ## Advanced Configuration
@@ -150,55 +187,6 @@ cache_duration = 3600  # 1 hour
 auto_refresh = true
 ```
 
-## Creating Custom Instructions
-
-### Step 1: Create Instruction Set
-
-```bash
-# Create new instruction set directory
-mkdir -p configurations/instructions/my_custom_set
-
-# Create instruction files
-touch configurations/instructions/my_custom_set/answer.md
-touch configurations/instructions/my_custom_set/api_planner.md
-# ... create other component files
-```
-
-### Step 2: Write Instructions
-
-Edit each instruction file with specific guidance:
-
-```markdown
-# My Custom Answer Instructions
-
-## Purpose
-Generate answers tailored for my specific use case.
-
-## Behavior Guidelines
-- Always include company-specific terminology
-- Reference internal processes when relevant
-- Use formal business language
-- Include compliance considerations
-
-## Output Format
-- Executive summary first
-- Detailed analysis
-- Action items
-- Compliance notes
-
-## Error Handling
-- Escalate complex issues to appropriate teams
-- Include risk assessment
-- Provide alternative approaches
-```
-
-### Step 3: Configure Usage
-
-```toml
-[instructions]
-instruction_set = "my_custom_set"
-```
-
 ## Instruction Best Practices
 
 ### Writing Effective Instructions
@@ -211,19 +199,22 @@ instruction_set = "my_custom_set"
 ### Common Patterns
 
 #### Answer Instructions
-- Focus on clarity and completeness
-- Include formatting guidelines
-- Specify tone and style requirements
+
+-   Focus on clarity and completeness
+-   Include formatting guidelines
+-   Specify tone and style requirements
 
 #### Planning Instructions
-- Emphasize systematic approach
-- Include risk assessment steps
-- Specify validation requirements
+
+-   Emphasize systematic approach
+-   Include risk assessment steps
+-   Specify validation requirements
 
 #### Code Instructions
-- Include coding standards
-- Specify error handling patterns
-- Include testing requirements
+
+-   Include coding standards
+-   Specify error handling patterns
+-   Include testing requirements
 
 ## Testing Instructions
 
@@ -251,12 +242,12 @@ cuga instructions check --set my_custom_set
 
 ### Common Issues
 
-| Issue | Solution |
-|-------|----------|
-| Instructions not loading | Check file paths and syntax |
-| Behavior not changing | Verify instruction set configuration |
-| Syntax errors | Validate markdown format |
-| Performance issues | Check instruction complexity |
+| Issue                    | Solution                             |
+| ------------------------ | ------------------------------------ |
+| Instructions not loading | Check file paths and syntax          |
+| Behavior not changing    | Verify instruction set configuration |
+| Syntax errors            | Validate markdown format             |
+| Performance issues       | Check instruction complexity         |
 
 ### Debug Commands
 
@@ -274,21 +265,27 @@ cuga instructions show --component answer
 cuga instructions reload
 ```
 
+⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+
+⚠️ ALERT: Don’t read below — to be removed. ⚠️
+
+⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+
 ## Enterprise Considerations
 
 ### Compliance and Governance
 
-- **Version Control**: Track instruction changes
-- **Approval Process**: Require review for instruction updates
-- **Audit Trail**: Log instruction usage and changes
-- **Backup**: Regular backup of instruction sets
+-   **Version Control**: Track instruction changes
+-   **Approval Process**: Require review for instruction updates
+-   **Audit Trail**: Log instruction usage and changes
+-   **Backup**: Regular backup of instruction sets
 
 ### Security
 
-- **Access Control**: Limit who can modify instructions
-- **Validation**: Prevent malicious instruction content
-- **Monitoring**: Track instruction usage patterns
-- **Encryption**: Secure instruction storage
+-   **Access Control**: Limit who can modify instructions
+-   **Validation**: Prevent malicious instruction content
+-   **Monitoring**: Track instruction usage patterns
+-   **Encryption**: Secure instruction storage
 
 ## Next Steps
 
@@ -301,10 +298,6 @@ After configuring special instructions:
 
 ---
 
-<div align="center">
-Instructions configured? Explore [Task Modes](./task-modes) next!
+<div align='center'>
+    Instructions configured? Explore [Task Modes](./task-modes) next!
 </div>
-
-
-
-

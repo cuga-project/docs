@@ -1,13 +1,48 @@
 ---
-title: Settings Configuration
-description: Configure CUGA reasoning modes and custom instructions
+title: Overview
+description: Understand how CUGA can be customized
 ---
 
-Fine-tune CUGA's behavior through three distinct reasoning modes and custom instruction configurations for optimal performance across different use cases.
+import {
+    Tabs,
+    TabsList,
+    TabsTrigger,
+    TabsContent,
+} from 'fumadocs-ui/components/tabs';
 
-## 🎯 Configuration Overview
+You can customize CUGA's behavior and features through the use of configuration files and environment variables.
 
-CUGA uses TOML configuration files for flexible and readable settings management:
+## Configuration Structure
+
+By default, CUGA uses configuration files which are stored in the `src/cuga/configuration/` folder, however you can
+specify a custom configuration directory via this environment variable:
+
+<Tabs defaultValue="mac">
+  <TabsList>
+    <TabsTrigger value="mac">Mac</TabsTrigger>
+    <TabsTrigger value="windows">Windows</TabsTrigger>
+  </TabsList>
+
+  <TabsContent value="mac">
+    ```bash
+    # Set custom configuration directory
+    export CUGA_CONFIGURATIONS_DIR="/path/to/your/configurations"
+    ```
+
+  </TabsContent>
+
+  <TabsContent value="windows">
+    ```powershell
+    # Set custom configuration directory
+    setx CUGA_CONFIGURATIONS_DIR "C:\path\to\your\configurations"
+    ```
+
+  </TabsContent>
+</Tabs>
+
+This allows you to organize multiple configurations in separate folders.
+
+Each configuration folder, contains TOML and MD files that allow to toggle features and customize behavior.
 
 ```
 configurations/
@@ -27,16 +62,22 @@ configurations/
         └── code_agent.md  # Custom code agent instructions
 ```
 
-### Custom Configuration Directory
+## Customization topics
 
-You can specify a custom configuration directory using the environment variable:
+The following pages include additional information on specific customzation topics:
 
-```bash
-# Set custom configuration directory
-export CUGA_CONFIGURATIONS_DIR="/path/to/your/configurations"
-```
+-   Configure your [LLM providers](../llm-config) of choice
+-   Configure [environment variables and system settings](../environment)
+-   Customize [reasoning modes and advanced features](../modes) for optimal performance
+-   Configure [CUGA's task execution modes](../task-modes)
+-   Specify [Special Instructions](../special-instructions) for different sub agents
+-   [Onboard tools](../tools) or integrate with existing tool runtime environments
 
-This allows you to organize your configurations in any directory structure you prefer.
+⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+
+⚠️ ALERT: Don’t read below — to be removed. ⚠️
+
+⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
 
 ## 🚀 Reasoning Modes
 
@@ -44,11 +85,11 @@ This allows you to organize your configurations in any directory structure you p
 
 CUGA offers three reasoning modes optimized for different use cases:
 
-| Mode        | Speed | Accuracy | Use Case                    |
-|-------------|-------|----------|-----------------------------|
-| **Fast**    | ⭐⭐⭐⭐⭐ | ⭐⭐⭐    | Development, testing        |
-| **Balanced** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | General purpose, workflows  |
-| **Accurate** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Production, critical tasks  |
+| Mode         | Speed      | Accuracy   | Use Case                   |
+| ------------ | ---------- | ---------- | -------------------------- |
+| **Fast**     | ⭐⭐⭐⭐⭐ | ⭐⭐⭐     | Development, testing       |
+| **Balanced** | ⭐⭐⭐⭐   | ⭐⭐⭐⭐   | General purpose, workflows |
+| **Accurate** | ⭐⭐⭐     | ⭐⭐⭐⭐⭐ | Production, critical tasks |
 
 ### Fast Mode Configuration
 
@@ -68,11 +109,12 @@ final_answer = true
 ```
 
 **Fast Mode Features:**
-- **Speed Optimized**: Minimal task decomposition for quick execution
-- **Direct Execution**: Bypasses complex reasoning chains
-- **Local Sandbox**: Uses local execution environment
-- **No Reflection**: Skips output validation for speed
-- **Quick Code Generation**: Fast code generation without extensive validation
+
+-   **Speed Optimized**: Minimal task decomposition for quick execution
+-   **Direct Execution**: Bypasses complex reasoning chains
+-   **Local Sandbox**: Uses local execution environment
+-   **No Reflection**: Skips output validation for speed
+-   **Quick Code Generation**: Fast code generation without extensive validation
 
 ### Balanced Mode Configuration
 
@@ -92,11 +134,12 @@ final_answer = true
 ```
 
 **Balanced Mode Features:**
-- **Task Decomposition**: Breaks complex tasks into manageable steps
-- **Reflection Enabled**: Validates code output for quality
-- **Local Sandbox**: Uses local execution environment
-- **No Chat Interface**: Focuses on API-based execution
-- **Fast Code Generation**: Quick code generation with validation
+
+-   **Task Decomposition**: Breaks complex tasks into manageable steps
+-   **Reflection Enabled**: Validates code output for quality
+-   **Local Sandbox**: Uses local execution environment
+-   **No Chat Interface**: Focuses on API-based execution
+-   **Fast Code Generation**: Quick code generation with validation
 
 ### Accurate Mode Configuration
 
@@ -116,12 +159,13 @@ final_answer = true
 ```
 
 **Accurate Mode Features:**
-- **Full Task Decomposition**: Comprehensive task breakdown
-- **Thought Process**: Enables detailed reasoning chains
-- **Code Output Summary**: Provides detailed execution summaries
-- **Accurate Code Generation**: High-quality code with extensive validation
-- **Save & Reuse**: Enables workflow persistence
-- **Multiple Reflections**: Multiple validation passes for accuracy
+
+-   **Full Task Decomposition**: Comprehensive task breakdown
+-   **Thought Process**: Enables detailed reasoning chains
+-   **Code Output Summary**: Provides detailed execution summaries
+-   **Accurate Code Generation**: High-quality code with extensive validation
+-   **Save & Reuse**: Enables workflow persistence
+-   **Multiple Reflections**: Multiple validation passes for accuracy
 
 ## 📝 Custom Instructions
 
@@ -148,31 +192,33 @@ Each instruction file should contain markdown content that defines the behavior 
 # API Planner Instructions
 
 ## Role
+
 You are an expert API planner responsible for breaking down complex tasks into API calls.
 
 ## Guidelines
-- Always validate API endpoints before use
-- Consider rate limits and authentication
-- Provide clear error handling strategies
-- Document expected responses
+
+-   Always validate API endpoints before use
+-   Consider rate limits and authentication
+-   Provide clear error handling strategies
+-   Document expected responses
 
 ## Examples
-- For data retrieval: Use GET requests with proper query parameters
-- For data modification: Use POST/PUT requests with validation
+
+-   For data retrieval: Use GET requests with proper query parameters
+-   For data modification: Use POST/PUT requests with validation
 ```
 
 ### Instruction File Naming
 
 Custom instruction files follow the pattern:
-- `./configurations/instructions/default/api_code_planner.md`
-- `./configurations/instructions/default/plan_controller.md`
-- `./configurations/instructions/default/task_decomposition.md`
-- `./configurations/instructions/default/api_planner.md`
-- `./configurations/instructions/default/answer.md`
-- `./configurations/instructions/default/shortlister.md`
-- `./configurations/instructions/default/code_agent.md`
 
-
+-   `./configurations/instructions/default/api_code_planner.md`
+-   `./configurations/instructions/default/plan_controller.md`
+-   `./configurations/instructions/default/task_decomposition.md`
+-   `./configurations/instructions/default/api_planner.md`
+-   `./configurations/instructions/default/answer.md`
+-   `./configurations/instructions/default/shortlister.md`
+-   `./configurations/instructions/default/code_agent.md`
 
 ## 🎮 Mode Switching
 
@@ -198,7 +244,6 @@ Edit `settings.toml`:
 cuga_mode = "balanced"  # or "fast" or "accurate"
 ```
 
-
 ## 📚 Next Steps
 
 After configuring your settings:
@@ -210,6 +255,6 @@ After configuring your settings:
 
 ---
 
-<div align="center">
-Settings configured? Test with [Demo Mode](../usage/demo-mode)!
+<div align='center'>
+    Settings configured? Test with [Demo Mode](../usage/demo-mode)!
 </div>

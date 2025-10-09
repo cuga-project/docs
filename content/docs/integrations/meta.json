@@ -3,6 +3,7 @@
   "icon": "Plug",
   "defaultOpen": false,
   "pages": [
-    "cuga-as-mcp"
+    "cuga-as-mcp",
+    "langflow"
   ]
 }
