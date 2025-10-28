@@ -1,8 +1,95 @@
 ---
-title: 'CUGA with Digital Sales OpenAPI server'
-description: 'Connect CUGA to a simple OpenAPI server'
+title: 'CUGA with Digital Sales OpenAPI Server'
+description: 'Connect CUGA to an OpenAPI server and run in demo mode'
 icon: 'code'
 ---
 
-# CUGA with Digital Sales OpenAPI server
+CUGA can load any **OpenAPI endpoint** as a tool. You can use external APIs or host your own locally.
+This guide shows you how to configure and run CUGA with a Digital Sales API.
 
+---
+
+## ✅ What You’ll Do
+
+1. Configure **settings** and **API registry**.
+2. Add authentication (optional).
+3. Start CUGA in **demo mode**.
+
+---
+
+## ⚙️ Configuration Steps
+
+### 1. **Settings File**
+
+CUGA uses APIs by default. Check your `settings.toml`:
+
+```toml
+mode = "api"
+```
+
+> 💡 **Tip:** APIs work in `api` and `hybrid` modes. Learn more about `hybrid` [here](../hybrid-demo).
+
+---
+
+### 2. **API Registry (`mcp_servers.yaml`)**
+
+Default location:
+
+```
+src/cuga/backend/tools_env/registry/config/mcp_servers.yaml
+```
+
+To use a custom file:
+
+```bash
+export MCP_SERVERS_FILE="<path-to-file>"
+```
+
+#### Example:
+
+```yaml
+services:
+    - digital_sales:
+          url: https://digitalsales.19pc1vtv090u.us-east.codeengine.appdomain.cloud/openapi.json
+          description: Digital Sales Skills API for territory accounts and client information
+```
+
+---
+
+### 🔐 Adding Authentication (Optional)
+
+```yaml
+services:
+  - digital_sales:
+      url: https://digitalsales.19pc1vtv090u.us-east.codeengine.appdomain.cloud/openapi.json
+      description: Digital Sales Skills API for territory accounts and client information
+    - auth:
+        type: api-key
+        value: <your-api-key>
+```
+
+> ✅ The `type` and `value` are sent as headers: `{type: value}` or as in the example above `{'api-key': '<your-api-key>'}`.
+
+---
+
+## ▶️ Running CUGA in Demo Mode
+
+Start CUGA:
+
+```bash
+cuga start demo
+```
+
+What happens next:
+
+-   ✅ Loads all APIs from `mcp_servers.yaml`.
+-   ✅ Makes all endpoints available as tools.
+-   ✅ Launches **demo mode** and opens in your browser after a few seconds.
+
+---
+
+### 🎯 You’re Ready!
+
+Now you can query CUGA using the API endpoints as tools.
+
+---
