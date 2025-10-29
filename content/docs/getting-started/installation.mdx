@@ -10,65 +10,177 @@ import { CodeBlock } from 'fumadocs-ui/components/codeblock';
 
 # Installation Guide
 
-This comprehensive guide will walk you through installing CUGA on your system, including all dependencies and configuration options. CUGA is an enterprise agent you can trust for building reliable agents for real-world use.
+Get CUGA up and running on your system in just a few minutes. This comprehensive guide will walk you through installing CUGA, from quick setup to detailed configuration options. CUGA is an enterprise agent you can trust for building reliable agents for real-world use.
 
-## System Requirements
+## Prerequisites
+
+### System Requirements
 
 <Callout type="info">
 CUGA requires Python 3.12 or higher and works on Windows, macOS, and Linux systems.
 </Callout>
 
-### Minimum Requirements
+**Minimum Requirements:**
 - **Python**: 3.12 or higher
 - **RAM**: 8GB minimum, 16GB recommended
-- **Storage**: 2GB free space
+- **Storage**: 2GB free space (5GB for development)
 - **Network**: Internet connection for API access
+- **OS**: Ubuntu 20.04+, macOS 12+, or Windows 10+
 
-### Recommended Setup
-- **Python**: 3.12+
-- **RAM**: 16GB or more
-- **Storage**: 5GB free space
-- **OS**: Ubuntu 20.04+, macOS 12+, Windows 10+
+### Required Tools
 
-## Prerequisites
+Before you begin, ensure you have the following:
 
-Before installing CUGA, ensure you have these tools:
+- **Python 3.12+** - Install from [python.org](https://www.python.org/)
+- **UV Package Manager** - Modern Python dependency management (see [installation guide](#installing-uv) below)
+- **Git** - For cloning the repository
+- **API Keys** - OpenAI API key or compatible LLM provider
 
-<Steps>
-  <Step title="Python 3.12+">
-    Install Python 3.12 or higher from python.org
-  </Step>
-  <Step title="UV Package Manager">
-    Install UV for modern Python dependency management
-  </Step>
-  <Step title="Git">
-    Install Git for version control and cloning
-  </Step>
-  <Step title="API Keys">
-    Obtain necessary API keys for LLM services
-  </Step>
-</Steps>
+<Callout type="warning">
+Additional requirements vary by installation method. See the specific installation section below for details.
+</Callout>
 
 ### Installing UV
 
-UV is the recommended package manager for CUGA:
+UV is the recommended package manager for CUGA, providing faster dependency resolution and better virtual environment management than pip.
+
+<Tabs defaultValue="macos">
+  <TabsList>
+    <TabsTrigger value="macos">macOS</TabsTrigger>
+    <TabsTrigger value="linux">Linux</TabsTrigger>
+    <TabsTrigger value="windows">Windows</TabsTrigger>
+  </TabsList>
+
+  <TabsContent value="macos">
+    <h4>macOS Installation</h4>
+
+    **Using Homebrew (Recommended):**
+    ```bash
+    brew install uv
+    ```
+
+    **Using curl:**
+    ```bash
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
+
+    **Using pip:**
+    ```bash
+    pip install uv
+    ```
+  </TabsContent>
+
+  <TabsContent value="linux">
+    <h4>Linux Installation</h4>
+
+    **Using curl (Recommended):**
+    ```bash
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
+
+    **Using pip:**
+    ```bash
+    pip install uv
+    ```
+  </TabsContent>
+
+  <TabsContent value="windows">
+    <h4>Windows Installation</h4>
+
+    **Using PowerShell (Recommended):**
+    ```powershell
+    powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
+
+    **Using pip:**
+    ```bash
+    pip install uv
+    ```
+  </TabsContent>
+</Tabs>
+
+---
+
+## Quick Start
+
+Get started with the essential setup steps to have CUGA running quickly using the standard installation method.
+
+<Steps>
+  <Step title="Clone Repository">
+    Clone the CUGA repository to your local machine:
+
+    ```bash
+    git clone https://github.com/cuga-project/cuga-agent.git
+    cd cuga-agent
+    ```
+  </Step>
+
+  <Step title="Setup Environment">
+    Create a virtual environment and install dependencies:
+
+    ```bash
+    uv venv --python=3.12
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    uv sync
+    ```
+
+    <Callout type="warning">
+    Make sure to activate the virtual environment before running any CUGA commands.
+    </Callout>
+  </Step>
+
+  <Step title="Configure Environment">
+    Copy the example environment file and add your API key:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+    Edit the `.env` file and add your OpenAI API key:
+
+    ```bash
+    OPENAI_API_KEY=your_api_key_here
+    ```
+
+    <Callout type="info">
+    For IBM team members, you can use the ETE LiteLLM API key from the [ETE LiteLLM portal](https://ete-litellm.bx.cloud9.ibm.com/ui/).
+    </Callout>
+  </Step>
+
+  <Step title="Test Installation">
+    Verify that CUGA is working correctly:
+
+    ```bash
+    uv run test_sandbox
+    ```
+
+    If everything is set up correctly, you should see a success message: `('test succeeded\n', {})`
+  </Step>
+</Steps>
+
+### First Run
+
+Start CUGA in demo mode to explore its capabilities:
 
 ```bash
-# macOS/Linux
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Windows (PowerShell)
-powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-
-# Or via pip
-pip install uv
+cuga start demo
 ```
 
-<Callout type="warning">
-UV provides faster dependency resolution and better virtual environment management than pip.
+Try this example query to test the system:
+
+<CodeBlock lang="bash">
+"get my top account by revenue from digital sales"
+</CodeBlock>
+
+<Callout type="success">
+Congratulations! You've successfully installed CUGA. Continue reading for detailed configuration options and advanced setup.
 </Callout>
 
-## Installation Methods
+---
+
+## Alternative Installation Methods
+
+Choose the installation method that best fits your use case:
 
 <Tabs defaultValue="standard">
   <TabsList>
@@ -80,7 +192,14 @@ UV provides faster dependency resolution and better virtual environment manageme
   <TabsContent value="standard">
     <h3>Standard Installation</h3>
     <p>Recommended for most users. Install CUGA directly on your system.</p>
-    
+
+    **Requirements:**
+    - Python 3.12+
+    - UV package manager
+    - Git
+    - 2GB free storage
+    - OpenAI API key or compatible provider
+
     <Steps>
       <Step title="Clone Repository">
         ```bash
@@ -111,15 +230,20 @@ UV provides faster dependency resolution and better virtual environment manageme
   <TabsContent value="docker">
     <h3>Docker Installation</h3>
     <p>Use Docker for isolated, reproducible environments.</p>
-    
+
+    **Requirements:**
+    - Docker Desktop or Docker Engine
+    - 4GB RAM available for container
+    - OpenAI API key or compatible provider
+
     <Callout type="info">
     Docker installation is recommended for evaluation and testing purposes.
     </Callout>
-    
+
     ```bash
     # Pull the CUGA Docker image
     docker pull ibmresearch/cuga:latest
-    
+
     # Run CUGA container
     docker run -it --rm \
       -p 8000:8000 \
@@ -131,15 +255,23 @@ UV provides faster dependency resolution and better virtual environment manageme
   <TabsContent value="development">
     <h3>Development Setup</h3>
     <p>For contributors and developers working on CUGA.</p>
-    
+
+    **Requirements:**
+    - Python 3.12+
+    - UV package manager
+    - Git
+    - 5GB free storage (for dev dependencies)
+    - OpenAI API key or compatible provider
+    - Pre-commit (installed automatically)
+
     ```bash
     # Clone with submodules
     git clone --recursive https://github.com/cuga-project/cuga-agent.git
     cd cuga-agent
-    
+
     # Install in development mode
     uv sync --dev
-    
+
     # Install pre-commit hooks
     pre-commit install
     ```
@@ -191,8 +323,14 @@ CUGA supports multiple LLM providers:
     <p>IBM internal LLM service (recommended for team members):</p>
     
     ```bash
-    OPENAI_API_KEY=ete-your-ete-key
-    AGENT_SETTING_CONFIG=settings.litellm.toml
+    # LiteLLM Configuration (using OpenAI settings)
+    OPENAI_API_KEY=your-api-key
+    AGENT_SETTING_CONFIG="settings.openai.toml"
+
+    # Override for LiteLLM
+    MODEL_NAME=Azure/gpt-4o              # Override model name
+    OPENAI_BASE_URL=https://your-litellm-endpoint.com  # Override base URL
+    OPENAI_API_VERSION=2024-08-06        # Override API version
     ```
     
     <Callout type="info">
@@ -279,7 +417,6 @@ Most installation issues are related to Python version, dependencies, or API key
 Now that CUGA is installed, explore these resources:
 </Callout>
 
-- **[Quick Start Guide](./quickstart)**: Get up and running quickly
 - **[Usage Modes](./usage/modes)**: Learn about different operation modes
 - **[Configuration](./configuration/settings)**: Customize CUGA for your needs
 - **[API Integration](./usage/api-integration)**: Integrate CUGA into your applications
