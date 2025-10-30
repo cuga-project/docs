@@ -1,10 +1,216 @@
 ---
 title: Connect to MCP Server
-description: How to connect CUGA to a Model Context Protocol (MCP) server
+description: Set up and configure a Model Context Protocol server with CUGA
+icon: 'code'
 ---
 
-# Connect to MCP Server
+import { Callout } from 'fumadocs-ui/components/callout';
 
-🚧 Documentation coming soon...
+CUGA can connect to any **MCP (Model Context Protocol) server** to access tools and resources. This guide shows you how to configure and run CUGA with an MCP server.
 
-For now, refer to the [CUGA with Runtime Tools example](../runtime-tools).
+---
+
+## ✅ What You'll Do
+
+1. Set up an **MCP server** (or use an existing one).
+2. Configure CUGA to **connect** to the server.
+3. Start CUGA in **demo mode** with MCP tools available.
+
+---
+
+## ⚙️ Configuration Steps
+
+### 1. **Settings File**
+
+CUGA uses MCP servers in all modes. Check your `settings.toml`:
+
+```toml
+mode = "api"
+```
+
+> 💡 **Tip:** MCP servers work in `api` and `hybrid` modes. Learn more about `hybrid` [here](../hybrid-demo).
+
+---
+
+### 2. **MCP Server Registry (`mcp_servers.yaml`)**
+
+Default location:
+
+```
+src/cuga/backend/tools_env/registry/config/mcp_servers.yaml
+```
+
+To use a custom file:
+
+```bash
+export MCP_SERVERS_FILE="<path-to-file>"
+```
+
+#### Example:
+
+```yaml
+mcpServers:
+  filesystem:
+    command: npx
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "./workspace"]
+    transport: stdio
+    description: Local file system operations
+```
+
+---
+
+### 3. **Setting Up Your MCP Server**
+
+You can either use an existing MCP server or create your own.
+
+#### Option A: Using an Existing Server
+
+Install the server and add it to `mcp_servers.yaml`:
+
+```yaml
+mcpServers:
+  github:
+    command: npx
+    args: ["@modelcontextprotocol/server-github"]
+    transport: stdio
+    description: GitHub MCP server for repository operations
+    env:
+      GITHUB_PERSONAL_ACCESS_TOKEN: "<your-token>"
+```
+
+<Callout title="Getting a GitHub Personal Access Token">
+
+1. Go to [GitHub Settings > Developer settings > Personal access tokens > Tokens (classic)](https://github.com/settings/tokens).
+2. Click **Generate new token (classic)**.
+3. Name your token (e.g., "CUGA MCP Server").
+4. Select scopes based on your needs:
+   - `repo` for repository access
+   - `read:org` for organization information
+   - `gist` for gist access
+5. Click **Generate token** and copy it immediately (you won't see it again).
+6. Add the token to `mcp_servers.yaml` in the `env` section as shown above.
+
+</Callout>
+
+#### Option B: Creating a Simple MCP Server
+
+Create a custom MCP server using the MCP Python SDK:
+
+```python
+import asyncio
+from mcp.server import Server
+from mcp.server.stdio import stdio_server
+from mcp.types import Tool, TextContent
+
+server = Server("weather-server")
+
+@server.list_tools()
+async def list_tools():
+    return [
+        Tool(
+            name="get_weather",
+            description="Get the current weather for a city",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "city": {
+                        "type": "string",
+                        "description": "The name of the city (e.g., 'San Francisco', 'New York')"
+                    }
+                },
+                "required": ["city"]
+            }
+        )
+    ]
+
+@server.call_tool()
+async def call_tool(name: str, arguments: dict):
+    if name == "get_weather":
+        city = arguments.get("city", "unknown")
+        return [TextContent(
+            type="text",
+            text=f"Weather in {city}: Sunny, 72°F"
+        )]
+    raise ValueError(f"Unknown tool: {name}")
+
+async def main():
+    async with stdio_server() as streams:
+        await server.run(
+            streams[0],
+            streams[1],
+            server.create_initialization_options()
+        )
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+Register it in `mcp_servers.yaml`:
+
+```yaml
+mcpServers:
+  my_server:
+    command: python
+    args: ["./my_server.py"]
+    transport: stdio
+    description: Weather information service. Provides current weather conditions and temperature for any city.
+```
+
+> 💡 **Tip:** The MCP Python SDK provides the core building blocks for creating MCP servers. For more complex functionality, see the [MCP Python SDK documentation](https://modelcontextprotocol.io/docs/tools/python/).
+
+---
+
+### 🔐 Adding Environment Variables (Optional)
+
+Pass secrets or configuration through environment variables:
+
+```yaml
+mcpServers:
+  my_server:
+    command: python
+    args: ["./my_server.py"]
+    transport: stdio
+    description: Weather information service. Provides current weather conditions and temperature for any city.
+    env:
+      API_KEY: "<your-weather-api-key>"
+      DEBUG: "true"
+```
+
+> ✅ Environment variables are loaded from your system or `.env` file before CUGA starts.
+
+---
+
+## ▶️ Running CUGA with MCP Servers
+
+Start CUGA:
+
+```bash
+cuga start demo
+```
+
+What happens next:
+
+- ✅ Loads all MCP servers from `mcp_servers.yaml`.
+- ✅ Establishes connections to each server.
+- ✅ Makes all server tools available to CUGA.
+- ✅ Launches **demo mode** and opens in your browser after a few seconds.
+
+---
+
+### 🎯 You're Ready!
+
+Now you can query CUGA using tools from your MCP servers. The orchestrator will automatically select and call the appropriate tools to complete your tasks.
+
+Try a sample query based on your server:
+
+**GitHub server:**
+```text
+Get the last commit on cuga-project/cuga-agent
+```
+
+**Python weather server:**
+```text
+What's the weather in San Francisco?
+```
+
+---
