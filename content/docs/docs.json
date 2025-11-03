@@ -113,8 +113,8 @@
     }
   },
   "logo": {
-    "light": "/logo/logo-light.png",
-    "dark": "/logo/logo-dark.png"
+    "light": "/logo/cuga-logo.png",
+    "dark": "/logo/cuga-logo.png"
   },
   "navbar": {
     "links": [
