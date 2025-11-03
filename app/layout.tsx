@@ -2,10 +2,12 @@ import './global.css';
 import { RootProvider } from 'fumadocs-ui/provider';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { source } from '@/lib/source';
-import { baseOptions, iconMap } from '@/lib/layout.shared';
+import { baseOptions, iconMap, getFaviconMetadata } from '@/lib/layout.shared';
 import { config } from '@/lib/config';
 import SearchDialog from '@/components/search';
 import type { ReactNode } from 'react';
+
+export const metadata = getFaviconMetadata();
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

@@ -23,7 +23,7 @@ export const config = {
   
   // Logo paths (relative to public folder)
   logos: {
-    favicon: '/logo/cuga-logo.png',
+    favicon: '/favicon.png',
     light: '/logo/cuga-logo.png',
     dark: '/logo/cuga-logo.png',
   },

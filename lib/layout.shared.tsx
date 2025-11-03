@@ -2,6 +2,8 @@ import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { BookOpenIcon, BuildingIcon, PlugIcon, SettingsIcon, RocketIcon, WrenchIcon } from 'lucide-react';
 import { config, getAssetPath } from './config';
 import { GithubInfo } from 'fumadocs-ui/components/github-info';
+import type { Metadata } from 'next';
+
 /**
  * Shared layout configurations
  *
@@ -9,6 +11,16 @@ import { GithubInfo } from 'fumadocs-ui/components/github-info';
  * Home Layout: app/(home)/layout.tsx
  * Docs Layout: app/docs/layout.tsx
  */
+
+export function getFaviconMetadata(): Metadata {
+  return {
+    icons: {
+      icon: getAssetPath(config.logos.favicon),
+      apple: getAssetPath(config.logos.favicon),
+    },
+  };
+}
+
 export function baseOptions(): BaseLayoutProps {
   return {
     nav: {
