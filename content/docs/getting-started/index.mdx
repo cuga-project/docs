@@ -1,5 +1,5 @@
 ---
-title: What is CUGA ?
+title: Quick Start
 description: An Enterprise Agent You Can Trust - Building reliable agents for real-world use
 ---
 
@@ -75,503 +75,174 @@ See the [Roadmap](#roadmap) for where we're headed, or the [Call for the Communi
   </Accordion>
 </Accordions>
 
-## 🚀 Quick Start
+## Requirements
 
-<details>
-<summary><em style={{color: '#666'}}>🔧 Optional: Local Digital Sales API Setup (only if remote endpoint fails)</em></summary>
+### System Requirements
 
-> The demo comes pre-configured with the Digital Sales API → [📖 API Docs](https://digitalsales.19pc1vtv090u.us-east.codeengine.appdomain.cloud/docs)
+<Callout type="info">
+CUGA requires Python 3.12 or higher and works on Windows, macOS, and Linux systems.
+</Callout>
 
-**Only follow these steps if you encounter issues with the remote Digital Sales endpoint:**
+- **Python**: 3.12 or higher
+- **RAM**: 8GB minimum, 16GB recommended
+- **Storage**: 2GB free space (5GB for development)
+- **Network**: Internet connection for API access
+- **OS**: Ubuntu 20.04+, macOS 12+, or Windows 10+
 
-```bash
-# Start the Digital Sales API locally on port 8000
-uv run digital_sales_openapi
+### Required Tools
 
-# Then update ./src/cuga/backend/tools_env/registry/config/mcp_servers.yaml to use localhost:
-# Change the digital_sales URL from the remote endpoint to:
-# http://localhost:8000
-```
+Before you begin, ensure you have the following:
 
-</details>
+- **UV Package Manager** - Modern Python dependency management (see [installation guide](#installing-uv) below)
+- **Git** - For cloning the repository
+- **API Keys** - OpenAI API key or compatible LLM provider
 
-<details>
-<summary><em style={{color: '#666'}}>📋 Prerequisites (click to expand)</em></summary>
+<Callout type="warning">
+Additional requirements vary by installation method. See the specific installation section below for details.
+</Callout>
 
-- **Python 3.12+** - [Download here](https://www.python.org/downloads/)
-- **uv package manager** - [Installation guide](https://docs.astral.sh/uv/getting-started/installation/)
+<Accordions type="single">
+  <Accordion title="📦 Installing UV">
+    UV is the recommended package manager for CUGA, providing faster dependency resolution and better virtual environment management than pip.
 
-</details>
+    <Tabs defaultValue="macos">
+      <TabsList>
+        <TabsTrigger value="macos">macOS</TabsTrigger>
+        <TabsTrigger value="linux">Linux</TabsTrigger>
+        <TabsTrigger value="windows">Windows</TabsTrigger>
+      </TabsList>
 
-```bash
-# In terminal, clone the repository and navigate into it
-git clone https://github.com/cuga-project/cuga-agent.git
-cd cuga-agent
+      <TabsContent value="macos">
+        <h4>macOS Installation</h4>
 
-# 1. Create and activate virtual environment
-uv venv --python=3.12 && source .venv/bin/activate
+        **Using Homebrew (Recommended):**
+        ```bash
+        brew install uv
+        ```
 
-# 2. Install dependencies
-uv sync
+        **Using curl:**
+        ```bash
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        ```
 
-# 3. Set up environment variables
-# Create .env file with your API keys
-echo "OPENAI_API_KEY=your-openai-api-key-here" > .env
+        **Using pip:**
+        ```bash
+        pip install uv
+        ```
+      </TabsContent>
 
-# 4. Start the demo
-cuga start demo
+      <TabsContent value="linux">
+        <h4>Linux Installation</h4>
 
-# Chrome will open automatically at https://localhost:8005
-# then try sending your task to CUGA: 'get top account by revenue from digital sales'
+        **Using curl (Recommended):**
+        ```bash
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        ```
 
-```
+        **Using pip:**
+        ```bash
+        pip install uv
+        ```
+      </TabsContent>
 
-<details>
-<summary>🤖 LLM Configuration - Advanced Options</summary>
+      <TabsContent value="windows">
+        <h4>Windows Installation</h4>
+
+        **Using PowerShell (Recommended):**
+        ```powershell
+        powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+        ```
+
+        **Using pip:**
+        ```bash
+        pip install uv
+        ```
+      </TabsContent>
+    </Tabs>
+  </Accordion>
+</Accordions>
+
 ---
 
-Refer to: `.env.example` for detailed examples.
+## 🚀 Quick Start
 
-CUGA supports multiple LLM providers with flexible configuration options. You can configure models through TOML files or override specific settings using environment variables.
+Get started with the essential setup steps to have CUGA running quickly using the standard installation method.
 
-## Supported Platforms
-
-- **OpenAI** - GPT models via OpenAI API (also supports LiteLLM via base URL override)
-- **IBM WatsonX** - IBM's enterprise LLM platform
-- **Azure OpenAI** - Microsoft's Azure OpenAI service
-- **RITS** - Internal IBM research platform
-
-## Configuration Priority
-
-1. **Environment Variables** (highest priority)
-2. **TOML Configuration** (medium priority)
-3. **Default Values** (lowest priority)
-
-### Option 1: OpenAI 🌐
-
-**Setup Instructions:**
-
-1. Create an account at [platform.openai.com](https://platform.openai.com)
-2. Generate an API key from your [API keys page](https://platform.openai.com/api-keys)
-3. Add to your `.env` file:
-   ```bash
-   # OpenAI Configuration
-   OPENAI_API_KEY=sk-...your-key-here...
-   AGENT_SETTING_CONFIG="settings.openai.toml"
-   
-   # Optional overrides
-   MODEL_NAME=gpt-4o                    # Override model name
-   OPENAI_BASE_URL=https://api.openai.com/v1  # Override base URL
-   OPENAI_API_VERSION=2024-08-06        # Override API version
-   ```
-
-**Default Values:**
-- Model: `gpt-4o`
-- API Version: OpenAI's default API Version
-- Base URL: OpenAI's default endpoint
-
-### Option 2: IBM WatsonX 🔵
-
-**Setup Instructions:**
-
-1. Access [IBM WatsonX](https://www.ibm.com/watsonx)
-2. Create a project and get your credentials:
-   - Project ID
-   - API Key
-   - Region/URL
-3. Add to your `.env` file:
-   ```bash
-   # WatsonX Configuration
-   WATSONX_API_KEY=your-watsonx-api-key
-   WATSONX_PROJECT_ID=your-project-id
-   WATSONX_URL=https://us-south.ml.cloud.ibm.com  # or your region
-   AGENT_SETTING_CONFIG="settings.watsonx.toml"
-   
-   # Optional override
-   MODEL_NAME=meta-llama/llama-4-maverick-17b-128e-instruct-fp8  # Override model for all agents
-   ```
-
-**Default Values:**
-- Model: `meta-llama/llama-4-maverick-17b-128e-instruct-fp8`
-
-### Option 3: Azure OpenAI
-
-**Setup Instructions:**
-
-1. Add to your `.env` file:
-   ```bash
-    AGENT_SETTING_CONFIG="settings.azure.toml"  # Default config uses ETE
-    AZURE_OPENAI_API_KEY="<your azure apikey>"
-    AZURE_OPENAI_ENDPOINT="<your azure endpoint>"
-    OPENAI_API_VERSION="2024-08-01-preview"
-   ```
-
-### LiteLLM Support
-
-CUGA supports LiteLLM through the OpenAI configuration by overriding the base URL:
-
-1. Add to your `.env` file:
-   ```bash
-   # LiteLLM Configuration (using OpenAI settings)
-   OPENAI_API_KEY=your-api-key
-   AGENT_SETTING_CONFIG="settings.openai.toml"
-   
-   # Override for LiteLLM
-   MODEL_NAME=Azure/gpt-4o              # Override model name
-   OPENAI_BASE_URL=https://your-litellm-endpoint.com  # Override base URL
-   OPENAI_API_VERSION=2024-08-06        # Override API version
-   ```
-
-## Configuration Files
-
-CUGA uses TOML configuration files located in `src/cuga/configurations/models/`:
-
-- `settings.openai.toml` - OpenAI configuration (also supports LiteLLM via base URL override)
-- `settings.watsonx.toml` - WatsonX configuration  
-- `settings.azure.toml` - Azure OpenAI configuration
-
-Each file contains agent-specific model settings that can be overridden by environment variables.
-
-</details>
-
-## Demos
-
-### Hybrid Task Execution
-
-Watch CUGA seamlessly combine web and API operations in a single workflow:
-
-**Example Task:** `get top account by revenue from digital sales, then add it to current page`
-
-<details>
-<summary><b>Would you like to test this? (Advanced Demo)</b></summary>
-
-Experience CUGA's hybrid capabilities by combining API calls with web interactions:
-
-### Setup Steps:
-
-1. **Switch to hybrid mode:**
-   ```bash
-   # Edit ./src/cuga/settings.toml and change:
-   mode = 'hybrid'  # under [advanced_features] section
-   ```
-
-2. **Install browser API support:**
-   - Installs playwright browser API and Chromium browser
-   - The `playwright` installer should already be included after installing with [Quick Start](#-quick-start)
-
-   ```bash
-   playwright install chromium
-   ```
-
-3. **Start the demo:**
-   ```bash
-   cuga start demo
-   ```
-
-4. **Enable the browser extension:**
-   - Click the extension puzzle icon in your browser
-   - Toggle the CUGA extension to activate it
-   - This will open the CUGA side panel
-
-5. **Open the test application:**
-   - Navigate to: [Sales app](https://samimarreed.github.io/sales/)
-
-6. **Try the hybrid task:**
-   ```
-   get top account by revenue from digital sales then add it to current page
-   ```
-
-🎯 **What you'll see:** CUGA will fetch data from the Digital Sales API and then interact with the web page to add the account information directly to the current page - demonstrating seamless API-to-web workflow integration!
-
-</details>
-
-## Configurations
-
-<details>
-<summary>🔒 Running with a secure code sandbox</summary>
-
-1. Download and install [Rancher Desktop](https://rancherdesktop.io/).
-
-2. If your `./src/cuga/settings.toml` is configured for `accurate` mode (see `./src/cuga/configurations/modes/accurate.toml`), set:
-   ```toml
-   local_sandbox = false
-   ```
-   in the `accurate.toml` file.
-
-   If your `./src/cuga/settings.toml` points to a different mode (e.g., `fast` or `custom`), make the same change in the corresponding `<name>.toml` file under `./src/cuga/configurations/modes/`.
-
-3. Test your sandbox setup:
-   ```bash
-   uv run test_sandbox
-   ```
-   You should see the output: `('test succeeded\n', {})`
-
-</details>
-
-<details>
-<summary>⚙️ Reasoning modes - Switch between Fast/Accurate modes</summary>
-
-## Available Modes under `./src/cuga`
-
-| Mode       | File                                   | Description                         |
-| ---------- | -------------------------------------- | ----------------------------------- |
-| `fast`     | `./configurations/modes/fast.toml`     | Optimized for speed                 |
-| `accurate` | `./configurations/modes/accurate.toml` | Optimized for precision _(default)_ |
-| `custom`   | `./configurations/modes/custom.toml`   | User-defined settings               |
-
-## Configuration
-
-```
-configurations/
-├── modes/fast.toml
-├── modes/accurate.toml
-└── modes/custom.toml
-```
-
-Edit `settings.toml`:
-
-```toml
-[features]
-cuga_mode = "fast"  # or "accurate" or "custom"
-```
-
-**Documentation:** [./docs/flags.html](./docs/flags.html)
-
-</details>
-
-<details>
-<summary>🎯 Task Mode Configuration - Switch between API/Web/Hybrid modes</summary>
-
-## Available Task Modes
-
-| Mode     | Description                                                                 |
-|----------|-----------------------------------------------------------------------------|
-| `api`    | API-only mode - executes API tasks  _(default)_                             |
-| `web`    | Web-only mode - executes web tasks using browser extension                  |
-| `hybrid` | Hybrid mode - executes both API tasks and web tasks using browser extension |
-
-## How Task Modes Work
-
-### API Mode (`mode = 'api'`)
-- Opens tasks in a regular web browser
-- Best for API/Tools-focused workflows and testing
-
-### Web Mode (`mode = 'web'`)
-- Interface inside a browser extension (available next to browser)
-- Optimized for web-specific tasks and interactions
-- Direct access to web page content and controls
-
-### Hybrid Mode (`mode = 'hybrid'`)
-- Opens inside browser extension like web mode
-- Can execute both API/Tools tasks and web page tasks simultaneously
-- Starts from configurable URL defined in `demo_mode.start_url`
-- Most versatile mode for complex workflows combining web and API operations
-
-## Configuration
-
-Edit `./src/cuga/settings.toml`:
-
-```toml
-[demo_mode]
-start_url = "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login"  # Starting URL for hybrid mode
-
-
-[advanced_features]
-mode = 'api'  # 'api', 'web', or 'hybrid'
-```
-
-</details>
-
-<details>
-<summary>📝 Special Instructions Configuration</summary>
-
-## How It Works
-
-Each `.md` file contains specialized instructions that are automatically integrated into the CUGA's internal prompts when that component is active. Simply edit the markdown files to customize behavior for each node type.
-
-**Available instruction sets:** `answer`, `api_planner`, `code_agent`, `plan_controller`, `reflection`, `shortlister`, `task_decomposition`
-
-## Configuration
-
-```
-configurations/
-└── instructions/
-    ├── instructions.toml
-    ├── default/
-    │   ├── answer.md
-    │   ├── api_planner.md
-    │   ├── code_agent.md
-    │   ├── plan_controller.md
-    │   ├── reflection.md
-    │   ├── shortlister.md
-    │   └── task_decomposition.md
-    └── [other instruction sets]/
-```
-
-Edit `configurations/instructions/instructions.toml`:
-
-```toml
-[instructions]
-instruction_set = "default"  # or any instruction set above
-```
-
-</details>
-
-<Accordions type="single">
-  <Accordion title="📚 Documentation Structure">
-    This documentation is organized into four main sections:
-
-    ### 1. **Getting Started**
-    - Introduction and overview
-    - Quick start guide
-    - Installation instructions
-    - Configuration setup
-
-    ### 2. **Usage**
-    - Basic usage patterns
-    - Demo mode operation
-    - Advanced features like save & reuse
-    - API integration examples
-
-    ### 3. **Evaluation**
-    - Benchmark testing (WebArena, AppWorld)
-    - WxO tools integration
-    - Docker-based parallel evaluation
-    - Experiment tracking and analytics
-
-    ### 4. **Development**
-    - Testing and debugging
-    - Troubleshooting common issues
-    - API reference
-    - Development best practices
-  </Accordion>
-</Accordions>
-
-<Accordions type="single">
-  <Accordion title="📋 Prerequisites">
-    | Tool               | Purpose                | Installation                                                             |
-    | ------------------ | ---------------------- | ------------------------------------------------------------------------ |
-    | UV              | Python project manager | [Install Guide](https://docs.astral.sh/uv/getting-started/installation/) |
-    | Rancher Desktop | Container management   | [Download](https://rancherdesktop.io/)                                   |
-    | OpenAI API Key  | LLM access             | Add to `.env` file                                                       |
-
-    > **CUGA Team**: Use the [ETE LiteLLM](https://ete-litellm.bx.cloud9.ibm.com/ui/) API key
-  </Accordion>
-</Accordions>
-
-## 🎯 Demo Mode
-
-CUGA comes with a pre-configured demo featuring the Digital Sales API:
-
-```bash
-# Start the demo
-cuga start demo
-
-# Try this example query:
-"get my top account by revenue from digital sales"
-```
-
-<Accordions type="single">
-  <Accordion title="📊 Experiment Tracking">
-    Monitor your CUGA experiments with built-in analytics:
+<Steps>
+  <Step title="Clone Repository">
+    Clone the CUGA repository to your local machine:
 
     ```bash
-    # View experiment dashboard
-    cuga exp
-
-    # Start dashboard for specific experiment
-    # Click "Start Dashboard" in the interface
+    git clone https://github.com/cuga-project/cuga-agent.git
+    cd cuga-agent
     ```
-  </Accordion>
-</Accordions>
+  </Step>
 
-## 🔧 Advanced Usage
+  <Step title="Setup Environment">
+    Create a virtual environment and install dependencies:
 
-<details>
-<summary><b>💾 Save & Reuse</b></summary>
+    ```bash
+    uv venv --python=3.12
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    uv sync
+    ```
 
-## Setup
+    <Callout type="warning">
+    Make sure to activate the virtual environment before running any CUGA commands.
+    </Callout>
+  </Step>
 
-• Change `./src/cuga/settings.toml`: `cuga_mode = "save_reuse_fast"`
-• Run: `cuga start demo`
+  <Step title="Configure Environment">
+    Copy the example environment file and add your API key:
 
-## Demo Steps
+    ```bash
+    cp .env.example .env
+    ```
 
-• **First run**: `get top account by revenue`
+    Edit the `.env` file and add your OpenAI API key:
 
-- This is a new flow (first time)
-- Wait for task to finish
-- Approve to save the workflow
-- Provide another example to help generalization of flow e.g. `get top 2 accounts by revenue`
+    ```bash
+    OPENAI_API_KEY=your_api_key_here
+    ```
 
-• **Flow now will be saved**:
+    <Callout type="info">
+    For IBM team members, you can use the ETE LiteLLM API key from the [ETE LiteLLM portal](https://ete-litellm.bx.cloud9.ibm.com/ui/).
+    </Callout>
+  </Step>
 
-- May take some time
-- Flow will be successfully saved
+  <Step title="Test Installation">
+    Verify that CUGA is working correctly:
 
-• **Verify reuse**: `get top 4 accounts by revenue`
+    ```bash
+    uv run test-sandbox
+    ```
 
-- Should run faster using saved workflow
+    If everything is set up correctly, you should see a success message: `('test succeeded\n', {})`
+  </Step>
+</Steps>
 
-</details>
+### First Run
 
-<details>
-<summary><b>🔧 Adding Tools: Comprehensive Examples</b></summary>
-
-CUGA supports three types of tool integrations. Each approach has its own use cases and benefits:
-
-## 📋 **Tool Types Overview**
-
-| Tool Type | Best For | Configuration | Runtime Loading |
-|-----------|----------|---------------|-----------------|
-| **OpenAPI** | REST APIs, existing services | `mcp_servers.yaml` | ✅ Build |
-| **MCP** | Custom protocols, complex integrations | `mcp_servers.yaml` | ✅ Build |
-| **LangChain** | Python functions, rapid prototyping | Direct import | ✅ Runtime |
-
-## 📚 **Additional Resources**
-
-- **Tool Registry**: [cuga/backend/tools_env/registry/README.md](cuga/backend/tools_env/registry/README.md)
-- **Comprehensive example with different tools + MCP**: [docs/examples/cuga_with_runtime_tools/README.md](Adding Tools)
-- **CUGA as MCP**: [docs/examples/cuga_as_mcp/README.md](docs/examples/cuga_as_mcp)
-
-</details>
-
-### Test Scenarios - E2E
-
-The test suite covers various execution modes across different scenarios:
-
-| Scenario                       | Fast Mode | Accurate Mode | Save & Reuse Mode |
-| ------------------------------ | --------- | ------------- | ----------------- |
-| **Get top account by revenue** | ✓         | ✓             | ✓                 |
-| **List accounts**              | ✓         | ✓             | -                 |
-
-### Registry Test Suites
-
-The registry tests cover comprehensive validation of the Tools Environment Registry system:
-
-- **OpenAPI Integration**: Tests loading, listing, and calling legacy OpenAPI services with proper parameter handling and response validation
-- **MCP Server Integration**: Validates FastMCP client initialization, tool loading with parameter flattening, and function calling via SSE-based MCP servers
-- **Mixed Configuration Support**: Tests simultaneous operation of both legacy and MCP services with proper isolation and prefixing
-- **E2E API Registry Server**: End-to-end testing of HTTP endpoints, server lifecycle, and REST API function calling with error handling
-
-The test suite includes:
-
-- **Integration Tests**: Verify all components work together seamlessly
-- **Agent Behavior Tests**: Validate decision-making and task execution
-
-## 🧪 Running Tests
-
-### Run tests
-
-Focused suites:
+Start CUGA in demo mode to explore its capabilities:
 
 ```bash
-uv run pytest ./src/cuga/backend/tools_env/registry/tests/ ./src/system_tests/e2e/ -v
+cuga start demo
 ```
+
+Try this example query to test the system:
+
+```text
+get my top account by revenue from digital sales
+```
+
+<Callout type="success">
+Congratulations! You've successfully installed CUGA. Continue reading for detailed configuration options and advanced setup.
+</Callout>
+
 
 ## 📚 Resources
 
-- 📖 [Example](./docs/examples)
+- 📖 [Example](../guides/openapi-integration/)
 - 📧 Contact: [CUGA Team](https://forms.office.com/pages/responsepage.aspx?id=V3D2_MlQ1EqY8__KZK3Z6UtMUa14uFNMi1EyUFiZFGRUQklOQThLRjlYMFM2R1dYTk5GVTFMRzNZVi4u&route=shorturl)
 
 ## Team 

@@ -7,6 +7,7 @@ import { Steps, Step } from 'fumadocs-ui/components/steps';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from 'fumadocs-ui/components/tabs';
 import { Callout } from 'fumadocs-ui/components/callout';
 import { CodeBlock } from 'fumadocs-ui/components/codeblock';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 
 # Installation Guide
 
@@ -38,68 +39,70 @@ Before you begin, ensure you have the following:
 Additional requirements vary by installation method. See the specific installation section below for details.
 </Callout>
 
-### Installing UV
+<Accordions type="single">
+  <Accordion title="📦 Installing UV">
+    UV is the recommended package manager for CUGA, providing faster dependency resolution and better virtual environment management than pip.
 
-UV is the recommended package manager for CUGA, providing faster dependency resolution and better virtual environment management than pip.
+    <Tabs defaultValue="macos">
+      <TabsList>
+        <TabsTrigger value="macos">macOS</TabsTrigger>
+        <TabsTrigger value="linux">Linux</TabsTrigger>
+        <TabsTrigger value="windows">Windows</TabsTrigger>
+      </TabsList>
 
-<Tabs defaultValue="macos">
-  <TabsList>
-    <TabsTrigger value="macos">macOS</TabsTrigger>
-    <TabsTrigger value="linux">Linux</TabsTrigger>
-    <TabsTrigger value="windows">Windows</TabsTrigger>
-  </TabsList>
+      <TabsContent value="macos">
+        <h4>macOS Installation</h4>
 
-  <TabsContent value="macos">
-    <h4>macOS Installation</h4>
+        **Using Homebrew (Recommended):**
+        ```bash
+        brew install uv
+        ```
 
-    **Using Homebrew (Recommended):**
-    ```bash
-    brew install uv
-    ```
+        **Using curl:**
+        ```bash
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        ```
 
-    **Using curl:**
-    ```bash
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    ```
+        **Using pip:**
+        ```bash
+        pip install uv
+        ```
+      </TabsContent>
 
-    **Using pip:**
-    ```bash
-    pip install uv
-    ```
-  </TabsContent>
+      <TabsContent value="linux">
+        <h4>Linux Installation</h4>
 
-  <TabsContent value="linux">
-    <h4>Linux Installation</h4>
+        **Using curl (Recommended):**
+        ```bash
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        ```
 
-    **Using curl (Recommended):**
-    ```bash
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    ```
+        **Using pip:**
+        ```bash
+        pip install uv
+        ```
+      </TabsContent>
 
-    **Using pip:**
-    ```bash
-    pip install uv
-    ```
-  </TabsContent>
+      <TabsContent value="windows">
+        <h4>Windows Installation</h4>
 
-  <TabsContent value="windows">
-    <h4>Windows Installation</h4>
+        **Using PowerShell (Recommended):**
+        ```powershell
+        powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+        ```
 
-    **Using PowerShell (Recommended):**
-    ```powershell
-    powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-    ```
-
-    **Using pip:**
-    ```bash
-    pip install uv
-    ```
-  </TabsContent>
-</Tabs>
+        **Using pip:**
+        ```bash
+        pip install uv
+        ```
+      </TabsContent>
+    </Tabs>
+  </Accordion>
+</Accordions>
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
 Get started with the essential setup steps to have CUGA running quickly using the standard installation method.
 
