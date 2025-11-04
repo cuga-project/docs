@@ -3,7 +3,8 @@
   "icon": "Wrench",
   "defaultOpen": false,
   "pages": [
-    "testing"
+    "testing",
+    "CONTRIBUTING"
   ]
 }
 
