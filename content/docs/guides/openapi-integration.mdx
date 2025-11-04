@@ -9,7 +9,36 @@ This guide shows you how to configure and run CUGA with a Digital Sales API.
 
 ---
 
-## ✅ What You’ll Do
+## 📋 Prerequisites
+
+Before starting, ensure you have:
+
+- **Python 3.12+** - [Download here](https://www.python.org/downloads/)
+- **uv package manager** - [Installation guide](https://docs.astral.sh/uv/getting-started/installation/)
+- **CUGA installed** - Clone from [GitHub](https://github.com/cuga-project/cuga-agent)
+
+### Setup Steps
+
+```bash
+# Navigate to CUGA directory
+cd cuga-agent
+
+# Create and activate virtual environment
+uv venv --python=3.12 && source .venv/bin/activate
+
+# Install dependencies
+uv sync
+
+# Create .env file with your API keys
+echo "OPENAI_API_KEY=your-openai-api-key-here" > .env
+# Or use another LLM provider (see CUGA README for options)
+```
+
+> 💡 **Tip:** For LLM configuration options (OpenAI, WatsonX, Azure, etc.), see the [CUGA README](https://github.com/cuga-project/cuga-agent#quick-start).
+
+---
+
+## ✅ What You'll Do
 
 1. Configure **settings** and **API registry**.
 2. Add authentication (optional).
@@ -21,9 +50,10 @@ This guide shows you how to configure and run CUGA with a Digital Sales API.
 
 ### 1. **Settings File**
 
-CUGA uses APIs by default. Check your `settings.toml`:
+CUGA uses APIs by default. Check your `settings.toml` (located at `src/cuga/settings.toml`):
 
 ```toml
+[advanced_features]
 mode = "api"
 ```
 
@@ -74,9 +104,13 @@ services:
 
 ## ▶️ Running CUGA in Demo Mode
 
-Start CUGA:
+Make sure your virtual environment is activated, then start CUGA:
 
 ```bash
+# Ensure virtual environment is activated
+source .venv/bin/activate
+
+# Start CUGA demo mode
 cuga start demo
 ```
 
@@ -84,12 +118,37 @@ What happens next:
 
 -   ✅ Loads all APIs from `mcp_servers.yaml`.
 -   ✅ Makes all endpoints available as tools.
--   ✅ Launches **demo mode** and opens in your browser after a few seconds.
+-   ✅ Launches **demo mode** and opens in your browser after a few seconds at `http://localhost:8005`.
 
 ---
 
-### 🎯 You’re Ready!
+## 🎯 You're Ready!
 
 Now you can query CUGA using the API endpoints as tools.
+
+### Example Queries
+
+Try these queries in the CUGA demo interface:
+
+```
+"Get top account by revenue from digital sales"
+"List all accounts in my territory"
+"Get client information for account XYZ"
+```
+
+---
+
+## 🔍 Troubleshooting
+
+### Common Issues
+
+**Issue:** `cuga: command not found`
+- **Solution:** Ensure virtual environment is activated: `source .venv/bin/activate`
+
+**Issue:** API endpoints not loading
+- **Solution:** Check `mcp_servers.yaml` path and format. Verify the OpenAPI URL is accessible.
+
+**Issue:** Browser doesn't open
+- **Solution:** Manually navigate to `http://localhost:8005`
 
 ---

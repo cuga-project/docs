@@ -10,6 +10,36 @@ CUGA can connect to any **MCP (Model Context Protocol) server** to access tools 
 
 ---
 
+## 📋 Prerequisites
+
+Before starting, ensure you have:
+
+- **Python 3.12+** - [Download here](https://www.python.org/downloads/)
+- **uv package manager** - [Installation guide](https://docs.astral.sh/uv/getting-started/installation/)
+- **CUGA installed** - Clone from [GitHub](https://github.com/cuga-project/cuga-agent)
+- **Node.js** (for MCP filesystem server) - [Download here](https://nodejs.org/)
+
+### Setup Steps
+
+```bash
+# Navigate to CUGA directory
+cd cuga-agent
+
+# Create and activate virtual environment
+uv venv --python=3.12 && source .venv/bin/activate
+
+# Install dependencies
+uv sync
+
+# Create .env file with your API keys
+echo "OPENAI_API_KEY=your-openai-api-key-here" > .env
+# Or use another LLM provider (see CUGA README for options)
+```
+
+> 💡 **Tip:** For LLM configuration options (OpenAI, WatsonX, Azure, etc.), see the [CUGA README](https://github.com/cuga-project/cuga-agent#quick-start).
+
+---
+
 ## ✅ What You'll Do
 
 1. Set up an **MCP server** (or use an existing one).
@@ -22,9 +52,10 @@ CUGA can connect to any **MCP (Model Context Protocol) server** to access tools 
 
 ### 1. **Settings File**
 
-CUGA uses MCP servers in all modes. Check your `settings.toml`:
+CUGA uses MCP servers in all modes. Check your `settings.toml` (located at `src/cuga/settings.toml`):
 
 ```toml
+[advanced_features]
 mode = "api"
 ```
 
@@ -182,9 +213,13 @@ mcpServers:
 
 ## ▶️ Running CUGA with MCP Servers
 
-Start CUGA:
+Make sure your virtual environment is activated, then start CUGA:
 
 ```bash
+# Ensure virtual environment is activated
+source .venv/bin/activate
+
+# Start CUGA demo mode
 cuga start demo
 ```
 
@@ -193,13 +228,15 @@ What happens next:
 - ✅ Loads all MCP servers from `mcp_servers.yaml`.
 - ✅ Establishes connections to each server.
 - ✅ Makes all server tools available to CUGA.
-- ✅ Launches **demo mode** and opens in your browser after a few seconds.
+- ✅ Launches **demo mode** and opens in your browser after a few seconds at `http://localhost:8005`.
 
 ---
 
-### 🎯 You're Ready!
+## 🎯 You're Ready!
 
 Now you can query CUGA using tools from your MCP servers. The orchestrator will automatically select and call the appropriate tools to complete your tasks.
+
+### Example Queries
 
 Try a sample query based on your server:
 
@@ -212,5 +249,34 @@ Get the last commit on cuga-project/cuga-agent
 ```text
 What's the weather in San Francisco?
 ```
+
+**Filesystem server:**
+```text
+List all files in the cuga_workspace directory
+```
+
+---
+
+## 🔍 Troubleshooting
+
+### Common Issues
+
+**Issue:** `cuga: command not found`
+- **Solution:** Ensure virtual environment is activated: `source .venv/bin/activate`
+
+**Issue:** MCP server fails to start
+- **Solution:** Check that the command/binary exists. For `npx` commands, ensure Node.js is installed.
+
+**Issue:** Filesystem server errors
+- **Solution:** Ensure the workspace directory exists: `mkdir -p cuga_workspace`
+
+**Issue:** GitHub server authentication fails
+- **Solution:** Verify your `GITHUB_PERSONAL_ACCESS_TOKEN` is set correctly in the `env` section of `mcp_servers.yaml`
+
+**Issue:** Python MCP server not working
+- **Solution:** Ensure the MCP Python SDK is installed in your virtual environment: `pip install mcp`
+
+**Issue:** Browser doesn't open
+- **Solution:** Manually navigate to `http://localhost:8005`
 
 ---
