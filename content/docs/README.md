@@ -1,9 +1,9 @@
 ---
-title: Computer Using Generalist Agent (CUGA)
+title: ConfigUrable Generalist Agent (CUGA)
 description: An autonomous agent capable of performing web actions with intelligent planning and task decomposition
 ---
 
-# Computer Using Generalist Agent (CUGA)
+# ConfigUrable Generalist Agent (CUGA)
 
 <div align="center">
 

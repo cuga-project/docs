@@ -11,7 +11,7 @@ export const config = {
   // Site information
   site: {
     name: 'CUGA AGENT',
-    description: 'Computer Using Generalist Agent - built for reliability and trust',
+    description: 'ConfigUrable Generalist Agent - built for reliability and trust',
   },
   
   // External URLs
