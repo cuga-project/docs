@@ -45,12 +45,13 @@ This allows you to organize multiple configurations in separate folders.
 Each configuration folder, contains TOML and MD files that allow to toggle features and customize behavior.
 
 ```
-configurations/
+src/cuga/configurations/
 ├── models/
 │   ├── settings.litellm.toml      # Default ETE configuration
 │   ├── settings.openai.toml       # OpenAI configuration
 │   ├── settings.watsonx.toml      # WatsonX configuration
 │   └── settings.azure.toml        # Azure configuration
+│   └── settings.groq.toml        # Groq configuration
 ├── modes/
 │   ├── fast.toml              # Fast mode settings
 │   ├── balanced.toml          # Balanced mode settings

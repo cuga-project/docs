@@ -13,14 +13,14 @@ CUGA provides multiple execution modes optimized for different use cases, from f
 |------|-------|----------|----------|---------------|
 | **Fast** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | Development, testing | `./configurations/modes/fast.toml` |
 | **Accurate** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Production, critical tasks | `./configurations/modes/accurate.toml` |
-| **Custom** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Tailored workflows | `./configurations/modes/custom.toml` |
-| **Save & Reuse** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Repeated workflows | `./configurations/modes/save_reuse.toml` |
+| **Balanced** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | General purpose workflows | `./configurations/modes/balanced.toml` |
+| **Save & Reuse** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Repeated workflows | `./configurations/modes/save_reuse_fast.toml` |
 
 ### Mode Selection Criteria
 
 - **Fast Mode**: When speed is critical, accuracy can be slightly lower
 - **Accurate Mode**: When precision is essential, speed can be slower
-- **Custom Mode**: When you need specific behavior not covered by presets
+- **Balanced Mode**: When precision and speed are equally important
 - **Save & Reuse**: When you have repetitive tasks that benefit from caching
 
 ## 🚀 Fast Mode
@@ -32,41 +32,24 @@ Optimized for rapid development, testing, and scenarios where speed is more impo
 
 ```toml
 # configurations/modes/fast.toml
-[mode]
-name = "fast"
-description = "Optimized for speed and development"
-version = "1.0"
-
-[agent]
-temperature = 0.1              # Lower temperature for faster decisions
-max_tokens = 2000              # Reduced token limit for speed
-timeout = 60                   # Shorter timeout
-max_retries = 2                # Fewer retry attempts
-
-[execution]
-parallel_tasks = 4             # More parallel execution
-cache_enabled = true           # Enable caching
-cache_ttl = 300               # 5-minute cache TTL
-validation_enabled = false     # Skip validation for speed
-
-[optimization]
-early_termination = true       # Stop when good enough
-approximate_results = true     # Allow approximate results
-fast_fallback = true          # Use fast fallback methods
+[features]
+chat = false
+task_decomposition = false
+final_answer = false
+thoughts = false
+local_sandbox = true
+code_generation = "fast"
+code_output_summary = false
+code_output_reflection = false
+save_reuse = false
+forced_apps = []
 ```
-
-### Use Cases
-
-- **Development**: Rapid prototyping and testing
-- **Debugging**: Quick iteration cycles
-- **Exploration**: Initial data exploration
-- **Batch Processing**: High-volume, lower-precision tasks
 
 ### Performance Characteristics
 
 - **Execution Time**: 2-5x faster than accurate mode
 - **Memory Usage**: 30-50% less memory
-- **Accuracy**: 85-90% of accurate mode
+- **Accuracy**: 75-80% of accurate mode
 - **Resource Usage**: Optimized for throughput
 
 ## 🎯 Accurate Mode
@@ -78,35 +61,20 @@ Optimized for production environments where precision, reliability, and correctn
 
 ```toml
 # configurations/modes/accurate.toml
-[mode]
-name = "accurate"
-description = "Optimized for precision and reliability"
-version = "1.0"
 
-[agent]
-temperature = 0.05             # Very low temperature for consistency
-max_tokens = 4000              # Full token allowance
-timeout = 120                  # Longer timeout for complex tasks
-max_retries = 3                # More retry attempts
+[features]
+chat = false
+task_decomposition = true
+local_sandbox = false
+thoughts = true
+code_output_summary = true
+code_generation = "accurate"
+code_output_reflection = true
+save_reuse = false
+forced_apps = []
+final_answer = true
 
-[execution]
-parallel_tasks = 2             # Fewer parallel tasks for accuracy
-cache_enabled = false          # Disable caching for fresh results
-validation_enabled = true      # Enable validation
-verification_enabled = true    # Enable result verification
-
-[quality]
-double_check = true            # Double-check critical results
-confidence_threshold = 0.95    # High confidence requirement
-error_tolerance = 0.01         # Very low error tolerance
 ```
-
-### Use Cases
-
-- **Production**: Live production environments
-- **Critical Tasks**: Business-critical operations
-- **Compliance**: Regulatory and compliance requirements
-- **Financial**: Financial calculations and reporting
 
 ### Performance Characteristics
 
@@ -115,29 +83,36 @@ error_tolerance = 0.01         # Very low error tolerance
 - **Accuracy**: 98-99% precision
 - **Reliability**: High fault tolerance
 
+## ⚖️ Balanced Mode
 
+### Purpose
+The best of both worlds, a middle ground between speed and precision.
 
-## 📊 Mode Comparison
+### Configuration
 
-### Performance Metrics
+```toml
+# configurations/modes/balanced.toml
 
-| Metric | Fast | Accurate | Custom | Save & Reuse |
-|--------|------|----------|--------|--------------|
-| **Speed** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| **Accuracy** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| **Memory** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| **Reliability** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| **Learning** | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+[features]
+chat = false
+task_decomposition = true
+local_sandbox = true
+thoughts = false
+code_output_summary = false
+code_generation = "fast"
+code_output_reflection = true
+save_reuse = false
+forced_apps = []
+final_answer = true
 
-### Resource Usage
+```
 
-| Resource | Fast | Accurate | Custom | Save & Reuse |
-|----------|------|----------|--------|--------------|
-| **CPU** | Low | High | Medium | Medium |
-| **Memory** | Low | High | Medium | Medium |
-| **Storage** | Low | Medium | Medium | High |
-| **Network** | Low | Medium | Medium | Low |
+### Performance Characteristics
 
+- **Execution Time**: 1-2x slower than fast mode
+- **Memory Usage**: 20-30% more memory
+- **Accuracy**: 90-95% precision
+- **Reliability**: High fault tolerance
 
 ## 📚 Next Steps
 
