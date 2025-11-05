@@ -1,0 +1,259 @@
+---
+title: Evaluation
+description: Evaluate your APIs against structured test cases with detailed scoring and reporting.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+# **CUGA Evaluation**
+
+An evaluation framework for **CUGA**, enabling you to **test your APIs** against structured test cases with detailed scoring and reporting.
+
+---
+
+## **Features**
+- ✅ Validate **API responses** against expected outputs  
+- ✅ Score **keywords**, **tool calls**, and **response similarity**  
+- ✅ Generate **JSON** and **CSV** reports for easy analysis  
+
+---
+
+## **Test File Schema**
+
+<Callout type="info" title="Schema">
+Your test file must be a **JSON** following the structure below. Expand to view the full JSON schema.
+</Callout>
+
+<details>
+  <summary><strong>View Full JSON Schema</strong></summary>
+
+```json filename="test_schema.json"
+{
+  "name": "name for the test suite",
+  "title": "TestCases",
+  "type": "object",
+  "properties": {
+    "test_cases": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TestCase"
+      }
+    }
+  },
+  "required": ["test_cases"],
+  "definitions": {
+    "ToolCall": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "args": { "type": "object" }
+      },
+      "required": ["name", "arguments"]
+    },
+    "ExpectedOutput": {
+      "type": "object",
+      "properties": {
+        "response": { "type": "string" },
+        "keywords": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "tool_calls": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/ToolCall" }
+        }
+      },
+      "required": ["response", "keywords", "tool_calls"]
+    },
+    "TestCase": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "intent": { "type": "string" },
+        "expected_output": { "$ref": "#/definitions/ExpectedOutput" }
+      },
+      "required": ["name", "description", "intent", "expected_output"]
+    }
+  }
+}
+```
+
+</details>
+
+<Callout type="warning" title="Schema consistency note">
+In the <code>ToolCall</code> definition, the property is named <code>args</code>, but the <code>required</code> array references <code>arguments</code>.  
+If this is unintended, change <code>"arguments"</code> to <code>"args"</code> (or rename the property) to ensure validation consistency.
+</Callout>
+
+***
+
+### **Schema Overview**
+
+<table>
+  <thead>
+    <tr>
+      <th>Entity</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>ToolCall</strong></td>
+      <td>Represents a tool invocation with <code>name</code> and <code>args</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>ExpectedOutput</strong></td>
+      <td>Expected response, keywords, and tool calls.</td>
+    </tr>
+    <tr>
+      <td><strong>TestCase</strong></td>
+      <td>Defines a single test case with intent and expected output.</td>
+    </tr>
+  </tbody>
+</table>
+
+***
+
+## **Output Format**
+
+The evaluation generates **two files**:
+
+*   <code>results.json</code>
+*   <code>results.csv</code>
+
+### **JSON Structure**
+
+```json filename="results.json"
+{
+  "summary": {
+    "total_tests": "...",
+    "avg_keyword_score": "...",
+    "avg_tool_call_score": "...",
+    "avg_response_score": "..."
+  },
+  "results": [
+    {
+      "index": "...",
+      "test_name": "...",
+      "score": {
+        "keyword_score": "...",
+        "tool_call_score": "...",
+        "response_score": "...",
+        "response_scoring_type": "..."
+      },
+      "details": {
+        "missing_keywords": "...",
+        "expected_keywords": "...",
+        "expected_tool_calls": "...",
+        "tool_call_mismatches": "...",
+        "response_expected": "...",
+        "response_actual": "...",
+        "response_scoring_type": "..."
+      }
+    }
+  ]
+}
+```
+
+***
+
+## **Quick Start Example**
+
+Run the evaluation on the default <code>digital\_sales</code> API using the example test case.
+
+<Tabs>
+  <Tab value="input-json" label="Example Input JSON">
+
+```json filename="docs/examples/evaluation/input_example.json"
+{
+  "name": "digital-sales",
+  "test_cases": [
+    {
+      "name": "test_get_top_account",
+      "description": "gets the top account by revenue",
+      "intent": "get my top account by revenue",
+      "expected_output": {
+        "response": "**Top Account by Revenue** - **Name:** Andromeda Inc. - **Revenue:** $9,700,000 - **Account ID:** acc_49",
+        "keywords": ["Andromeda Inc.", "9,700,000"],
+        "tool_calls": [
+          {
+            "name": "digital_sales_get_my_accounts_my_accounts_get",
+            "args": {}
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+  </Tab>
+  <Tab value="commands" label="Run Commands">
+    <Steps>
+      <Step title="Update API URL">
+
+```yaml filename="src/cuga/backend/tools_env/registry/config/mcp_servers.yaml"
+url: http://localhost:8000/openapi.json
+```
+
+```
+  </Step>
+  <Step title="Start the API server">
+    
+```
+
+```bash
+uv run digital_sales_openapi
+```
+
+```
+  </Step>
+  <Step title="Run evaluation">
+    
+```
+
+```bash
+cuga evaluate docs/examples/evaluation/input_example.json
+```
+
+You’ll get <code>results.json</code> and <code>results.csv</code> in the project root.
+
+      </Step>
+    </Steps>
+
+  </Tab>
+</Tabs>
+
+***
+
+## **Usage**
+
+```bash
+cuga evaluate -t <test file path> -r <results file path>
+```
+
+**Steps:**
+
+1.  Update <code>mcp\_servers.yaml</code> with your APIs (or create a new YAML), then set:
+
+```bash
+export MCP_SERVERS_FILE=<location>
+```
+
+2.  Create a test file following the schema.
+
+3.  Run the evaluation command above.
+
+***
+
+<Callout type="success" title="Authoring tips">
+• Keep <strong>intents</strong> user-centric and concise.  
+• Use <strong>keywords</strong> for must-include facts (IDs, amounts, dates).  
+• Specify <strong>tool_calls</strong> only when you expect a deterministic invocation pattern.  
+• For free-form responses, choose an appropriate <code>response_scoring_type</code> in your evaluator config.
+</Callout>
+```
+
