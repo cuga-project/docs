@@ -10,16 +10,7 @@ CUGA supports multiple LLM providers with flexible configuration options. You ca
 - **OpenAI** - GPT models via OpenAI API (also supports LiteLLM via base URL override)
 - **IBM WatsonX** - IBM's enterprise LLM platform
 - **Azure OpenAI** - Microsoft's Azure OpenAI service
-- **RITS** - Internal IBM research platform
-
-## Configuration Priority
-
-1. **Environment Variables** (highest priority)
-   - `MODEL_NAME` - Override the model name
-   - `AGENT_SETTING_CONFIG` - Override the configuration file
-   - Provider-specific API keys and endpoints
-2. **TOML Configuration** (medium priority)
-3. **Default Values** (lowest priority)
+- **Groq** - Groq's LLM platform
 
 ### Option 1: OpenAI 🌐
 
@@ -91,6 +82,27 @@ You can override the model name using:
 MODEL_NAME="gpt-4o"
 ```
 
+### Option 4: Groq
+
+**Setup Instructions:**
+
+1. Add to your `.env` file:
+   ```bash
+   # For Groq
+   # GENT_SETTING_CONFIG="settings.groq.toml"
+   # GROQ_API_KEY="XXXX"
+   ```
+
+**Environment Variable Override:**
+You can override the model name using:
+```bash
+MODEL_NAME="openai/gpt-oss-120b"
+```
+2. Install dependencies
+   ```bash
+   uv sync --group groq
+   ```
+
 ### LiteLLM Support
 
 CUGA supports LiteLLM through the OpenAI configuration by overriding the base URL:
@@ -116,19 +128,9 @@ CUGA uses TOML configuration files located in `src/cuga/configurations/models/`:
 - `settings.openai.toml` - OpenAI configuration (also supports LiteLLM via base URL override)
 - `settings.watsonx.toml` - WatsonX configuration  
 - `settings.azure.toml` - Azure OpenAI configuration
+- `settings.groq.toml` - Groq configuration
 
 Each file contains agent-specific model settings that can be overridden by environment variables.
-
-### Settings Structure 
-
-```
-configurations/
-└── models/
-    ├── settings.litellm.toml      # Default ETE configuration
-    ├── settings.openai.toml       # OpenAI configuration
-    ├── settings.watsonx.toml      # WatsonX configuration
-    └── settings.azure.toml        # Azure configuration
-```
 
 ### Settings File Content Structure
 
@@ -178,44 +180,6 @@ platform = "watsonx"
 model_name = "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
 temperature = 0.1
 max_tokens = 5000
-```
-
-#### Agent Types
-
-CUGA uses different specialized agents for different tasks:
-
-- **`task_decomposition`**: Breaks down complex tasks into smaller, manageable steps
-- **`planner`**: Creates execution plans and strategies
-- **`chat`**: Handles conversational interactions and responses
-- **`shortlister`**: Prioritizes and filters tasks or options
-
-Each agent can be configured with:
-- **`platform`**: The LLM provider (openai, watsonx, azure)
-- **`model_name`**: Specific model to use (optional, uses platform default if not specified)
-- **`temperature`**: Controls randomness (0.0 = deterministic, 1.0 = very random)
-- **`max_tokens`**: Maximum number of tokens in the response
-
-### Example Configuration Files
-
-#### settings.litellm.toml (Default)
-```toml
-[llm]
-provider = "litellm"
-model = "gpt-4"
-temperature = 0.1
-max_tokens = 4000
-
-[litellm]
-base_url = "https://ete-litellm.bx.cloud9.ibm.com"
-```
-
-#### settings.openai.toml
-```toml
-[llm]
-provider = "openai"
-model = "gpt-4"
-temperature = 0.1
-max_tokens = 4000
 ```
 
 ## 🔄 Switching Between Providers
