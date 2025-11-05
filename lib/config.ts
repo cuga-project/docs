@@ -6,7 +6,7 @@
 // Base configuration
 export const config = {
   // Base path for GitHub Pages deployment
-  basePath: '/',
+  basePath: '',
   
   // Site information
   site: {
