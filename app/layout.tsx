@@ -2,12 +2,46 @@ import './global.css';
 import { RootProvider } from 'fumadocs-ui/provider';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { source } from '@/lib/source';
-import { baseOptions, iconMap, getFaviconMetadata } from '@/lib/layout.shared';
-import { config } from '@/lib/config';
+import { baseOptions, iconMap } from '@/lib/layout.shared';
+import { config, getAssetPath } from '@/lib/config';
 import SearchDialog from '@/components/search';
 import type { ReactNode } from 'react';
+import type { Metadata } from 'next';
 
-export const metadata = getFaviconMetadata();
+export const metadata: Metadata = {
+  title: {
+    default: config.site.name,
+    template: `%s | ${config.site.name}`,
+  },
+  description: config.site.description,
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://cuga.dev'),
+  icons: {
+    icon: getAssetPath(config.logos.favicon),
+    apple: getAssetPath(config.logos.favicon),
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: '/',
+    title: config.site.name,
+    description: config.site.description,
+    siteName: config.site.name,
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: config.site.name,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: config.site.name,
+    description: config.site.description,
+    images: ['/og-image.png'],
+  },
+};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
