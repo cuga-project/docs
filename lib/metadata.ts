@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const baseUrl = process.env.NODE_ENV === 'development' 
   ? new URL('http://localhost:3000')
-  : new URL(process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://cuga.dev');
+  : new URL(process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://cuga.dev/'));
 
 export function createMetadata(override: Metadata): Metadata {
   return {
