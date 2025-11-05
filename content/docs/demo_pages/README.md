@@ -152,13 +152,13 @@ After testing the demo pages:
 3. **Build Workflows**: Create custom automation workflows
 4. **Evaluate Performance**: Use the evaluation benchmarks
 
+
 ## 🤝 Support
 
 If you encounter issues with the demo pages:
 
-- 📧 Email: sami.marreed@ibm.com
 - 🐛 Issues: [GitHub Issues](https://github.com/cuga-project/cuga-agent/issues)
-- 📖 Documentation: [Full CUGA Docs](../index.mdx)
+- 📧 Contact Us: [Contact Form](https://forms.office.com/pages/responsepage.aspx?id=V3D2_MlQ1EqY8__KZK3Z6UtMUa14uFNMi1EyUFiZFGRUQklOQThLRjlYMFM2R1dYTk5GVTFMRzNZVi4u&route=shorturl)
 
 ---
 

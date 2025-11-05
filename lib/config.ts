@@ -18,7 +18,6 @@ export const config = {
   urls: {
     github: 'https://github.com/cuga-project/cuga-agent',
     website: 'https://cuga.dev/',
-    support: 'mailto:sami.marreed@ibm.com',
   },
   
   // Logo paths (relative to public folder)
@@ -42,11 +41,6 @@ export const config = {
       {
         title: 'GitHub',
         href: 'https://github.com/cuga-project/cuga-agent',
-        external: true,
-      },
-      {
-        title: 'Support',
-        href: 'mailto:sami.marreed@ibm.com',
         external: true,
       },
     ],

@@ -264,7 +264,6 @@ Automate testing and evaluation:
 - 📖 [Full Documentation](./docs)
 - 🐛 [Issue Tracker](https://github.com/cuga-project/cuga-agent/issues)
 - 💬 [Team Chat](#)
-- 📧 Contact: sami.marreed@ibm.com
 
 ## Contributing
 
