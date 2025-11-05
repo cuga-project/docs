@@ -6,7 +6,7 @@
 // Base configuration
 export const config = {
   // Base path for GitHub Pages deployment
-  basePath: '/research-rpa/cuga-docs',
+  basePath: '/docs',
   
   // Site information
   site: {
@@ -16,7 +16,7 @@ export const config = {
   
   // External URLs
   urls: {
-    github: 'https://github.ibm.com/research-rpa/cuga',
+    github: 'https://github.com/cuga-project/cuga-agent',
     website: 'https://cuga.dev/',
     support: 'mailto:sami.marreed@ibm.com',
   },
@@ -41,7 +41,7 @@ export const config = {
     links: [
       {
         title: 'GitHub',
-        href: 'https://github.ibm.com/research-rpa/cuga',
+        href: 'https://github.com/cuga-project/cuga-agent',
         external: true,
       },
       {

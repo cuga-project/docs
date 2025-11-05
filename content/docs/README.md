@@ -29,7 +29,6 @@ CUGA is a sophisticated autonomous agent that combines the power of large langua
 
 ## 🔗 Important Links
 
-- **[cuga-as-a-style](https://github.ibm.com/research-rpa/wxo-agents-experimental)** - Research repository
 - **[cuga-website](https://cuga.dev/)** - Official website
 - **[Enablement-session](https://ibm-my.sharepoint.com/personal/aviy_il_ibm_com/_layouts/15/stream.aspx?id=%2Fpersonal%2Faviy%5Fil%5Fibm%5Fcom%2FDocuments%2FRecordings%2FCUGA%20enablement%20session%2D20250724%5F150107%2DMeeting%20Recording%2Emp4&referrer=StreamWebApp%2EWeb&referrerScenario=AddressBarCopied%2Eview%2E22519f8f%2D7c32%2D45bf%2D92b7%2D5c0789485f1b)** - Training materials
 
@@ -58,7 +57,7 @@ Get started with CUGA in minutes:
 
 ```bash
 # Clone & Setup
-git clone git@github.ibm.com:research-rpa/cuga.git
+git clone git@github.com:cuga-project/cuga-agent.git
 cd cuga
 uv venv --python=3.12 && source .venv/bin/activate
 uv sync
@@ -263,7 +262,7 @@ Automate testing and evaluation:
 ## Resources
 
 - 📖 [Full Documentation](./docs)
-- 🐛 [Issue Tracker](https://github.ibm.com/research-rpa/cuga/issues)
+- 🐛 [Issue Tracker](https://github.com/cuga-project/cuga-agent/issues)
 - 💬 [Team Chat](#)
 - 📧 Contact: sami.marreed@ibm.com
 

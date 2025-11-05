@@ -4,7 +4,7 @@ const withMDX = createMDX();
 
 // Check if we're in production build (not dev mode)
 const isProduction = process.env.NODE_ENV === 'production';
-const basePath = '/research-rpa/cuga-docs';
+const basePath = '/docs';
 
 /** @type {import('next').NextConfig} */
 const config = {
