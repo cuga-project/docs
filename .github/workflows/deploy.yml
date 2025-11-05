@@ -39,6 +39,7 @@ jobs:
         run: pnpm build:static
         env:
           NODE_ENV: production
+          NEXT_PUBLIC_SITE_URL: https://docs.cuga.dev
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
