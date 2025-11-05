@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Regenerate MDX index
+        run: pnpm fumadocs-mdx
+
       - name: Build static site
         run: pnpm build:static
         env:
