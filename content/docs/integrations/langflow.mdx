@@ -4,5 +4,395 @@ description: 'Run CUGA in Langflow'
 icon: 'code'
 ---
 
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs, TabsContent, TabsList, TabsTrigger } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 
-🚧 Documentation coming soon...
+## Overview
+
+CUGA integrates seamlessly with Langflow, enabling you to build powerful visual AI workflows. This integration allows you to combine CUGA's agentic capabilities with Langflow's intuitive flow-based interface and MCP (Model Context Protocol) server tools.
+
+<Callout type="info">
+Langflow provides a visual, drag-and-drop interface for building LLM applications. When combined with CUGA, you can create sophisticated agentic workflows without writing code.
+</Callout>
+
+---
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- **Python 3.12+** with `uv` package manager
+- **API keys** for your chosen LLM provider (OpenAI, Watsonx, etc.)
+- **Network access** to MCP server endpoints
+
+<Callout type="warning">
+Make sure your Python environment is properly configured and you have the necessary permissions to install packages.
+</Callout>
+
+---
+
+## Installation & Setup
+
+<Steps>
+  <Step title="Install Langflow">
+    Install the Langflow nightly build using uv:
+
+    ```bash
+    uv pip install langflow-nightly==1.6.5.dev1
+    ```
+
+    <Callout type="info">
+    We recommend using the nightly build for the latest CUGA integration features.
+    </Callout>
+  </Step>
+
+  <Step title="Start Langflow Server">
+    Launch the Langflow server:
+
+    ```bash
+    uv run langflow run
+    ```
+
+    Once running, Langflow will be accessible in your browser at `http://localhost:7860`.
+  </Step>
+
+  <Step title="Create New Blank Flow">
+    When the Langflow UI opens in your browser:
+
+    1. Click the **"New Flow"** button or select **"Create Blank Flow"** from the menu
+    2. This will open a new empty canvas where you can build your CUGA workflow
+
+    <Callout type="info">
+    Starting with a blank flow ensures a clean workspace for building your CUGA integration.
+    </Callout>
+  </Step>
+
+  <Step title="Verify MCP Server Access">
+    The Digital Sales MCP server is deployed at:
+
+    ```
+    https://digitalsales-mcp.19pc1vtv090u.us-east.codeengine.appdomain.cloud/sse
+    ```
+
+    This server provides tools for account management, contact lookup, and more.
+
+    <Callout type="success">
+    You can test the endpoint accessibility using curl or by visiting it in your browser.
+    </Callout>
+  </Step>
+</Steps>
+
+---
+
+## Building Your Workflow
+
+### Component Overview
+
+<Accordions type="single">
+  <Accordion title="📥 Chat Input Component">
+    Captures user messages and serves as the entry point for conversations.
+
+    **Configuration:**
+    - No additional setup required
+    - Automatically captures text input from users
+    - Acts as the starting point of your workflow
+  </Accordion>
+
+  <Accordion title="🔧 MCP Tools Component">
+    Connects to MCP servers and exposes their tools to CUGA.
+
+    **Configuration:**
+    - Set MCP Server URL
+    - Enable Tool Mode
+    - Connect to CUGA's Tools input
+  </Accordion>
+
+  <Accordion title="🤖 CUGA Component">
+    The core agent that processes requests and orchestrates tool usage.
+
+    **Configuration:**
+    - Choose LLM provider
+    - Optional: Upload policy.md file
+    - Connect inputs and outputs
+  </Accordion>
+
+  <Accordion title="📤 Chat Output Component">
+    Displays CUGA's responses to users.
+
+    **Configuration:**
+    - Connect from CUGA output
+    - Shows formatted responses
+  </Accordion>
+</Accordions>
+
+---
+
+## Configuration Steps
+
+<Steps>
+  <Step title="Add Components to Canvas">
+    In the Langflow UI, drag and drop these components onto your canvas:
+
+    - **Chat Input** component
+    - **MCP Tools** component
+    - **CUGA** component
+    - **Chat Output** component
+  </Step>
+
+  <Step title="Configure MCP Tools">
+    Select the MCP Tools component and configure:
+
+    1. Set the MCP Server URL:
+       ```
+       https://digitalsales-mcp.19pc1vtv090u.us-east.codeengine.appdomain.cloud/sse
+       ```
+    2. **Enable Tool Mode** in the component settings
+    3. Connect the MCP Tools output to the CUGA Tools input
+
+    <Callout type="warning">
+    Ensure "Enable Tool Mode" is checked, or CUGA won't be able to access the tools.
+    </Callout>
+  </Step>
+
+  <Step title="Configure Language Model">
+    Choose your preferred LLM provider:
+
+    <Tabs defaultValue="openai">
+      <TabsList>
+        <TabsTrigger value="openai">OpenAI</TabsTrigger>
+        <TabsTrigger value="watsonx">IBM Watsonx</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="openai">
+        **OpenAI Configuration:**
+
+        Configure the CUGA component directly with your OpenAI API key.
+
+        - No additional LLM component needed
+        - Simply add your API key in CUGA settings
+        - Supports GPT-4, GPT-3.5-turbo, and other OpenAI models
+      </TabsContent>
+
+      <TabsContent value="watsonx">
+        **IBM Watsonx Configuration:**
+
+        1. Add a new LLM component to the canvas
+        2. Configure for Watsonx.ai:
+           - Set endpoint URL
+           - Add API key and Project ID
+           - Select model (e.g., `openai/gpt-oss-120b`)
+        3. In the CUGA component, select **"Custom Model"**
+        4. Connect the Watsonx LLM component to CUGA
+
+        <Callout type="info">
+        Watsonx integration allows you to use IBM's enterprise LLM platform with CUGA's agentic capabilities.
+        </Callout>
+      </TabsContent>
+    </Tabs>
+  </Step>
+
+  <Step title="Configure CUGA Policies (Optional)">
+    CUGA supports custom policies through a `policy.md` file for enhanced control:
+
+    ```markdown
+    ## Plan
+    <Instructions for how CUGA should approach planning tasks>
+
+    Example:
+    - Break down complex queries into subtasks
+    - Prioritize information gathering before execution
+    - Consider dependencies between actions
+
+    ## Answer
+    <Instructions for how CUGA should format final answers>
+
+    Example:
+    - Provide concise summaries with key findings
+    - Include relevant data points and metrics
+    - Cite sources when using MCP tool results
+    ```
+
+    Upload this file to the CUGA component to customize its behavior.
+
+    <Callout type="info">
+    Policy files allow you to fine-tune CUGA's reasoning and response formatting without modifying code.
+    </Callout>
+  </Step>
+
+  <Step title="Connect All Components">
+    Create the complete workflow by connecting:
+
+    1. **Chat Input** → **CUGA** (Message/Input port)
+    2. **MCP Tools** → **CUGA** (Tools input)
+    3. **CUGA** → **Chat Output** (Output port)
+
+    <Callout type="success">
+    Look for green connection lines between components to confirm successful connections.
+    </Callout>
+  </Step>
+</Steps>
+
+---
+
+## Workflow Architecture
+
+The final CUGA workflow in Langflow follows this structure:
+
+```
+[Chat Input] → [CUGA] → [Chat Output]
+                  ↑
+                  |
+         [MCP Tools] (connected to Tools input)
+                  |
+         [LLM Component] (optional - connected to Language Model input)
+```
+
+### Data Flow
+
+- **Chat Input → CUGA**: User messages flow into CUGA
+- **MCP Tools → CUGA**: Tools are made available to CUGA
+- **LLM → CUGA**: (Optional) Custom language model connection
+- **CUGA → Chat Output**: CUGA's responses are displayed to the user
+
+---
+
+## Use Cases
+
+<Accordions type="single">
+  <Accordion title="🔄 Hybrid Tasks">
+    Combine reasoning with tool execution for complex workflows:
+
+    - Data retrieval and analysis
+    - Multi-step decision making
+    - Context-aware automation
+  </Accordion>
+
+  <Accordion title="💼 Sales Operations">
+    Leverage digital-sales MCP tools for:
+
+    - Account management and lookup
+    - Contact information retrieval
+    - Territory data analysis
+    - Revenue reporting
+  </Accordion>
+
+  <Accordion title="⚙️ Multi-Step Workflows">
+    Plan and execute complex sequences:
+
+    - Orchestrate multiple API calls
+    - Handle dependencies between actions
+    - Error recovery and retry logic
+  </Accordion>
+
+  <Accordion title="🤖 Agentic Applications">
+    Build autonomous agents that:
+
+    - Reason about available tools
+    - Make intelligent decisions
+    - Adapt to changing contexts
+    - Learn from execution patterns
+  </Accordion>
+</Accordions>
+
+---
+
+## Testing Your Setup
+
+<Steps>
+  <Step title="Navigate to Playground">
+    In the Langflow UI, click the **"Playground"** button, then select **"Chat"** to open the chat interface.
+  </Step>
+
+  <Step title="Start a Conversation">
+    Type a message in the Chat Input component to initiate the workflow.
+  </Step>
+
+  <Step title="Observe Tool Usage">
+    Watch as CUGA analyzes the request and uses MCP tools when needed.
+
+    <Callout type="info">
+    You can monitor tool calls in the Langflow execution logs.
+    </Callout>
+  </Step>
+
+  <Step title="Review Responses">
+    Check the Chat Output for CUGA's formatted responses.
+  </Step>
+</Steps>
+
+### Example Test Queries
+
+Try these queries to test your setup:
+
+```
+"Show me all accounts in the system"
+"Find contacts for account XYZ"
+"What tools do you have available?"
+"Get my top account by revenue"
+```
+
+<Callout type="success">
+If CUGA successfully responds with account data, your integration is working correctly!
+</Callout>
+
+---
+
+## Troubleshooting
+
+<Accordions type="single">
+  <Accordion title="Chat Input/Output not appearing">
+    **Solutions:**
+    - Verify components are properly added to the canvas
+    - Check that all connections are established (green lines between components)
+    - Refresh the Langflow UI
+  </Accordion>
+
+  <Accordion title="MCP Tools not connecting">
+    **Solutions:**
+    - Verify the SSE endpoint is accessible
+    - Check network connectivity to the MCP server
+    - Test the endpoint URL in your browser
+    - Check firewall settings
+  </Accordion>
+
+  <Accordion title="CUGA not recognizing tools">
+    **Solutions:**
+    - Ensure "Enable Tool Mode" is checked in MCP Tools component
+    - Verify the connection between MCP Tools and CUGA
+    - Check MCP server logs for errors
+    - Restart the Langflow server
+  </Accordion>
+
+  <Accordion title="No response in Chat Output">
+    **Solutions:**
+    - Check that CUGA is properly connected to Chat Output
+    - Verify Chat Input is connected to CUGA
+    - Review Langflow logs for errors
+    - Check API key configuration
+  </Accordion>
+
+  <Accordion title="Model API errors">
+    **Solutions:**
+    - Confirm API keys are valid and have sufficient quota
+    - For Watsonx, verify project ID and endpoint configuration
+    - Check network connectivity
+    - Review error messages in logs
+  </Accordion>
+</Accordions>
+
+---
+
+## Additional Resources
+
+- [Langflow Documentation](https://docs.langflow.org/)
+- [MCP Tools Documentation](https://github.com/modelcontextprotocol)
+- [Digital Sales Application](https://samimarreed.github.io/sales/)
+- [CUGA MCP Server Guide](../guides/mcp-server)
+
+---
+
+<Callout type="success">
+**Success!** You've configured CUGA with Langflow. This setup enables CUGA to dynamically use MCP server tools while maintaining conversational context and goal-oriented behavior.
+</Callout>

@@ -4,6 +4,7 @@
   "defaultOpen": false,
   "pages": [
     "testing",
+    "evaluation",
     "CONTRIBUTING"
   ]
 }

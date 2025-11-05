@@ -35,22 +35,33 @@ This example creates an MCP server that exposes CUGA's task execution capabiliti
 
 ## Quick Start
 
-1. **Configure LLM Access:**
+1. **Clone the CUGA repository:**
+   ```bash
+   git clone https://github.com/cuga-project/cuga-agent.git
+   cd cuga-agent/docs/examples/cuga_as_mcp
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   uv sync
+   ```
+
+3. **Configure LLM Access:**
    - Follow the [main README LLM configuration section](../../README.md#llm-configuration---advanced-options) for setup instructions
    - Copy the environment file: `cp .env.example .env`
    - Add your API key to the `.env` file
 
-2. **Start the API Registry (in a separate terminal):**
+4. **Start the API Registry (in a separate terminal):**
    ```bash
    export MCP_SERVERS_FILE=./mcp_servers.yaml
    uv run registry
    ```
-3. **Start the MCP Server:**
+5. **Start the MCP Server:**
    ```bash
    uv run main.py
    ```
 
-4. **The server will:**
+6. **The server will:**
    - Start on `http://localhost:8000/sse`
    - Configure MCP servers from `mcp_servers.yaml`
    - Expose three execution modes:

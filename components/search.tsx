@@ -26,7 +26,7 @@ export default function DefaultSearchDialog(props: SharedProps) {
   const { locale } = useI18n(); // (optional) for i18n
   const { search, setSearch, query } = useDocsSearch({
     type: 'static',
-    from: process.env.NODE_ENV === 'production' ? '/research-rpa/cuga-docs/api/search' : '/api/search',
+    from: process.env.NODE_ENV === 'production' ? '/docs/api/search' : '/api/search',
     initOrama,
     locale,
   });

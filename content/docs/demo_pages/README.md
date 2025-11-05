@@ -42,7 +42,7 @@ This directory contains HTML demo pages for testing CUGA in different modes.
 ### 1. Download the Demo Pages
 ```bash
 # Clone or download the repository
-git clone git@github.ibm.com:research-rpa/cuga.git
+git clone git@github.com:cuga-project/cuga-agent.git
 cd cuga/docs-main/demo_pages
 ```
 
@@ -157,7 +157,7 @@ After testing the demo pages:
 If you encounter issues with the demo pages:
 
 - 📧 Email: sami.marreed@ibm.com
-- 🐛 Issues: [GitHub Issues](https://github.ibm.com/research-rpa/cuga/issues)
+- 🐛 Issues: [GitHub Issues](https://github.com/cuga-project/cuga-agent/issues)
 - 📖 Documentation: [Full CUGA Docs](../index.mdx)
 
 ---

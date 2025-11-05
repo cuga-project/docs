@@ -4,20 +4,48 @@ description: 'Integrate CUGA LangChain tools during runtime'
 icon: 'code'
 ---
 
-***
+CUGA supports loading and running **LangChain tools** dynamically during runtime. This allows you to create custom Python functions and make them available to the CUGA agent without modifying configuration files.
 
-# ✨ **CUGA Runtime Tools Integration** ✨
+---
 
-CUGA supports loading and running **LangChain tools** dynamically during runtime.
+## 📋 Prerequisites
 
-## ✅ **What You’ll Do**
+Before starting, ensure you have:
 
-*   🛠 **Write** runtime tools in Python.
-*   🔗 **Integrate** them into CUGA for dynamic task execution.
+- **Python 3.12+** - [Download here](https://www.python.org/downloads/)
+- **uv package manager** - [Installation guide](https://docs.astral.sh/uv/getting-started/installation/)
+- **CUGA installed** - Clone from [GitHub](https://github.com/cuga-project/cuga-agent)
 
-***
+### Setup Steps
 
-## **1️⃣ Writing a Tool**
+```bash
+# Navigate to CUGA directory
+cd cuga-agent
+
+# Create and activate virtual environment
+uv venv --python=3.12 && source .venv/bin/activate
+
+# Install dependencies
+uv sync
+
+# Create .env file with your API keys
+echo "OPENAI_API_KEY=your-openai-api-key-here" > .env
+# Or use another LLM provider (see CUGA README for options)
+```
+
+> 💡 **Tip:** For LLM configuration options (OpenAI, WatsonX, Azure, etc.), see the [CUGA README](https://github.com/cuga-project/cuga-agent#quick-start).
+
+---
+
+## ✅ What You'll Do
+
+1. **Write** runtime tools in Python as LangChain StructuredTools.
+2. **Integrate** them into CUGA for dynamic task execution.
+3. **Run** tasks that use your custom tools.
+
+---
+
+## 1. Writing a Tool
 
 Create your tool as a standard Python function and wrap it as a **LangChain Structured Tool**. Then, load it into CUGA in your runtime code.
 
@@ -26,48 +54,147 @@ Create your tool as a standard Python function and wrap it as a **LangChain Stru
 ```python
 from langchain_core.tools import StructuredTool
 
-def foo():
-    print("hello")
+def greet_user(name: str) -> str:
+    """Greet a user with a friendly message."""
+    message = f"Hello {name}! Welcome to CUGA runtime tools. This is a custom tool integrated at runtime."
+    print(message)
+    return message
 
-tools = [foo]
+# Wrap the function as a StructuredTool
+greet_tool = StructuredTool.from_function(greet_user)
+tools = [greet_tool]
 ```
 
-***
+---
 
-## **2️⃣ Adding It to CUGA**
+## 2. Adding It to CUGA
 Dynamically add the created tools in your code, using the tracker to set the tools.
 
-Here’s an example of how to integrate your tools into CUGA:
+Here's a complete example of how to integrate your tools into CUGA. Save this as `runtime_tool_example.py`:
 
 ```python
-cuga_agent = CugaAgent(browser_enabled=False)
-await cuga_agent.initialize_appworld_env()
+import asyncio
+from langchain_core.tools import StructuredTool
+from cuga.backend.cuga_graph.utils.controller import AgentRunner as CugaAgent
+from cuga.backend.activity_tracker.tracker import ActivityTracker
 
-tools = [foo]
-for tool in tools:
-    tool.metadata = {'server_name': "test"}
+def greet_user(name: str) -> str:
+    """Greet a user with a friendly message."""
+    message = f"Hello {name}! Welcome to CUGA runtime tools. This is a custom tool integrated at runtime."
+    print(message)
+    return message
 
-tracker.set_tools(tools)
+async def main():
+    # Initialize tracker
+    tracker = ActivityTracker()
 
-task_result: AgentResult = await cuga_agent.run_task_generic(
-    eval_mode=False,
-    goal=task
-)
+    # Create the tool
+    greet_tool = StructuredTool.from_function(greet_user)
+    tools = [greet_tool]
+
+    # Set metadata for the tools
+    for tool in tools:
+        tool.metadata = {'server_name': "custom_tools"}
+
+    # Register tools with tracker
+    tracker.set_tools(tools)
+
+    # Initialize CUGA agent
+    cuga_agent = CugaAgent(browser_enabled=False)
+    await cuga_agent.initialize_appworld_env()
+
+    # Define a task that will use your custom tool
+    task = "Greet the user named Alice"
+
+    # Run the task
+    task_result = await cuga_agent.run_task_generic(
+        eval_mode=False,
+        goal=task
+    )
+
+    print(f"\nTask completed! Result: {task_result.answer}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
-📂 Full example available in:
+---
 
-    docs/examples/cuga_with_runtime_tools
+## 3. Running Your Tool
 
-***
+> 💡 **Note:** The MCP Registry is only required if you're using OpenAPI or MCP tools from `mcp_servers.yaml`. If you're only using runtime LangChain tools, you can skip Step 1 and go directly to Step 2.
 
-## **3️⃣ What Happens When You Run CUGA**
+### Step 1: Start the MCP Registry (Optional - only if using OpenAPI/MCP tools)
 
-*   📦 **Loads all APIs and MCP servers** from `mcp_servers.yaml`.
-*   🔄 **Loads your LangChain tools** during runtime.
-*   ▶️ **Executes the task** defined in your code.
-*   🖥 **Displays logs** in the terminal for real-time tracking.
+If your application uses tools from `mcp_servers.yaml` in addition to runtime tools:
 
-***
+```bash
+export MCP_SERVERS_FILE=./src/cuga/backend/tools_env/registry/config/mcp_servers.yaml
+uv run registry
+```
+
+### Step 2: Run Your Script
+
+```bash
+# Activate your virtual environment
+source .venv/bin/activate
+
+# Run your script
+python runtime_tool_example.py
+```
+
+### Expected Output
+
+You should see output similar to this:
+
+```text
+Hello Alice! Welcome to CUGA runtime tools. This is a custom tool integrated at runtime.
+
+Task completed! Result: Successfully greeted Alice using the custom greet_user tool.
+```
+
+> 📂 **Full example available in:** `docs/examples/cuga_with_runtime_tools`
+
+---
+
+## What Happens When You Run CUGA
+
+When you execute your script, CUGA will:
+
+1. **Load all APIs and MCP servers** from `mcp_servers.yaml` (if configured)
+2. **Load your LangChain tools** registered at runtime
+3. **Execute the task** defined in your code
+4. **Display logs** in the terminal for real-time tracking
+5. **Call your custom tool** and execute your function
+
+---
+
+## 🎯 You're Ready!
+
+Now you can create custom Python functions and integrate them as tools in CUGA. The agent will automatically discover and use these tools when executing tasks that require them.
+
+### Example Use Cases
+
+- **Data Processing**: Create tools for custom data transformations
+- **External APIs**: Wrap API calls in tools for the agent to use
+- **File Operations**: Add specialized file handling capabilities
+- **Business Logic**: Implement domain-specific operations
+
+---
+
+## 🔍 Troubleshooting
+
+### Common Issues
+
+**Issue:** `ModuleNotFoundError: No module named 'cuga'`
+- **Solution:** Ensure virtual environment is activated: `source .venv/bin/activate`
+
+**Issue:** Tool not being called by agent
+- **Solution:** Check that tool metadata is set correctly and the tool description clearly explains its purpose
+
+**Issue:** Import errors for ActivityTracker
+- **Solution:** Verify you're using the correct import: `from cuga.backend.activity_tracker.tracker import ActivityTracker`
+
+---
 
 
