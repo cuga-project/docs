@@ -3,4 +3,313 @@ title: Hybrid Mode (Browser + API)
 description: Use CUGA in hybrid mode to combine browser automation with API interactions
 ---
 
-🚧 Documentation coming soon...
+CUGA's hybrid mode combines the power of both browser automation and API interactions, allowing you to seamlessly work with web pages while leveraging backend services.
+
+## 🎯 What is Hybrid Mode?
+
+Hybrid mode enables CUGA to:
+- **🌐 Browser Automation**: Navigate, interact with, and manipulate web pages
+- **🔌 API Interactions**: Make API calls to backend services
+- **🔄 Combined Workflows**: Use both capabilities in a single task
+- **📊 Data Integration**: Fetch data via APIs and display it on web pages
+
+## 🎬 Example in Action
+
+Watch CUGA seamlessly combine web and API operations in a single workflow:
+
+**Example Task:** `get top account by revenue from digital sales, then add it to current page`
+
+🎯 **What happens:** CUGA will fetch data from the Digital Sales API and then interact with the web page to add the account information directly to the current page - demonstrating seamless API-to-web workflow integration!
+
+## 🚀 Quick Start
+
+<details>
+<summary>📋 Prerequisites (click to expand)</summary>
+
+- **Python 3.12+** - [Download here](https://www.python.org/downloads/)
+- **uv package manager** - [Installation guide](https://docs.astral.sh/uv/getting-started/installation/)
+- **CUGA installed** - Follow the [Installation Guide](/docs/installation)
+
+</details>
+
+<details>
+<summary>🔧 Optional: Local Digital Sales API (only if remote endpoint fails)</summary>
+
+> The demo comes pre-configured with the Digital Sales API → [📖 API Docs](https://digitalsales.19pc1vtv090u.us-east.codeengine.appdomain.cloud/docs)
+
+**Only follow these steps if you encounter issues with the remote Digital Sales endpoint:**
+
+```bash
+# Navigate to cuga-agent directory
+cd cuga-agent
+
+# Start the Digital Sales API locally on port 8000
+uv run fastapi dev docs/examples/digital_sales_openapi/main.py --port 8000
+
+# Then update ./src/cuga/backend/tools_env/registry/config/mcp_servers.yaml
+# Change the digital_sales URL from:
+#   url: https://digitalsales.19pc1vtv090u.us-east.codeengine.appdomain.cloud/openapi.json
+# To:
+#   url: http://localhost:8000/openapi.json
+```
+
+</details>
+
+### Setup Steps
+
+1. **Switch to hybrid mode:**
+
+   Edit `./src/cuga/settings.toml`:
+
+   ```toml
+   [advanced_features]
+   mode = 'hybrid'  # Change from 'api' to 'hybrid'
+   ```
+
+2. **Install browser support (if not already installed):**
+
+   ```bash
+   # Install Playwright and Chromium browser
+   playwright install chromium
+   ```
+
+3. **Start CUGA:**
+
+   ```bash
+   # Start both registry and demo services
+   cuga start demo
+
+   # Chrome will open automatically at http://localhost:8005
+   ```
+
+4. **Enable the browser extension:**
+
+   - Click the extension puzzle icon in your browser toolbar
+   - Find and toggle the **CUGA** extension to activate it
+   - This will open the CUGA side panel in your browser
+
+5. **Open the test application:**
+
+   Navigate to the sales demo app: [https://samimarreed.github.io/sales/](https://samimarreed.github.io/sales/)
+
+6. **Try the hybrid task:**
+
+   In the CUGA interface, enter:
+   ```
+   get top account by revenue from digital sales then add it to current page
+   ```
+
+🎯 **What you'll see:** CUGA will:
+1. Query the Digital Sales API for account data
+2. Identify the top revenue account
+3. Interact with the web page to add the account information
+4. Display the results on the current page
+
+## 📊 How It Works
+
+### The Workflow
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Web Page      │    │   CUGA Agent    │    │   Digital       │
+│   (Browser)     │◄──►│   (Hybrid)      │◄──►│   Sales API     │
+│                 │    │                 │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+### Step-by-Step Process
+
+1. **Task Analysis**: CUGA analyzes your request and determines it requires both API and web operations
+2. **API Query**: Makes API call to Digital Sales service to fetch account data
+3. **Data Processing**: Processes the response and identifies the top account by revenue
+4. **Browser Interaction**: Uses browser automation to modify the current web page
+5. **Content Injection**: Adds the account information to the page DOM
+6. **User Feedback**: Provides confirmation of the completed operation
+
+## ⚙️ Configuration
+
+### Task Mode Settings
+
+CUGA supports three task execution modes:
+
+| Mode     | Description                                                                 |
+| -------- | --------------------------------------------------------------------------- |
+| `api`    | API-only mode - executes API tasks _(default)_                              |
+| `web`    | Web-only mode - executes web tasks using browser extension                  |
+| `hybrid` | Hybrid mode - executes both API tasks and web tasks using browser extension |
+
+Edit `./src/cuga/settings.toml`:
+
+```toml
+[demo_mode]
+# Starting URL when CUGA opens (for web and hybrid modes)
+start_url = "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login"
+
+[advanced_features]
+# Set the task execution mode
+mode = 'api'  # Options: 'api', 'web', or 'hybrid'
+```
+
+### Understanding CUGA Modes
+
+> **Important:** CUGA has two separate mode settings that serve different purposes:
+
+1. **Agent Execution Mode** (`features.cuga_mode`):
+   - Controls **how the agent reasons** and executes tasks
+   - Options: `fast`, `balanced`, `accurate`, `custom`, `save_reuse_fast`
+   - Located in `[features]` section
+
+2. **Task Execution Mode** (`advanced_features.mode`):
+   - Controls **where tasks run** (API, browser, or both)
+   - Options: `api`, `web`, `hybrid`
+   - Located in `[advanced_features]` section
+
+```toml
+[features]
+cuga_mode = "balanced"  # How the agent reasons
+
+[advanced_features]
+mode = 'hybrid'  # Where tasks execute
+```
+
+## 💬 Example Queries for Hybrid Mode
+
+These queries demonstrate the power of combining browser and API operations:
+
+**Data Fetching & Display:**
+```
+"get top account by revenue from digital sales and add it to current page"
+```
+
+**Form Population:**
+```
+"fetch customer data from the API and fill out the contact form on this page"
+```
+
+**Dynamic Updates:**
+```
+"retrieve user profile from the backend and populate the profile page"
+```
+
+**Multi-Source Integration:**
+```
+"get sales analytics and create a chart on the current page"
+```
+
+## 🔍 Verifying Your Setup
+
+### Check Current Configuration
+
+```bash
+# View current settings
+cat ./src/cuga/settings.toml | grep -A 2 "advanced_features"
+```
+
+Expected output:
+```toml
+[advanced_features]
+mode = 'hybrid'
+```
+
+### Check Service Status
+
+```bash
+# Check if demo services are running
+cuga status demo
+```
+
+Expected output:
+```
+Registry service: Running (PID: xxxxx)
+Demo service: Running (PID: xxxxx)
+```
+
+### Verify Digital Sales API
+
+The Digital Sales API should be accessible at the configured endpoint. You can test it directly:
+
+```bash
+# Test the remote API (default)
+curl https://digitalsales.19pc1vtv090u.us-east.codeengine.appdomain.cloud/openapi.json
+
+# Or test local API (if running locally)
+curl http://localhost:8000/openapi.json
+```
+
+## 🚨 Troubleshooting
+
+<details>
+<summary><b>Browser extension not appearing</b></summary>
+
+1. Make sure you're running in hybrid mode (`mode = 'hybrid'` in settings.toml)
+2. Verify Chromium is installed: `playwright install chromium`
+3. Check that the browser opened by CUGA (not a separate browser instance)
+4. Look for the CUGA extension icon in the browser toolbar
+
+</details>
+
+<details>
+<summary><b>Digital Sales API not responding</b></summary>
+
+**If using remote API:**
+1. Check your internet connection
+2. Verify the URL in `mcp_servers.yaml` is correct
+3. Try accessing the API docs: [https://digitalsales.19pc1vtv090u.us-east.codeengine.appdomain.cloud/docs](https://digitalsales.19pc1vtv090u.us-east.codeengine.appdomain.cloud/docs)
+
+**If using local API:**
+1. Make sure the API is running: `uv run fastapi dev docs/examples/digital_sales_openapi/main.py --port 8000`
+2. Test the endpoint: `curl http://localhost:8000/openapi.json`
+3. Check the port isn't already in use
+
+</details>
+
+<details>
+<summary><b>CUGA can't modify the web page</b></summary>
+
+1. Ensure you're on a web page that allows JavaScript modification
+2. Check browser console for errors (F12 → Console)
+3. Verify the browser extension is activated
+4. Some pages with strict Content Security Policy may block modifications
+
+</details>
+
+<details>
+<summary><b>Services won't start</b></summary>
+
+```bash
+# Stop any running services
+cuga stop demo
+
+# Kill processes on the default ports if needed
+# (Only if services are stuck)
+lsof -ti:8001 | xargs kill -9  # Registry port
+lsof -ti:8005 | xargs kill -9  # Demo port
+
+# Restart
+cuga start demo
+```
+
+</details>
+
+## 📚 Next Steps
+
+After mastering hybrid mode, explore:
+
+- **[Save & Reuse](/docs/guides/save-reuse)** - Capture and reuse successful workflows
+- **[MCP Integration](/docs/guides/mcp-integration)** - Add custom MCP servers and tools
+- **[API Configuration](/docs/guides/openapi-integration)** - Integrate your own APIs
+- **[Execution Modes](/docs/guides/modes)** - Fine-tune agent reasoning modes
+
+## 📖 Additional Resources
+
+- **Digital Sales API Docs**: [https://digitalsales.19pc1vtv090u.us-east.codeengine.appdomain.cloud/docs](https://digitalsales.19pc1vtv090u.us-east.codeengine.appdomain.cloud/docs)
+- **CUGA Repository**: [https://github.com/cuga-project/cuga-agent](https://github.com/cuga-project/cuga-agent)
+- **Example Sales App**: [https://samimarreed.github.io/sales/](https://samimarreed.github.io/sales/)
+
+---
+
+<div align="center">
+
+**Hybrid mode working?** Try the [Human-in-the-Loop Demo](/docs/guides/hitl-demo) next!
+
+</div>
