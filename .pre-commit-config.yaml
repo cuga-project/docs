@@ -32,7 +32,7 @@ repos:
         stages: [commit-msg]
         args: []
 
-  # Detect secrets - prevent committing sensitive information
+  # Detect secrets
   - repo: https://github.com/ibm/detect-secrets
     rev: 0.13.1+ibm.64.dss
     hooks:
