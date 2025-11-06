@@ -1,0 +1,416 @@
+---
+title: OpenAPI Tools Authentication
+description: Learn how to authenticate OpenAPI services with CUGA Agent using API keys, bearer tokens, and custom headers
+icon: 'shield-check'
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs, TabsContent, TabsList, TabsTrigger } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Download } from 'lucide-react';
+
+<Callout type="info">
+This guide assumes you have CUGA Agent already installed. If you haven't installed CUGA yet, please follow the installation guide first.
+</Callout>
+
+<Cards>
+  <Card
+    href="/docs/getting-started/installation"
+    title="Installation Guide"
+    description="Complete installation guide for CUGA Agent"
+    icon={<Download />}
+  />
+</Cards>
+
+This guide demonstrates how to set up authentication for OpenAPI services in CUGA Agent. You can either use your existing secure API or follow along with the minimal FastAPI server example we'll build together.
+
+<Callout type="info">
+CUGA supports multiple authentication methods including **API keys**, **bearer tokens**, **basic auth**, and **custom headers**.
+</Callout>
+
+---
+
+## What You'll Build
+
+This guide provides a complete authentication example. You can:
+
+- **Use your existing API** - Skip to the [Configure CUGA Authentication](#configure-cuga-authentication) section and adapt the authentication settings for your API
+- **Follow the example** - Build a minimal FastAPI server with API key authentication step-by-step
+
+The example includes:
+
+- FastAPI server with API key authentication
+- CUGA configuration for secure API access
+- Automatic header injection for protected endpoints
+- Testing with both CUGA and curl
+
+---
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- **CUGA Agent installed** - This guide assumes CUGA is already installed. If not, follow the [Installation Guide](/docs/getting-started/installation) first.
+- **Python 3.10+** - [Download here](https://www.python.org/downloads/)
+- **uv package manager** - [Installation guide](https://docs.astral.sh/uv/getting-started/installation/)
+
+---
+
+## Quick Start
+
+<Steps>
+
+### Create the FastAPI Server
+
+Create a new directory for your project and add a `server.py` file:
+
+```python
+from fastapi import FastAPI, HTTPException, Security, Header
+from fastapi.responses import JSONResponse
+import uvicorn
+from typing import Optional, Annotated
+
+app = FastAPI(
+    title="Minimal Auth Example API",
+    description="Simple API with API Key in Header",
+    version="1.0.0"
+)
+
+# Mock API Key (for demonstration only)
+VALID_API_KEY = "my-secret-key"
+
+def verify_api_key(x_api_key: Annotated[Optional[str], Header()] = None) -> str:
+    if not x_api_key or x_api_key != VALID_API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid X-API-Key")
+    return x_api_key
+
+@app.get("/data", tags=["Protected"], operation_id="getProtectedData")
+async def get_protected_data(api_key: Annotated[str, Security(verify_api_key)]):
+    """
+    Get protected data. Requires X-API-Key header.
+    Requires: X-API-Key: my-secret-key
+    """
+    return {"message": "This is protected data!", "access_granted": True}
+
+@app.get("/health", tags=["System"])
+async def health_check():
+    return {"status": "healthy"}
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": exc.detail,
+            "status_code": exc.status_code,
+        }
+    )
+
+if __name__ == "__main__":
+    print("\nMinimal Auth Example API Server running on http://localhost:8000")
+    print(f"Required X-API-Key: {VALID_API_KEY}\n")
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+```
+
+<Callout type="warn">
+**Security Note:** Never hardcode API keys in production! Use environment variables or secure vault services instead.
+</Callout>
+
+### Setup Dependencies
+
+Create a `pyproject.toml` file to manage Python dependencies:
+
+```toml
+[project]
+name = "minimal-auth-example"
+version = "1.0.0"
+description = "Minimal FastAPI server for CUGA Agent auth example"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+```
+
+### Configure CUGA Authentication
+
+Create or edit the `mcp_servers.yaml` configuration file. The default location is:
+
+```
+src/cuga/backend/tools_env/registry/config/mcp_servers.yaml
+```
+
+To use a custom file location, set the `MCP_SERVERS_FILE` environment variable:
+
+```bash
+export MCP_SERVERS_FILE="<path-to-your-custom-file>"
+```
+
+Add your API configuration:
+
+```yaml
+services:
+  - minimal-auth-api:
+      type: openapi
+      url: http://localhost:8000/openapi.json
+      description: "Minimal API with API Key authentication"
+      auth:
+        type: header
+        key: X-API-Key
+        value: my-secret-key
+```
+
+### Install and Run
+
+Install dependencies and start your server:
+
+<Tabs items={['Install', 'Run Server', 'Start CUGA']}>
+<Tab value="Install">
+
+```bash
+# Install project dependencies
+uv sync
+```
+
+</Tab>
+<Tab value="Run Server">
+
+```bash
+# Start the FastAPI server
+uv run python server.py
+```
+
+The server will be available at `http://localhost:8000`
+
+</Tab>
+<Tab value="Start CUGA">
+
+```bash
+# In a separate terminal, start CUGA in demo mode
+cuga start demo
+```
+
+CUGA will automatically inject the `X-API-Key` header when calling `getProtectedData`
+
+</Tab>
+</Tabs>
+
+</Steps>
+
+---
+
+## Authentication Types
+
+CUGA supports multiple authentication methods for OpenAPI services:
+
+<Accordions>
+<Accordion title="Header Authentication (API Keys)">
+
+**Use case:** Custom headers, API keys, or tokens
+
+```yaml
+auth:
+  type: header
+  key: X-API-Key
+  value: your-api-key-here
+```
+
+Headers sent: `{"X-API-Key": "your-api-key-here"}`
+
+</Accordion>
+
+<Accordion title="Bearer Token">
+
+**Use case:** JWT tokens, OAuth access tokens
+
+```yaml
+auth:
+  type: bearer
+  value: your-jwt-token-here
+```
+
+Headers sent: `{"Authorization": "Bearer your-jwt-token-here"}`
+
+</Accordion>
+
+<Accordion title="API Key (Query Parameter)">
+
+**Use case:** API keys passed in URL query string
+
+```yaml
+auth:
+  type: api-key
+  key: apiKey
+  value: your-api-key-here
+```
+
+Appends to URL: `?apiKey=your-api-key-here`
+
+</Accordion>
+
+<Accordion title="Basic Authentication">
+
+**Use case:** Username and password authentication
+
+```yaml
+auth:
+  type: basic
+  username: your-username
+  password: your-password
+```
+
+Headers sent: `{"Authorization": "Basic base64(username:password)"}`
+
+</Accordion>
+
+<Accordion title="Custom Query Parameter">
+
+**Use case:** Custom authentication parameters in query string
+
+```yaml
+auth:
+  type: query
+  key: token
+  value: your-custom-token
+```
+
+Appends to URL: `?token=your-custom-token`
+
+</Accordion>
+</Accordions>
+
+---
+
+## Complete Project Structure
+
+Your project should look like this:
+
+```
+minimal-auth-example/
+├── server.py              # FastAPI server with authentication
+├── pyproject.toml         # Python dependencies
+└── mcp_servers.yaml       # CUGA configuration
+```
+
+---
+
+## Real-World Examples
+
+### Example 1: GitHub API with Bearer Token
+
+```yaml
+services:
+  - github-api:
+      type: openapi
+      url: https://api.github.com/openapi.json
+      description: "GitHub REST API"
+      auth:
+        type: bearer
+        value: ghp_your_github_token_here
+```
+
+### Example 2: Multiple APIs with Different Auth
+
+```yaml
+services:
+  - api-one:
+      type: openapi
+      url: https://api1.example.com/openapi.json
+      auth:
+        type: header
+        key: X-API-Key
+        value: key1
+  
+  - api-two:
+      type: openapi
+      url: https://api2.example.com/openapi.json
+      auth:
+        type: bearer
+        value: token2
+```
+
+---
+
+## Security Best Practices
+
+<Callout type="warn" title="Production Security">
+
+**Never commit secrets to version control!**
+
+Use environment variables in your `mcp_servers.yaml`:
+
+```yaml
+services:
+  - secure-api:
+      type: openapi
+      url: http://localhost:8000/openapi.json
+      auth:
+        type: header
+        key: X-API-Key
+        value: ${API_KEY}  # Load from environment variable
+```
+
+Then set the environment variable:
+```bash
+export API_KEY="my-secret-key"
+```
+
+</Callout>
+
+---
+
+## Troubleshooting
+
+<Accordions>
+<Accordion title="401 Unauthorized Error">
+
+**Symptoms:** API calls fail with 401 status code
+
+**Solutions:**
+1. Verify the API key in `mcp_servers.yaml` matches the server
+2. Check the authentication type (`header`, `bearer`, etc.)
+3. Ensure the key name matches (e.g., `X-API-Key` vs `x-api-key`)
+4. Confirm the server is using the correct authentication header
+
+</Accordion>
+
+<Accordion title="OpenAPI Schema Not Loading">
+
+**Symptoms:** CUGA can't connect to the OpenAPI endpoint
+
+**Solutions:**
+1. Verify the server is running: `curl http://localhost:8000/openapi.json`
+2. Check the URL in `mcp_servers.yaml` is correct
+3. Ensure the server exposes an OpenAPI schema at the specified path
+4. Try accessing the schema directly in your browser
+
+</Accordion>
+
+<Accordion title="Authentication Header Not Being Sent">
+
+**Symptoms:** Headers not appearing in server logs
+
+**Solutions:**
+1. Check CUGA logs for authentication configuration errors
+2. Verify `mcp_servers.yaml` syntax is correct (proper indentation)
+3. Ensure the `auth` section is at the correct nesting level
+4. Restart CUGA after config changes
+
+</Accordion>
+</Accordions>
+
+---
+
+<div align="center">
+
+**Authentication working?** Try integrating your own APIs next!
+
+</div>
+

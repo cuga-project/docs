@@ -4,6 +4,7 @@
   "defaultOpen": false,
   "pages": [
     "openapi-integration",
+    "openapi-auth",
     "mcp-server",
     "runtime-tools",
     "hybrid-demo",
