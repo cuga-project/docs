@@ -8,6 +8,14 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 CUGA can connect to any **MCP (Model Context Protocol) server** to access tools and resources. This guide shows you how to configure and run CUGA with an MCP server.
 
+## 📖 Quick Overview
+
+This guide covers three ways to set up MCP servers with CUGA:
+
+- **[Option A: Using an Existing Server](#option-a-using-an-existing-server)** - Connect to pre-built MCP servers (e.g., GitHub) using STDIO transport
+- **[Option B: Creating a Local STDIO Server](#option-b-creating-a-local-stdio-server)** - Build a custom command-line based MCP server (local development)
+- **[Option C: Creating an HTTP Server](#option-c-creating-an-http-server)** - Build a custom HTTP-based MCP server (recommended for production/remote access)
+
 ---
 
 ## 📋 Prerequisites
@@ -123,9 +131,9 @@ mcpServers:
 
 </Callout>
 
-#### Option B: Creating a Simple MCP Server
+#### Option B: Creating a Local STDIO Server
 
-Create a custom MCP server using the MCP Python SDK:
+Create a custom local MCP server using STDIO transport with the MCP Python SDK:
 
 ```python
 import asyncio
@@ -176,6 +184,8 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+Save this file as `my_server.py` in your CUGA directory.
+
 Register it in `mcp_servers.yaml`:
 
 ```yaml
@@ -187,7 +197,60 @@ mcpServers:
     description: Weather information service. Provides current weather conditions and temperature for any city.
 ```
 
-> 💡 **Tip:** The MCP Python SDK provides the core building blocks for creating MCP servers. For more complex functionality, see the [MCP Python SDK documentation](https://modelcontextprotocol.io/docs/tools/python/).
+> 💡 **Tip:** STDIO transport is ideal for local development and command-line tools. For production deployments or remote access, see Option C below.
+
+#### Option C: Creating an HTTP Server
+
+Create a custom HTTP-based MCP server for remote access or production deployments using FastMCP:
+
+```python
+from fastmcp import FastMCP
+
+# Create an MCP server
+mcp = FastMCP("weather-server")
+
+@mcp.tool()
+def get_weather(city: str) -> str:
+    """Get the current weather for a city.
+
+    Args:
+        city: The name of the city (e.g., 'San Francisco', 'New York')
+
+    Returns:
+        Weather information for the city
+    """
+    return f"Weather in {city}: Sunny, 72°F"
+
+if __name__ == "__main__":
+    # Run with HTTP transport on port 8000
+    mcp.run(transport="http", port=8000)
+```
+
+Save this file as `weather_http_server.py` in your CUGA directory.
+
+Install the required dependencies:
+
+```bash
+pip install fastmcp
+```
+
+Start the HTTP server:
+
+```bash
+python weather_http_server.py
+```
+
+Register it in `mcp_servers.yaml`:
+
+```yaml
+mcpServers:
+  weather_http:
+    url: http://localhost:8000/mcp
+    transport: http
+    description: HTTP-based weather information service. Provides current weather conditions and temperature for any city via HTTP transport.
+```
+
+> 💡 **Tip:** HTTP transport is recommended for production environments as it allows the MCP server to run independently and be accessed remotely. Multiple CUGA instances can connect to the same HTTP server. For more about MCP servers, see the [MCP Python SDK documentation](https://modelcontextprotocol.io/docs/tools/python/).
 
 ---
 
@@ -245,9 +308,14 @@ Try a sample query based on your server:
 Get the last commit on cuga-project/cuga-agent
 ```
 
-**Python weather server:**
+**Python STDIO weather server:**
 ```text
 What's the weather in San Francisco?
+```
+
+**HTTP weather server:**
+```text
+What's the weather in New York?
 ```
 
 **Filesystem server:**
@@ -275,6 +343,13 @@ List all files in the cuga_workspace directory
 
 **Issue:** Python MCP server not working
 - **Solution:** Ensure the MCP Python SDK is installed in your virtual environment: `pip install mcp`
+
+**Issue:** HTTP MCP server connection fails
+- **Solution:**
+  - Ensure the HTTP server is running: check if you can access the URL in your browser
+  - Verify the port is not blocked by a firewall
+  - For FastMCP servers, ensure you have installed: `pip install fastmcp`
+  - Check server logs for any errors
 
 **Issue:** Browser doesn't open
 - **Solution:** Manually navigate to `http://localhost:8005`
