@@ -40,7 +40,7 @@ Additional requirements vary by installation method. See the specific installati
 </Callout>
 
 <Accordions type="single">
-  <Accordion title="📦 Installing UV">
+  <Accordion id="installing-uv" title="📦 Installing UV">
     UV is the recommended package manager for CUGA, providing faster dependency resolution and better virtual environment management than pip.
 
     <Tabs defaultValue="macos">
@@ -148,15 +148,6 @@ Get started with the essential setup steps to have CUGA running quickly using th
     </Callout>
   </Step>
 
-  <Step title="Test Installation">
-    Verify that CUGA is working correctly:
-
-    ```bash
-    uv run test-sandbox
-    ```
-
-    If everything is set up correctly, you should see a success message: `('test succeeded\n', {})`
-  </Step>
 </Steps>
 
 ### First Run
@@ -179,6 +170,41 @@ Congratulations! You've successfully installed CUGA. Continue reading for detail
 
 ---
 
+### Visualize trajectories
+
+Once you've run CUGA a few times, you can visualize the trajectories.
+
+Start the visualization server:
+
+```bash
+cuga viz
+```
+
+Navigate to Cuga Visualizer at [http://localhost:8988](http://localhost:8988). You can see a list of trajectories, and open any trajectory by clicking Open:
+
+<img
+  src="/images/cuga-viz-home.png"
+  alt="CUGA Visualizer home"
+  style={{ width: '100%', borderRadius: '0.5rem', marginBottom: '2rem' }}
+/>
+
+Here you can see an overview of the trajectory:
+
+<img
+  src="/images/cuga-viz-trajectory.png"
+  alt="CUGA Visualizer home"
+  style={{ width: '100%', borderRadius: '0.5rem', marginBottom: '2rem' }}
+/>
+
+You can view the details by clicking on the link under TASK_ID on the left:
+
+<img
+  src="/images/cuga-viz-details.png"
+  alt="CUGA Visualizer home"
+  style={{ width: '100%', borderRadius: '0.5rem', marginBottom: '2rem' }}
+/>
+
+
 ## Alternative Installation Methods
 
 Choose the installation method that best fits your use case:
@@ -186,7 +212,6 @@ Choose the installation method that best fits your use case:
 <Tabs defaultValue="standard">
   <TabsList>
     <TabsTrigger value="standard">Standard Installation</TabsTrigger>
-    <TabsTrigger value="docker">Docker Installation</TabsTrigger>
     <TabsTrigger value="development">Development Setup</TabsTrigger>
   </TabsList>
   
@@ -227,32 +252,7 @@ Choose the installation method that best fits your use case:
       </Step>
     </Steps>
   </TabsContent>
-  
-  <TabsContent value="docker">
-    <h3>Docker Installation</h3>
-    <p>Use Docker for isolated, reproducible environments.</p>
-
-    **Requirements:**
-    - Docker Desktop or Docker Engine
-    - 4GB RAM available for container
-    - OpenAI API key or compatible provider
-
-    <Callout type="info">
-    Docker installation is recommended for evaluation and testing purposes.
-    </Callout>
-
-    ```bash
-    # Pull the CUGA Docker image
-    docker pull ibmresearch/cuga:latest
-
-    # Run CUGA container
-    docker run -it --rm \
-      -p 8000:8000 \
-      -e OPENAI_API_KEY=your_key_here \
-      ibmresearch/cuga:latest
-    ```
-  </TabsContent>
-  
+    
   <TabsContent value="development">
     <h3>Development Setup</h3>
     <p>For contributors and developers working on CUGA.</p>
@@ -264,35 +264,42 @@ Choose the installation method that best fits your use case:
     - 5GB free storage (for dev dependencies)
     - OpenAI API key or compatible provider
     - Pre-commit (installed automatically)
+    - IDE or text editor (we use [VSCode](https://code.visualstudio.com) and provide launch.json for debugging)
 
-    ```bash
-    # Clone with submodules
-    git clone --recursive https://github.com/cuga-project/cuga-agent.git
-    cd cuga-agent
+    <Steps>
+      <Step title="Clone Repository with Submodules">
+        ```bash
+        git clone --recursive https://github.com/cuga-project/cuga-agent.git
+        cd cuga-agent
+        ```
+      </Step>
+      <Step title="Create Environment">
+        ```bash
+        uv venv --python=3.12
+        source .venv/bin/activate  # Windows: .venv\Scripts\activate
+        ```
+      </Step>
+      <Step title="Install in Development Mode">
+        ```bash
+        uv sync --dev
+        ```
+      </Step>
+      <Step title="Configure Environment">
+        ```bash
+        cp .env.example .env
+        # Edit .env with your API keys
+        ```
+      </Step>
+      <Step title="Install Pre-commit Hooks">
+        ```bash
+        pre-commit install
+        # This is to statically check the code before committing to git.
+        ```
+      </Step>
+    </Steps>
 
-    # Install in development mode
-    uv sync --dev
-
-    # Install pre-commit hooks
-    pre-commit install
-    ```
   </TabsContent>
 </Tabs>
-
-## Verification
-
-After installation, verify everything is working:
-
-```bash
-# Test the code sandbox
-uv run test-sandbox
-
-# Expected output: ('test succeeded\n', {})
-```
-
-<Callout type="success">
-If you see the success message, CUGA is properly installed and configured!
-</Callout>
 
 ## First Run
 
@@ -301,9 +308,6 @@ Start CUGA for the first time:
 ```bash
 # Start in demo mode
 cuga start demo
-
-# Or start the main service
-cuga start
 ```
 
 ## Troubleshooting
@@ -324,7 +328,7 @@ Most installation issues are related to Python version, dependencies, or API key
 ### Getting Help
 
 - **GitHub Issues**: [CUGA Issues](https://github.com/cuga-project/cuga-agent/issues)
-- **Documentation**: Check our [Development](./development/testing) section
+- **Documentation**: Check our [Development](/docs/development/testing) section
 
 ## Next Steps
 
@@ -332,9 +336,9 @@ Most installation issues are related to Python version, dependencies, or API key
 Now that CUGA is installed, explore these resources:
 </Callout>
 
-- **[Usage Modes](./usage/modes)**: Learn about different operation modes
-- **[Configuration](./configuration/settings)**: Customize CUGA for your needs
-- **[API Integration](./usage/api-integration)**: Integrate CUGA into your applications
+- **[Usage Modes](/docs/customization/modes)**: Learn about different operation modes
+- **[Configuration](/docs/customization/overview)**: Customize CUGA for your needs
+- **[API Integration](/docs/guides/openapi-integration)**: Integrate CUGA into your applications
 
 ---
 
