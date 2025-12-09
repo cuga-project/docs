@@ -11,6 +11,7 @@ CUGA supports multiple LLM providers with flexible configuration options. You ca
 - **IBM WatsonX** - IBM's enterprise LLM platform
 - **Azure OpenAI** - Microsoft's Azure OpenAI service
 - **Groq** - Groq's LLM platform
+- **OpenRouter** - LLM API gateway provider
 
 ### Option 1: OpenAI 🌐
 
@@ -103,6 +104,32 @@ MODEL_NAME="openai/gpt-oss-120b"
    uv sync --group groq
    ```
 
+### Option 5: OpenRouter
+
+**Setup Instructions:**
+
+1. Create an account at [openrouter.ai](https://openrouter.ai)
+2. Generate an API key from your account settings
+3. Add to your `.env` file:
+```bash
+   # For OpenRouter
+   # AGENT_SETTING_CONFIG="settings.openrouter.toml"
+   # OPENROUTER_API_KEY="XXXX"
+   # OPENROUTER_BASE_URL="https://openrouter.ai/api/v1"
+```
+
+**Default Values:**
+- Base URL: `https://openrouter.ai/api/v1`
+- Model: Configurable via `MODEL_NAME` environment variable
+
+**Environment Variable Override:**
+You can override the model name using:
+```bash
+MODEL_NAME="openai/gpt-4o"
+```
+
+**Note:** OpenRouter provides access to multiple model providers. Refer to [OpenRouter's model documentation](https://openrouter.ai/models) for available models and their pricing.
+
 ### LiteLLM Support
 
 CUGA supports LiteLLM through the OpenAI configuration by overriding the base URL:
@@ -129,6 +156,7 @@ CUGA uses TOML configuration files located in `src/cuga/configurations/models/`:
 - `settings.watsonx.toml` - WatsonX configuration  
 - `settings.azure.toml` - Azure OpenAI configuration
 - `settings.groq.toml` - Groq configuration
+- `settings.openrouter.toml` - OpenRouter configuration
 
 Each file contains agent-specific model settings that can be overridden by environment variables.
 
@@ -182,6 +210,29 @@ temperature = 0.1
 max_tokens = 5000
 ```
 
+#### OpenRouter Configuration Example
+```toml
+[agent.task_decomposition.model]
+platform = "openrouter"
+temperature = 0.1
+max_tokens = 1000
+
+[agent.planner.model]
+platform = "openrouter"
+temperature = 0.1
+max_tokens = 5000
+
+[agent.chat.model]
+platform = "openrouter"
+temperature = 0.1
+max_tokens = 5000
+
+[agent.shortlister.model]
+platform = "openrouter"
+temperature = 0.1
+max_tokens = 7000
+```
+
 ## 🔄 Switching Between Providers
 
 ### Method 1: Environment Variable
@@ -195,6 +246,12 @@ export AGENT_SETTING_CONFIG="settings.watsonx.toml"
 
 # Switch to Azure
 export AGENT_SETTING_CONFIG="settings.azure.toml"
+
+# Switch to Groq
+export AGENT_SETTING_CONFIG="settings.groq.toml"
+
+# Switch to OpenRouter
+export AGENT_SETTING_CONFIG="settings.openrouter.toml"
 ```
 
 ### Method 2: Edit .env File
