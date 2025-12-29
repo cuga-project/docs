@@ -1,5 +1,5 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import { BookOpenIcon, BuildingIcon, PlugIcon, SettingsIcon, RocketIcon, WrenchIcon } from 'lucide-react';
+import { BookOpenIcon, BuildingIcon, PlugIcon, SettingsIcon, RocketIcon, WrenchIcon, PackageIcon } from 'lucide-react';
 import { config, getAssetPath } from './config';
 import { GithubInfo } from 'fumadocs-ui/components/github-info';
 import type { Metadata } from 'next';
@@ -67,4 +67,5 @@ export const iconMap = {
   Plug: PlugIcon,
   Building: BuildingIcon,
   Wrench: WrenchIcon,
+  Package: PackageIcon,
 };

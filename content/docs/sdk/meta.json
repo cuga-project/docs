@@ -1,0 +1,9 @@
+{
+  "title": "SDK",
+  "icon": "Package",
+  "defaultOpen": false,
+  "pages": [
+    "cuga_agent"
+  ]
+}
+
