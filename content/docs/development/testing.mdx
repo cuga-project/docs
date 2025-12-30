@@ -1,7 +1,475 @@
 ---
-title: Testing
-description: Comprehensive testing guide for CUGA development
+title: Testing & Evaluation
+description: Comprehensive testing, evaluation, and CI/CD guide for CUGA
 ---
 
+CUGA has a comprehensive test suite covering end-to-end scenarios, unit tests, and integration tests across all execution modes (Fast, Balanced, Accurate, and Save & Reuse).
 
-🚧 Documentation coming soon...
+## Overview
+
+The test suite ensures CUGA reliability and performance across different configurations and execution scenarios.
+
+**Test Structure:**
+- **End-to-End (E2E) Tests**: Complete workflow testing across execution modes
+- **Unit Tests**: Individual component testing
+- **Integration Tests**: Service and tool integration testing
+- **Profiling Tests**: Performance benchmarking
+
+## Running Tests
+
+### Run All Tests
+
+```bash
+./src/scripts/run_tests.sh
+```
+
+This runs the complete test suite and generates reports.
+
+### Run Specific Test Suites
+
+```bash
+# Run unit tests only
+pytest tests/unit/ -v
+
+# Run integration tests
+pytest tests/integration/ -v
+
+# Run e2e tests
+pytest tests/e2e/ -v
+
+# Run specific test file
+pytest tests/unit/test_variables_manager.py -v
+```
+
+## Test Structure
+
+```
+src/system_tests/
+├── e2e/                          # End-to-end tests
+│   └── config/                   # Test configurations
+├── unit/                         # Unit tests
+│   ├── test_variables_manager.py
+│   └── test_value_preview.py
+├── integration/                  # Integration tests
+│   ├── test_api_response_handling.py
+│   ├── test_registry_services.py
+│   └── test_tool_environment.py
+└── profiling/                    # Performance tests
+    ├── bin/                      # Profiling executables
+    ├── config/                   # Performance configs
+    └── experiments/              # Benchmark tests
+```
+
+## End-to-End (E2E) Test Scenarios
+
+CUGA E2E tests cover critical user workflows across all execution modes:
+
+| Scenario | Fast Mode | Balanced Mode | Accurate Mode | Save & Reuse Mode |
+|----------|-----------|---------------|---------------|-------------------|
+| **Find VP Sales High-Value Accounts** | ✅ | ✅ | ✅ | - |
+| **Get top account by revenue** | ✅ | ✅ | ✅ | ✅ |
+| **List my accounts** | ✅ | ✅ | ✅ | - |
+
+### E2E Test Details
+
+#### Scenario 1: Find VP Sales High-Value Accounts
+- **Task**: Find VP of Sales and retrieve high-value accounts
+- **Tests**: Cross-functional queries, filtering, role-based access
+- **Modes**: Fast, Balanced, Accurate
+- **Assets**: CRM demo with sample data
+
+#### Scenario 2: Get Top Account by Revenue
+- **Task**: Query and rank accounts by revenue
+- **Tests**: Sorting, pagination, data aggregation
+- **Modes**: Fast, Balanced, Accurate, Save & Reuse
+- **Performance**: Benchmark speed improvements with Save & Reuse
+
+#### Scenario 3: List My Accounts
+- **Task**: Simple list retrieval with optional filtering
+- **Tests**: Basic API calls, pagination
+- **Modes**: Fast, Balanced, Accurate
+- **Use Case**: Baseline performance testing
+
+### Running E2E Tests
+
+```bash
+# Run all E2E tests
+pytest src/system_tests/e2e/ -v
+
+# Run specific scenario
+pytest src/system_tests/e2e/ -k "top_account" -v
+
+# Run with coverage
+pytest src/system_tests/e2e/ --cov=src/cuga -v
+```
+
+## Unit Tests
+
+Unit tests validate individual components in isolation.
+
+### Variables Manager Tests
+
+Tests the variables management system:
+
+- **Core Functionality**: Variable creation, storage, retrieval
+- **Metadata Handling**: Type information, context preservation
+- **Singleton Pattern**: Ensures single instance across application
+- **Reset Operations**: State cleanup between runs
+
+```bash
+pytest tests/unit/test_variables_manager.py -v
+```
+
+### Value Preview Tests
+
+Tests the smart value preview/truncation system:
+
+- **Intelligent Truncation**: Respects natural boundaries
+- **Nested Structure Preservation**: Maintains JSON/object structure
+- **Length-Aware Formatting**: Adapts to available space
+- **Type Preservation**: Keeps data type information
+
+```bash
+pytest tests/unit/test_value_preview.py -v
+```
+
+### Running Unit Tests
+
+```bash
+# Run all unit tests
+pytest src/system_tests/unit/ -v
+
+# Run with coverage report
+pytest src/system_tests/unit/ --cov=src/cuga --cov-report=html
+
+# Run specific test class
+pytest tests/unit/test_variables_manager.py::TestVariablesManager -v
+```
+
+## Integration Tests
+
+Integration tests validate service interactions and tool integration.
+
+### API Response Handling Tests
+
+Tests the API response processing pipeline:
+
+- **Error Cases**: HTTP errors, timeouts, malformed responses
+- **Validation**: Schema validation, data type checking
+- **Timeout Scenarios**: Handling slow or stalled requests
+- **Parameter Extraction**: Correct data extraction from responses
+
+```bash
+pytest src/system_tests/integration/test_api_response_handling.py -v
+```
+
+### Registry Services Tests
+
+Tests tool registry and service integration:
+
+- **OpenAPI Integration**: Swagger/OpenAPI spec loading and parsing
+- **MCP Server Functionality**: Model Context Protocol server interactions
+- **Mixed Service Configurations**: Multiple tools from different providers
+- **Service Loading**: Dynamic tool discovery and initialization
+
+```bash
+pytest src/system_tests/integration/test_registry_services.py -v
+```
+
+### Tool Environment Tests
+
+Tests the tool execution environment:
+
+- **Service Loading**: Loading tools from registry
+- **Parameter Handling**: Type conversion, validation, defaults
+- **Function Calling**: Tool invocation and response handling
+- **Isolation Testing**: Tool sandboxing and state isolation
+
+```bash
+pytest src/system_tests/integration/test_tool_environment.py -v
+```
+
+### Running Integration Tests
+
+```bash
+# Run all integration tests
+pytest src/system_tests/integration/ -v
+
+# Run specific test suite
+pytest src/system_tests/integration/test_registry_services.py -v
+
+# Run with extended output
+pytest src/system_tests/integration/ -vv --tb=long
+```
+
+## Profiling & Performance Tests
+
+Performance tests benchmark CUGA execution speed and efficiency.
+
+### Available Profiles
+
+```
+src/system_tests/profiling/
+├── config/
+│   ├── fast_profile.json
+│   ├── balanced_profile.json
+│   └── accurate_profile.json
+└── experiments/
+    ├── memory_usage.py
+    ├── execution_speed.py
+    └── tool_latency.py
+```
+
+### Running Performance Tests
+
+```bash
+# Run profiling for fast mode
+pytest src/system_tests/profiling/ -k "fast" -v
+
+# Run memory profiling
+pytest src/system_tests/profiling/experiments/memory_usage.py -v
+
+# Run execution speed tests
+pytest src/system_tests/profiling/experiments/execution_speed.py -v
+```
+
+## Test Configuration
+
+### Environment Setup for Tests
+
+```bash
+# Install test dependencies
+uv sync
+
+# Run tests with test environment
+export CUGA_TEST_MODE=true
+./src/scripts/run_tests.sh
+```
+
+### Test Environment Variables
+
+```bash
+# Use test CRM instance
+export CRM_API_PORT=8007
+
+# Use test registry
+export REGISTRY_PORT=8001
+
+# Skip slow tests
+export SKIP_SLOW_TESTS=true
+
+# Parallel execution
+export PYTEST_WORKERS=4
+```
+
+## Continuous Integration
+
+CUGA uses GitHub Actions for automated testing:
+
+### CI Pipeline
+
+The workflow:
+1. Lint and format checks
+2. Unit tests
+3. Integration tests
+4. E2E tests
+5. Coverage reports
+6. Performance benchmarks
+
+### Local CI Simulation
+
+Simulate the CI environment locally:
+
+```bash
+# Run linting
+flake8 src/ tests/
+
+# Run type checking
+mypy src/
+
+# Run tests with coverage
+pytest --cov=src/cuga --cov-report=term-missing
+
+# Generate coverage HTML report
+pytest --cov=src/cuga --cov-report=html
+```
+
+## Writing New Tests
+
+### E2E Test Template
+
+```python
+import pytest
+from cuga import CugaAgent
+
+@pytest.mark.e2e
+@pytest.mark.parametrize("mode", ["fast", "balanced", "accurate"])
+def test_custom_scenario(mode):
+    """Test custom scenario in different modes"""
+    agent = CugaAgent(mode=mode)
+
+    task = "Your test task here"
+    result = agent.execute(task)
+
+    assert result.success == True
+    assert result.steps <= 20  # Should complete in reasonable steps
+    assert len(result.answer) > 0  # Should return meaningful answer
+```
+
+### Unit Test Template
+
+```python
+import pytest
+from cuga.backend.components import YourComponent
+
+class TestYourComponent:
+    """Test suite for component"""
+
+    @pytest.fixture
+    def component(self):
+        """Create component instance"""
+        return YourComponent()
+
+    def test_functionality(self, component):
+        """Test core functionality"""
+        result = component.do_something()
+        assert result == expected_value
+```
+
+### Integration Test Template
+
+```python
+import pytest
+from cuga.backend.tools_env import ToolRegistry
+
+@pytest.mark.integration
+def test_tool_integration():
+    """Test tool registry integration"""
+    registry = ToolRegistry()
+    registry.load_tools()
+
+    tools = registry.get_all_tools()
+    assert len(tools) > 0
+    assert "sample_tool" in [t.name for t in tools]
+```
+
+## Test Coverage
+
+View and analyze test coverage:
+
+```bash
+# Generate coverage report
+pytest --cov=src/cuga --cov-report=term-missing --cov-report=html
+
+# View HTML report
+open htmlcov/index.html  # macOS
+xdg-open htmlcov/index.html  # Linux
+start htmlcov/index.html  # Windows
+```
+
+### Coverage Standards
+
+- **Minimum Target**: 80% coverage for core modules
+- **High-Value Tests**: Prioritize critical paths and API boundaries
+- **Excluded**: Test code, configuration, utilities, prototypes
+
+## Troubleshooting Tests
+
+### Test Failures
+
+**Problem**: Tests fail with "Address already in use"
+
+**Solution**:
+```bash
+# Kill existing processes
+pkill -f "cuga start"
+
+# Or change test ports in configuration
+export TEST_DEMO_PORT=7861
+```
+
+### Slow Tests
+
+**Problem**: Tests take too long
+
+**Solutions**:
+```bash
+# Run only fast tests
+pytest -m "not slow" -v
+
+# Run in parallel
+pytest -n auto
+
+# Skip profiling tests
+pytest --ignore=src/system_tests/profiling/
+```
+
+### Flaky Tests
+
+**Problem**: Tests pass sometimes, fail other times
+
+**Solutions**:
+1. Check for timing-dependent assertions
+2. Add appropriate waits for async operations
+3. Use fixtures to ensure clean state
+4. Check for port/resource conflicts
+
+## Evaluation & Benchmarking
+
+For comprehensive CUGA evaluation and benchmarking information, see:
+
+- [CUGA Evaluation Documentation](/docs/development/evaluation)
+- Evaluation framework in `src/cuga/evaluation/`
+- Benchmark harnesses for AppWorld, WebArena, and custom scenarios
+
+## Best Practices
+
+### When Writing Tests
+
+1. **Test behavior, not implementation**: Focus on what the component does
+2. **Use descriptive names**: Test name should explain what's being tested
+3. **One assertion per test** (when possible): Makes failures clear
+4. **Use fixtures**: Reduce duplication, improve readability
+5. **Mock external services**: Don't depend on real APIs in tests
+6. **Test edge cases**: Empty inputs, large inputs, errors
+
+### Test Organization
+
+```python
+# Good: Clear structure
+def test_should_handle_empty_list():
+def test_should_process_large_dataset():
+def test_should_raise_error_on_invalid_input():
+
+# Avoid: Unclear names
+def test_function():
+def test_something():
+def test_it_works():
+```
+
+### Performance Testing
+
+```bash
+# Profile specific test
+pytest tests/e2e/test_top_account.py -v --profile
+
+# Compare performance across modes
+for mode in fast balanced accurate; do
+  echo "Testing $mode mode..."
+  CUGA_MODE=$mode pytest tests/e2e/ --durations=10
+done
+```
+
+## Next Steps
+
+- Review [Evaluation Documentation](/docs/development/evaluation) for benchmarking
+- Check [CI/CD Configuration](#continuous-integration) for automation
+- Explore [Contributing Guide](/docs/development/CONTRIBUTING) for test standards
+- See [Settings Reference](/docs/customization/settings-reference) for test configuration
+
+## Resources
+
+- [Pytest Documentation](https://docs.pytest.org/)
+- [Python unittest Framework](https://docs.python.org/3/library/unittest.html)
+- [CUGA Evaluation README](https://github.com/cuga-project/cuga-agent/blob/main/src/cuga/evaluation/README.md)
+- [GitHub Actions CI/CD](https://docs.github.com/en/actions)

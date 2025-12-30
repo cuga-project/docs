@@ -8,6 +8,12 @@
     "mcp-server",
     "runtime-tools",
     "hybrid-demo",
-    "save-reuse"
+    "human-in-the-loop",
+    "save-reuse",
+    "---Demo Applications---",
+    "crm-demo",
+    "digital-sales-api",
+    "email-mcp-demo",
+    "filesystem-mcp-demo"
   ]
 }

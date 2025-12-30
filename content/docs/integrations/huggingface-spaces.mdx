@@ -1,0 +1,303 @@
+---
+title: Hugging Face Spaces
+description: Deploy CUGA as an interactive demo on Hugging Face Spaces
+---
+
+CUGA can be deployed to [Hugging Face Spaces](https://huggingface.co/spaces) as an interactive demo, allowing users to experience the agent's capabilities without local installation.
+
+## Live Demo
+
+Try CUGA now on Hugging Face Spaces:
+
+**[https://huggingface.co/spaces/ibm-research/cuga-agent](https://huggingface.co/spaces/ibm-research/cuga-agent)**
+
+## Overview
+
+The Hugging Face Spaces deployment provides:
+
+- **Interactive Demo**: Try CUGA in your browser without setup
+- **Guided Tour**: Step-by-step walkthrough of CUGA capabilities
+- **Sample Data**: Pre-configured CRM and file tools for exploration
+- **Knowledge Base**: Built-in CUGA documentation for the agent
+
+## Demo Features
+
+### UI Layout
+
+The CUGA Spaces demo includes:
+
+- **Center Panel**: Chat interface for interacting with CUGA
+- **Left Panel**: Variables view showing stored intermediate results
+- **Right Panel**: Workspace files (e.g., `contacts.txt`)
+- **Top-Right**: Tools panel showing available CRM + File MCP servers
+
+### Pre-configured Tools
+
+The demo comes with:
+
+1. **CRM API**: Full CRM system with Accounts, Contacts, Leads, and Opportunities
+2. **File MCP Server**: Access to workspace files under `./workspace`
+
+### Sample Data
+
+- **CRM Records**: Comprehensive test data with accounts, contacts, and opportunities
+- **contacts.txt**: Sample email list for multi-tool demo tasks
+- **email_template.md**: Template for account performance reports
+
+## Guided Tour
+
+The demo includes an interactive guided tour. Here's what to expect:
+
+### Step 1: Introduction
+
+CUGA explains the UI layout and waits for you to say "start tour" or similar.
+
+### Step 2: CRM Basics
+
+Learn about CRM concepts:
+- **Accounts**: Companies in the CRM
+- **Contacts**: People at those companies
+- **Leads**: Potential prospects
+- **Opportunities**: Deals in progress
+
+**Try**: `Find the top 3 accounts by revenue`
+
+### Step 3: Understanding Code Execution
+
+After the task completes:
+- CUGA explains how it used Python code to call paginated APIs
+- Click "Reasoning Process" to see the generated code
+- Ask: `What variables do you have?`
+
+### Step 4: Variables & Chaining
+
+Learn how CUGA:
+- Stores intermediate results in variables
+- Names variables intelligently
+- Uses variables for reasoning and chaining tasks
+
+**Try**: `Who is the contact of Monetized Corp?`
+
+### Step 5: Multi-Tool Tasks
+
+Open `contacts.txt` in the workspace panel, then try a complex multi-tool task:
+
+**Try**: `From the list of emails in contacts.txt, which contacts exist in the CRM? Show me the matching contacts sorted by the annual revenue of their accounts.`
+
+This demonstrates:
+- Reading files via File MCP server
+- Parsing email lists
+- Querying CRM with pagination
+- Matching and sorting data
+- Combining results across tools
+
+### Step 6: Free Exploration
+
+After the tour, explore on your own with tasks like:
+- `List all opportunities worth more than $10,000`
+- `Find accounts in the Technology industry`
+- `Who are the contacts for our top 5 accounts?`
+
+## Deployment Architecture
+
+### Knowledge Base
+
+The deployment includes a knowledge base (`cuga_knowledge.md`) that provides CUGA with:
+
+- Framework overview and core concepts
+- Architecture explanation (Planner, Executor, Code-Act)
+- Capabilities and configuration options
+- Tool types and integrations
+- Benchmark performance information
+- Policy and safety features
+- Memory capabilities
+
+This enables CUGA to answer questions about itself accurately.
+
+### Playbook
+
+The `cuga_playbook.md` file defines the guided tour behavior:
+
+- Step-by-step instructions for the demo
+- Expected user actions and CUGA responses
+- Explanations for each feature demonstration
+- Progress tracking through the tour
+
+### Sample Files
+
+The deployment includes sample files for demonstration:
+
+**contacts.txt**:
+```
+sarah.bell@gammadeltainc.partners.org
+sharon.jimenez@upsiloncorp.innovation.org
+ruth.ross@sigmasystems.operations.com
+dorothy.richardson@nextgencorp.gmail.com
+james.richardson@technovate.com
+michael.torres@pinnacle-solutions.net
+emma.larsson@nexus-digital.co
+```
+
+**email_template.md**: Template for generating account performance emails.
+
+## Creating Your Own HF Spaces Deployment
+
+To deploy your own CUGA instance on Hugging Face Spaces:
+
+### Step 1: Fork or Clone
+
+Start with the CUGA repository or create a new Space.
+
+### Step 2: Configure Space Settings
+
+In your Space settings:
+
+```yaml
+title: CUGA Agent
+emoji: owl
+colorFrom: blue
+colorTo: purple
+sdk: gradio
+sdk_version: 4.x
+app_file: app.py
+pinned: false
+```
+
+### Step 3: Add Environment Variables
+
+In Space settings, add secrets:
+
+```
+OPENAI_API_KEY=your-api-key
+# Or other LLM provider credentials
+```
+
+### Step 4: Customize Knowledge Base
+
+Edit `cuga_knowledge.md` to add:
+
+- Your domain-specific information
+- Custom tool documentation
+- Organization-specific policies
+- Relevant examples and use cases
+
+### Step 5: Customize Playbook
+
+Edit `cuga_playbook.md` to create:
+
+- Custom guided tours for your use case
+- Domain-specific demo scenarios
+- Onboarding flows for your tools
+
+### Step 6: Add Your Tools
+
+Configure your tools in the MCP server configuration:
+
+```yaml
+# mcp_servers.yaml
+servers:
+  - name: your_api
+    type: openapi
+    spec_url: https://your-api.com/openapi.json
+  - name: your_mcp
+    type: mcp
+    command: your-mcp-server
+```
+
+### Step 7: Deploy
+
+Push to Hugging Face Spaces:
+
+```bash
+git remote add space https://huggingface.co/spaces/YOUR_USERNAME/YOUR_SPACE
+git push space main
+```
+
+## Customization Options
+
+### Custom Branding
+
+Modify the Gradio interface for your branding:
+
+- Logo and colors
+- Welcome messages
+- Footer links
+
+### Custom Demo Data
+
+Replace sample data with your domain:
+
+- CRM records matching your industry
+- Relevant file examples
+- Domain-specific templates
+
+### Custom Tour
+
+Create tours for your specific use case:
+
+1. Define tour steps in playbook
+2. Add expected user actions
+3. Include explanations for each feature
+4. Test the full flow
+
+## Best Practices
+
+### For Public Demos
+
+- Use rate limiting to prevent abuse
+- Don't expose sensitive API keys
+- Provide clear usage guidelines
+- Monitor for inappropriate usage
+
+### For Internal Demos
+
+- Connect to test/sandbox APIs only
+- Use demo data, not production data
+- Limit tool permissions appropriately
+- Add authentication if needed
+
+### For Customer Demos
+
+- Customize for their industry/domain
+- Pre-load relevant sample data
+- Create guided tours for their use cases
+- Provide clear next steps after demo
+
+## Troubleshooting
+
+### Space Won't Start
+
+**Problem**: Hugging Face Space fails to launch
+
+**Solutions**:
+1. Check build logs for errors
+2. Verify all dependencies are in `requirements.txt`
+3. Ensure environment variables are set
+4. Check memory/CPU limits aren't exceeded
+
+### Tools Not Available
+
+**Problem**: CRM or other tools not showing in demo
+
+**Solutions**:
+1. Verify tool configuration in MCP servers config
+2. Check that tool endpoints are accessible
+3. Review logs for connection errors
+4. Ensure API credentials are valid
+
+### Slow Performance
+
+**Problem**: Demo responses are slow
+
+**Solutions**:
+1. Use faster LLM models for demo
+2. Enable caching where possible
+3. Reduce tool response sizes
+4. Consider upgrading Space hardware
+
+## Resources
+
+- [Live Demo](https://huggingface.co/spaces/ibm-research/cuga-agent)
+- [Hugging Face Spaces Documentation](https://huggingface.co/docs/hub/spaces)
+- [Gradio Documentation](https://gradio.app/docs/)
+- [CUGA GitHub Repository](https://github.com/cuga-project/cuga-agent)

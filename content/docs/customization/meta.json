@@ -10,6 +10,9 @@
     "task-modes",
     "special-instructions",
     "tools",
-    "cli-sdk"
+    "cli-sdk",
+    "memory",
+    "e2b-sandbox",
+    "settings-reference"
   ]
 }

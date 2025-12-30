@@ -1,0 +1,531 @@
+---
+title: Settings Reference
+description: Complete reference for all CUGA configuration options in settings.toml
+---
+
+This document provides comprehensive reference for all configuration options available in `./src/cuga/settings.toml`.
+
+## File Location
+
+```
+./src/cuga/settings.toml
+```
+
+This is the main configuration file controlling all CUGA behavior.
+
+## Configuration Sections
+
+## Page Understanding
+
+Controls how CUGA analyzes and understands web pages.
+
+```toml
+[page_understanding]
+transformer_path = "cuga.backend.browser_env.page_understanding.pu_transform.PageUnderstandingV1"
+demo_nocodeui_pu = false
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `transformer_path` | String | `PageUnderstandingV1` | Python path to page understanding transformer. Handles DOM analysis and page content extraction. |
+| `demo_nocodeui_pu` | Boolean | `false` | Disable page understanding for demo no-code UI. Set to `true` to skip page understanding in no-code scenarios. |
+
+---
+
+## Evaluation
+
+Controls evaluation and testing behavior.
+
+```toml
+[evaluation]
+max_steps = 55
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `max_steps` | Integer | `55` | Maximum number of execution steps allowed before stopping. Prevents infinite loops and runaway execution. Higher values allow more complex tasks. |
+
+---
+
+## Demo Mode
+
+Controls demo mode behavior and starting state.
+
+```toml
+[demo_mode]
+start_url = "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login"
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `start_url` | String | OrangeHRM demo URL | Starting URL for web/hybrid modes. Browser opens to this page when demo starts. Change to test different applications. |
+
+---
+
+## Features
+
+Core feature configuration.
+
+```toml
+[features]
+cuga_mode = "balanced"
+memory_provider = "mem0"
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `cuga_mode` | String | `"balanced"` | Execution reasoning mode. Options: `"fast"`, `"balanced"`, `"accurate"`, `"save_reuse_fast"`, `"custom"`. Fast is quicker but less accurate; Accurate is slower but more precise; Save & Reuse caches workflows. |
+| `memory_provider` | String | `"mem0"` | Memory system provider. Currently supports `"mem0"`. Used for learning from past errors and improving performance. |
+
+---
+
+## Advanced Features
+
+Advanced configuration flags for specialized behavior.
+
+```toml
+[advanced_features]
+# Benchmark and Evaluation
+web_arena_eval = false
+benchmark = "default"
+
+# Vision and Analysis
+use_vision = true
+use_paraphrase = false
+
+# Tracing and Debugging
+tracker_enabled = false
+langfuse_tracing = false
+
+# Integrations
+wxo_integration = false
+use_location_resolver = false
+
+# Execution Modes
+mode = 'api'
+use_extension = false
+
+# Planning and Optimization
+code_planner_enabled = true
+api_planner_hitl = false
+lite_mode = true
+lite_mode_tool_threshold = 70
+shortlisting_tool_threshold = 35
+
+# Memory and Learning
+enable_memory = false
+enable_fact = false
+
+# Workflows
+save_reuse_generate_html = false
+decomposition_strategy = "flexible"
+
+# E2B Cloud Sandbox
+e2b_sandbox = false
+e2b_sandbox_mode = "per-session"
+e2b_sandbox_idle_ttl = 600
+e2b_sandbox_max_age = 86400
+e2b_sandbox_ttl_buffer = 60
+e2b_cleanup_on_create = true
+e2b_cleanup_frequency = 0
+
+# Limits
+message_window_limit = 100
+max_input_length = 5000
+```
+
+### Benchmark & Evaluation Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `web_arena_eval` | Boolean | `false` | Enable WebArena benchmark evaluation mode. For testing on WebArena benchmark suite. |
+| `benchmark` | String | `"default"` | Benchmark mode. Options: `"default"`, `"appworld"`, `"webarena"`. Controls evaluation settings. |
+
+### Vision & Analysis Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `use_vision` | Boolean | `true` | Enable vision capabilities for analyzing screenshots and visual page content. Enhances page understanding. |
+| `use_paraphrase` | Boolean | `false` | Paraphrase user inputs for better interpretation. Can improve understanding of ambiguous queries. |
+
+### Tracing & Debugging Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `tracker_enabled` | Boolean | `false` | Enable activity tracking and detailed execution logs. Useful for debugging and analysis. |
+| `langfuse_tracing` | Boolean | `false` | Enable Langfuse integration for comprehensive execution tracing and monitoring. Requires Langfuse account. |
+
+### Integration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `wxo_integration` | Boolean | `false` | Enable IBM WatsonX Orchestrate integration. For enterprise IBM customers. |
+| `use_location_resolver` | Boolean | `false` | Enable location resolution for geographic context. Helps when tasks involve location-based data. |
+
+### Execution Mode Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `mode` | String | `'api'` | Task execution mode. Options: `'api'`, `'web'`, `'hybrid'`. API mode uses tools only; Web mode uses browser; Hybrid uses both. See [Task Modes](/docs/customization/task-modes) for details. |
+| `use_extension` | Boolean | `false` | Enable browser extension for web/hybrid modes. Required for web and hybrid execution. |
+
+### Planning & Optimization Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `code_planner_enabled` | Boolean | `true` | Enable code generation planning. Controls whether CUGA generates Python code for complex operations. |
+| `api_planner_hitl` | Boolean | `false` | Enable Human-in-the-Loop for API planner. Pauses at decision points requiring human approval. See [Human-in-the-Loop](/docs/guides/human-in-the-loop). |
+| `lite_mode` | Boolean | `true` | Enable CugaLite mode for simple API tasks. Automatically routes simple tasks to faster execution path. |
+| `lite_mode_tool_threshold` | Integer | `70` | Tool count threshold for CugaLite routing. If app has fewer than this many tools, use CugaLite. |
+| `shortlisting_tool_threshold` | Integer | `35` | Threshold for enabling tool shortlisting. If total tools exceed this, enable intelligent tool filtering. |
+
+### Memory & Learning Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enable_memory` | Boolean | `false` | Enable memory system. Learn from past errors and improve over time. Requires `uv sync --group memory`. See [Memory](/docs/customization/memory). |
+| `enable_fact` | Boolean | `false` | Enable fact checking. Verify agent outputs against known facts. |
+
+### Workflow Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `save_reuse_generate_html` | Boolean | `false` | Generate HTML visualization for saved workflows. Creates interactive diagrams of workflow execution. Disabled by default for performance. |
+| `decomposition_strategy` | String | `"flexible"` | Task decomposition strategy. Options: `"exact"` (one subtask per app), `"flexible"` (multiple subtasks per app). Flexible allows more efficient task splitting. |
+
+### E2B Cloud Sandbox Options
+
+See [E2B Cloud Sandbox](/docs/customization/e2b-sandbox) for detailed E2B configuration.
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `e2b_sandbox` | Boolean | `false` | Enable E2B cloud sandbox for code execution. Requires E2B account and API key. |
+| `e2b_sandbox_mode` | String | `"per-session"` | E2B sandbox lifecycle. Options: `"per-session"` (cached per thread), `"single"` (shared sandbox), `"per-call"` (new sandbox each call). |
+| `e2b_sandbox_idle_ttl` | Integer | `600` | Idle timeout in seconds before sandbox expires. Default: 10 minutes. Shorter values save cost. |
+| `e2b_sandbox_max_age` | Integer | `86400` | Max age for "single" mode sandboxes in seconds. Default: 24 hours. Set to 0 to disable age-based recreation. |
+| `e2b_sandbox_ttl_buffer` | Integer | `60` | Safety buffer in seconds before E2B timeout. Allows graceful shutdown. |
+| `e2b_cleanup_on_create` | Boolean | `true` | Run cleanup when creating new sandboxes. Prevents sandbox accumulation. |
+| `e2b_cleanup_frequency` | Integer | `0` | Check all sandboxes every N get_or_create calls. 0 = only on create. Higher values reduce cleanup overhead. |
+
+### Limit Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `message_window_limit` | Integer | `100` | Maximum messages to keep in conversation history. Older messages discarded when exceeded. Reduces context size. |
+| `max_input_length` | Integer | `5000` | Maximum character length for user input. Prevents abuse and excessive processing. |
+
+---
+
+## Server Ports
+
+Controls service ports and URLs for all CUGA services.
+
+```toml
+[server_ports]
+registry = 8001
+demo = 7860
+apis_url = 9000
+crm_api = 8007
+saved_flows = 8003
+environment_url = 8000
+digital_sales_api = 8000
+mcp_server = 8000
+petstore_api = 8081
+graph_visualization = 8080
+orchestrate_url = 4321
+trm_url = 8080
+memory = 8888
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `registry` | Integer | `8001` | API registry service port. Where CUGA tools and APIs are exposed. |
+| `demo` | Integer | `7860` | CUGA demo interface port. Open browser to http://localhost:7860 |
+| `apis_url` | Integer | `9000` | APIs service port. (Rarely used) |
+| `crm_api` | Integer | `8007` | CRM demo application port. Used in demo_crm mode. |
+| `saved_flows` | Integer | `8003` | Saved workflows service port. For Save & Reuse feature. |
+| `environment_url` | Integer | `8000` | Environment service port. Base configuration service. |
+| `digital_sales_api` | Integer | `8000` | Digital Sales API port. Used in digital sales demo. |
+| `mcp_server` | Integer | `8000` | MCP server port for tool integration. |
+| `petstore_api` | Integer | `8081` | Petstore demo API port. Example API for testing. |
+| `graph_visualization` | Integer | `8080` | Graph visualization service port. For execution flow visualization. |
+| `orchestrate_url` | Integer | `4321` | Orchestration service port. (Enterprise only) |
+| `trm_url` | Integer | `8080` | Task/Routing/Management URL port. (Advanced) |
+| `memory` | Integer | `8888` | Memory service port. Used when memory is enabled. |
+
+### Advanced Port Configuration
+
+For E2B cloud sandbox, configure registry exposure:
+
+```toml
+[server_ports]
+# registry_host = "http://localhost:8001"  # Optional: Full registry URL
+# function_call_host = ""  # Optional: For E2B to call functions via ngrok
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `registry_host` | String | (optional) | Full registry URL. Falls back to "http://localhost:{registry}" if not set. |
+| `function_call_host` | String | (optional) | URL for E2B or external systems to call functions. Usually an ngrok URL. Falls back to registry_host, then default localhost:8001. |
+
+---
+
+## Configuration Examples
+
+### Fast Development Setup
+
+```toml
+[features]
+cuga_mode = "fast"
+memory_provider = "mem0"
+
+[advanced_features]
+use_vision = true
+code_planner_enabled = true
+api_planner_hitl = false
+lite_mode = true
+enable_memory = false
+mode = 'api'
+
+[server_ports]
+demo = 7860
+registry = 8001
+```
+
+### Production Enterprise Setup
+
+```toml
+[features]
+cuga_mode = "accurate"
+memory_provider = "mem0"
+
+[advanced_features]
+use_vision = true
+code_planner_enabled = true
+api_planner_hitl = true          # Require approval for critical actions
+lite_mode = true
+enable_memory = true             # Learn from experience
+langfuse_tracing = true          # Full observability
+mode = 'api'
+message_window_limit = 200
+max_input_length = 10000
+
+[server_ports]
+demo = 7860
+registry = 8001
+memory = 8888
+```
+
+### E2B Cloud Execution Setup
+
+```toml
+[features]
+cuga_mode = "balanced"
+memory_provider = "mem0"
+
+[advanced_features]
+e2b_sandbox = true
+e2b_sandbox_mode = "per-session"
+e2b_sandbox_idle_ttl = 600
+use_vision = true
+code_planner_enabled = true
+
+[server_ports]
+demo = 7860
+registry = 8001
+function_call_host = "https://your-ngrok-url.ngrok.io"  # E2B tunnel URL
+```
+
+### Save & Reuse Optimization Setup
+
+```toml
+[features]
+cuga_mode = "save_reuse_fast"
+memory_provider = "mem0"
+
+[advanced_features]
+enable_memory = true
+save_reuse_generate_html = false  # Disable for performance
+decomposition_strategy = "flexible"
+lite_mode = true
+code_planner_enabled = true
+
+[server_ports]
+demo = 7860
+registry = 8001
+saved_flows = 8003
+memory = 8888
+```
+
+### Web/Hybrid Mode Setup
+
+```toml
+[demo_mode]
+start_url = "https://example.com"
+
+[features]
+cuga_mode = "balanced"
+memory_provider = "mem0"
+
+[advanced_features]
+mode = 'hybrid'                    # or 'web' for web-only
+use_extension = true
+use_vision = true
+code_planner_enabled = true
+
+[server_ports]
+demo = 7860
+registry = 8001
+```
+
+---
+
+## Environment Variable Overrides
+
+Many settings can be overridden via environment variables. The priority is:
+
+1. **Environment Variables** (highest - overrides everything)
+2. **settings.toml** (middle - configuration file)
+3. **Code Defaults** (lowest - hardcoded defaults)
+
+### Environment Variables Reference
+
+All environment variables that can be used to configure CUGA:
+
+#### LLM Provider Configuration
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `AGENT_SETTING_CONFIG` | LLM settings file to use | `settings.openai.toml` |
+| `MODEL_NAME` | Override default model name | `gpt-4o` |
+| `OPENAI_API_KEY` | OpenAI API key | `sk-...` |
+| `OPENAI_BASE_URL` | Custom OpenAI-compatible endpoint (for LiteLLM) | `http://localhost:4000` |
+| `OPENAI_API_VERSION` | OpenAI API version | `2024-08-01-preview` |
+| `AZURE_OPENAI_API_KEY` | Azure OpenAI API key | |
+| `AZURE_OPENAI_ENDPOINT` | Azure OpenAI endpoint URL | |
+| `WATSONX_PROJECT_ID` | WatsonX project ID | |
+| `WATSONX_URL` | WatsonX endpoint URL | `https://us-south.ml.cloud.ibm.com` |
+| `WATSONX_APIKEY` | WatsonX API key | |
+| `GROQ_API_KEY` | Groq API key | |
+| `OPENROUTER_API_KEY` | OpenRouter API key | |
+| `OPENROUTER_BASE_URL` | OpenRouter base URL | `https://openrouter.ai/api/v1` |
+| `RITS_API_KEY` | RITS API key (IBM internal) | |
+
+#### Cloud Sandbox (E2B)
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `E2B_API_KEY` | E2B API key for cloud sandbox | `e2b_...` |
+
+#### Browser Configuration
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `MAC_USER_DATA_PATH` | Chrome profile path on macOS | `~/Library/Application Support/Google/Chrome/AgentS` |
+| `WINDOWS_USER_DATA_PATH` | Chrome profile path on Windows | `C:/Users/<User>/AppData/Local/Google/Chrome/User Data/AgentS` |
+
+#### Server Ports (Dynaconf)
+
+Use `DYNACONF_SERVER_PORTS__<NAME>` to override port settings:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DYNACONF_SERVER_PORTS__REGISTRY` | API registry port | `8001` |
+| `DYNACONF_SERVER_PORTS__DEMO` | Demo UI port | `7860` |
+| `DYNACONF_SERVER_PORTS__CRM_API` | CRM demo API port | `8007` |
+| `DYNACONF_SERVER_PORTS__EMAIL_MCP` | Email MCP server port | `8000` |
+| `DYNACONF_SERVER_PORTS__EMAIL_SINK` | Email SMTP sink port | `1025` |
+| `DYNACONF_SERVER_PORTS__FILESYSTEM_MCP` | File System MCP port | `8112` |
+| `DYNACONF_SERVER_PORTS__MEMORY` | Memory service port | `8888` |
+
+#### Example .env File
+
+```bash
+# LLM Provider (choose one)
+AGENT_SETTING_CONFIG="settings.openai.toml"
+OPENAI_API_KEY="sk-..."
+
+# Optional: E2B Cloud Sandbox
+E2B_API_KEY="e2b_..."
+
+# Optional: Chrome profile for demo mode
+MAC_USER_DATA_PATH="~/Library/Application Support/Google/Chrome/AgentS"
+```
+
+See [Model Configuration](/docs/customization/llm-config) for detailed LLM setup instructions.
+
+---
+
+## Troubleshooting
+
+### Port Already in Use
+
+**Problem**: "Address already in use" error for demo port
+
+**Solution**:
+```toml
+[server_ports]
+demo = 7861  # Change to different port
+```
+
+Or kill existing process:
+```bash
+lsof -i :7860
+kill -9 <PID>
+```
+
+### Settings Not Taking Effect
+
+**Problem**: Configuration changes don't apply after restart
+
+**Solutions**:
+1. Ensure you edited the correct file: `./src/cuga/settings.toml`
+2. Check for syntax errors in TOML (invalid indentation, missing quotes)
+3. Restart CUGA completely (kill all processes)
+4. Check environment variables aren't overriding (run `env | grep CUGA`)
+
+### Mode/Feature Not Available
+
+**Problem**: Feature appears disabled despite being in settings
+
+**Solutions**:
+1. Check dependencies are installed: `uv sync --group <feature>`
+2. Verify feature is enabled: `grep <feature> settings.toml`
+3. Check required environment variables are set
+4. Review logs for initialization errors
+
+### Performance Issues
+
+**Optimization Strategy**:
+1. Enable `lite_mode = true` for simple tasks
+2. Reduce `message_window_limit` to 50 if using memory
+3. Disable `langfuse_tracing` unless needed
+4. Use `fast` mode if accuracy isn't critical
+5. Enable `save_reuse_fast` mode for repetitive tasks
+
+---
+
+## Next Steps
+
+- Review [Environment Variables](/docs/customization/environment) for external configuration
+- Check [Execution Modes](/docs/customization/modes) for mode-specific settings
+- Explore [Task Modes](/docs/customization/task-modes) for API/Web/Hybrid mode details
+- Review [Advanced Features](/docs/guides) for feature-specific configuration
+
+## Resources
+
+- [Execution Modes Guide](/docs/customization/modes)
+- [E2B Cloud Sandbox](/docs/customization/e2b-sandbox)
+- [Memory Configuration](/docs/customization/memory)
+- [Human-in-the-Loop](/docs/guides/human-in-the-loop)
+- [Save & Reuse](/docs/guides/save-reuse)

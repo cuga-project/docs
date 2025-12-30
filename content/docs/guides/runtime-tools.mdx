@@ -197,4 +197,54 @@ Now you can create custom Python functions and integrate them as tools in CUGA. 
 
 ---
 
+## Advanced: Multi-Tool Workflows
+
+CUGA can combine runtime LangChain tools with OpenAPI and MCP tools in a single workflow:
+
+```python
+import asyncio
+from langchain_core.tools import StructuredTool
+from cuga.backend.cuga_graph.utils.controller import AgentRunner as CugaAgent
+from cuga.backend.activity_tracker.tracker import ActivityTracker
+
+def send_email(to: str, subject: str, body: str) -> str:
+    """Send an email to a recipient."""
+    return f"Email sent to {to}: {subject}"
+
+async def main():
+    tracker = ActivityTracker()
+
+    # Create LangChain tools
+    email_tool = StructuredTool.from_function(send_email)
+    email_tool.metadata = {'server_name': "email_tools"}
+    tracker.set_tools([email_tool])
+
+    # Initialize CUGA (OpenAPI/MCP tools loaded from mcp_servers.yaml)
+    cuga_agent = CugaAgent(browser_enabled=False)
+    await cuga_agent.initialize_appworld_env()
+
+    # Task uses all tool types together
+    task = """Get the top account by revenue from digital sales,
+              send an email to the account owner,
+              and save the email to cuga_workspace/email_sent.md"""
+
+    result = await cuga_agent.run_task_generic(eval_mode=False, goal=task)
+    print(f"Result: {result.answer}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+This demonstrates:
+- **OpenAPI tools** for CRM/sales data access
+- **MCP tools** for file system operations
+- **LangChain tools** for custom email functionality
+
+---
+
+## Next Steps
+
+- Review [OpenAPI Integration](/docs/guides/openapi-integration) for API tools
+- Check [MCP Server Integration](/docs/guides/mcp-server) for MCP tools
+- Explore [CRM Demo](/docs/guides/crm-demo) for realistic testing scenarios
 

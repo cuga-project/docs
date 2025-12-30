@@ -1,8 +1,352 @@
 ---
 title: Save & Reuse
-description: Learn how to save and reuse successful workflows with CUGA
+description: Learn how to save and reuse successful workflows with CUGA for faster execution
 ---
 
-🚧 Documentation coming soon...
+Save & Reuse is a CUGA feature that captures successful execution paths (plans, code, and trajectories) and reuses them for similar tasks. This dramatically reduces execution time for repeated or similar workflows.
+
+## Overview
+
+Save & Reuse works by:
+
+1. **First Run**: CUGA executes a task and captures the successful path
+2. **Approval**: You review and approve saving the workflow
+3. **Generalization**: You provide examples to help CUGA generalize the pattern
+4. **Subsequent Runs**: CUGA recognizes similar tasks and reuses the saved workflow
+5. **Performance**: Similar tasks execute in a fraction of the time
+
+## When to Use Save & Reuse
+
+Save & Reuse is ideal for:
+
+- **Repetitive Tasks**: Same task run multiple times
+- **Similar Tasks**: Variations of the same underlying workflow
+- **Time-Sensitive Operations**: When execution speed is critical
+- **Batch Processing**: Running similar tasks on different data
+- **Consistent Workflows**: Tasks with predictable patterns
+
+## Benefits
+
+| Metric | Without Save & Reuse | With Save & Reuse |
+|--------|----------------------|-------------------|
+| **First Run** | Standard execution | Standard execution |
+| **Subsequent Runs** | Same speed | 50-80% faster |
+| **Reasoning Steps** | Full planning | Minimal planning |
+| **Cost** | Higher (more thinking) | Lower (less reasoning) |
+| **Consistency** | Variable | Highly consistent |
+
+## Setup
+
+### Step 1: Enable Save & Reuse Mode
+
+Edit `./src/cuga/settings.toml`:
+
+```toml
+[features]
+cuga_mode = "save_reuse_fast"
+```
+
+### Step 2: Start CUGA
+
+```bash
+cuga start demo
+```
+
+Save & Reuse is now active. CUGA will offer to save workflows after successful execution.
+
+## Demo Workflow
+
+Here's a complete example of Save & Reuse in action:
+
+### Phase 1: First Run - Create Workflow
+
+**Task**: `get top account by revenue`
+
+**What happens**:
+
+1. CUGA plans the workflow
+2. CUGA executes the task successfully
+3. Task completes and returns results
+4. CUGA asks: "Save this workflow for reuse?"
+
+### Phase 2: Approval & Generalization
+
+**Action**: Click "Save Workflow"
+
+CUGA then asks:
+
+> To help me generalize this workflow, can you provide another example of a similar task?
+
+**Provide an example**: `get top 2 accounts by revenue`
+
+**What happens**:
+
+1. CUGA analyzes the two examples
+2. CUGA identifies the pattern: "Get top N accounts by revenue"
+3. CUGA creates a generalized workflow
+4. Workflow is saved to the workflow registry
+
+**Progress**: You'll see logs in the terminal:
+
+```
+[INFO] Processing workflow for save...
+[INFO] Analyzing execution patterns...
+[INFO] Generating generalized workflow...
+[INFO] Saving workflow to registry...
+[✓] Workflow saved successfully
+```
+
+Workflow saving may take 30-60 seconds.
+
+### Phase 3: Verification - Reuse Workflow
+
+**Task**: `get top 4 accounts by revenue`
+
+**What happens**:
+
+1. CUGA recognizes this matches the saved workflow pattern
+2. CUGA **reuses the saved workflow** instead of replanning
+3. **Execution is 50-80% faster** than the first run
+4. Results are returned using the saved workflow
+
+**You should notice**:
+
+- Significantly faster execution
+- Fewer planning steps
+- Fewer intermediate reasoning steps
+- More consistent results
+
+## Configuration
+
+### Enable Save & Reuse
+
+```toml
+[features]
+cuga_mode = "save_reuse_fast"
+```
+
+### HTML Visualization (Optional)
+
+CUGA can generate HTML visualizations of saved flows:
+
+```toml
+[advanced_features]
+save_reuse_generate_html = true  # Generate HTML visualization (disabled by default for performance)
+```
+
+When enabled, saved workflows are visualized as interactive HTML diagrams showing:
+
+- Execution flow and steps
+- Tool calls and API interactions
+- Data transformations
+- Decision points
+
+## Understanding Saved Workflows
+
+### What Gets Saved
+
+A saved workflow includes:
+
+1. **Execution Plan**: The sequence of steps CUGA decided to take
+2. **Tool Calls**: Which APIs/tools were called and in what order
+3. **Code Generation**: Python code generated for complex operations
+4. **Trajectory**: The actual execution path taken
+5. **Parameters**: Variable inputs and outputs
+
+### What's Reused
+
+When CUGA recognizes a similar task:
+
+1. **Planning is skipped** or minimized (huge speed gain)
+2. **Saved tool sequence** is applied
+3. **Generated code** is reused with new parameters
+4. **Trajectory** guides decision-making
+5. **Full execution** still happens (with established path)
+
+### Example Saved Workflow
+
+```
+Workflow: Get Top N Accounts by Revenue
+
+Pattern Recognition:
+- Task: "Get top [N] account[s] by revenue"
+- Variables: N (number of accounts)
+
+Execution Steps:
+1. Query accounts API with sorting by revenue
+2. Limit results to N accounts
+3. Return formatted results
+
+Generalized Call:
+- get_top_n_accounts(n=N, sort_by="revenue")
+```
+
+## Best Practices
+
+### Creating Effective Workflows
+
+1. **Start with a clear task**: Ensure the first task is unambiguous
+2. **Complete execution**: Let the task finish completely before saving
+3. **Provide diverse examples**: Give 2-3 variations for generalization
+4. **Test before reusing**: Try a slightly different version before relying on it
+
+### Naming and Organization
+
+Save workflows for:
+
+- Clearly defined patterns (not ad-hoc queries)
+- Tasks you expect to repeat
+- Time-sensitive operations
+- Batch processing workflows
+
+Avoid saving:
+
+- One-off tasks
+- Complex conditional workflows
+- Tasks with highly variable patterns
+
+### Combining with Other Features
+
+Save & Reuse works well with:
+
+- **Memory**: Remember past approvals used with saved workflows
+- **HITL**: Reuse approved workflows with consistent approvals
+- **Execution Modes**: Use `save_reuse_fast` with `accurate` mode for balance
+
+```toml
+[features]
+cuga_mode = "save_reuse_fast"  # Save & Reuse
+
+[advanced_features]
+# Optional: Combine with HITL for approved workflow reuse
+api_planner_hitl = false  # Set to true for approval workflow
+```
+
+## Troubleshooting
+
+### Workflow Not Saving
+
+**Problem**: Save option doesn't appear after task completion
+
+**Solutions**:
+1. Verify `cuga_mode = "save_reuse_fast"` in settings.toml
+2. Ensure task completed successfully (no errors)
+3. Check that task is worth saving (not trivial queries)
+4. Restart CUGA after changing settings
+
+### Workflow Not Recognized on Second Run
+
+**Problem**: Second similar task doesn't use saved workflow
+
+**Solutions**:
+1. Verify workflow saved successfully in logs
+2. Check that second task is sufficiently similar to first
+3. Review workflow generalization (may need better examples)
+4. Try exact same task again to verify saving worked
+
+### Reused Workflow Fails
+
+**Problem**: Reused workflow fails where original succeeded
+
+**Solutions**:
+1. The saved pattern may not generalize to this case
+2. Check that parameters are within expected ranges
+3. Provide additional examples to improve generalization
+4. Delete and recreate workflow if pattern changed
+
+### Performance Not Improving
+
+**Problem**: Save & Reuse mode isn't faster
+
+**Solutions**:
+1. Check logs confirm workflow is being reused
+2. Some tasks may have minimal planning overhead
+3. Network latency may dominate execution time
+4. Combine with other optimizations (batching, caching)
+
+### Workflow Storage/Management
+
+**Question**: Where are workflows stored?
+
+Workflows are stored in:
+```
+./cuga_workspace/saved_flows/
+```
+
+Each workflow is a JSON file containing:
+- Execution plan
+- Code templates
+- Parameter mappings
+- Generalization patterns
+
+You can manually inspect or delete workflows if needed.
+
+## Advanced: Custom Workflow Tuning
+
+### Adjusting Generalization
+
+If the workflow is too specific or too general:
+
+1. **Too specific**: Provide more diverse examples
+2. **Too general**: Provide more similar examples
+3. **Different patterns**: Save separate workflows for different patterns
+
+### Combining Multiple Workflows
+
+For complex operations:
+
+1. Create separate workflows for sub-tasks
+2. CUGA can chain them automatically
+3. Each sub-task reuses its own workflow
+4. Overall execution is highly optimized
+
+### Performance Metrics
+
+Monitor workflow performance:
+
+```
+Workflow: get_top_n_accounts
+
+First Run (Planning): 2.3 seconds
+First Run (Execution): 1.8 seconds
+Total: 4.1 seconds
+
+Second Run (Reuse): 0.9 seconds
+Improvement: 78% faster
+```
+
+## Comparison with Other Optimization Approaches
+
+| Approach | Speed Gain | Setup | Flexibility | Best For |
+|----------|-----------|-------|-------------|----------|
+| **Save & Reuse** | 50-80% | Quick | Medium | Repeated patterns |
+| **Memory** | 20-50% | Medium | High | Learning from errors |
+| **Fast Mode** | 30-40% | Automatic | Low | Quick iterations |
+| **Lite Mode** | Varies | Automatic | Low | Simple API tasks |
+
+Combine approaches for maximum benefit:
+```toml
+[features]
+cuga_mode = "save_reuse_fast"
+memory_provider = "mem0"
+
+[advanced_features]
+enable_memory = true
+lite_mode = true
+```
+
+## Next Steps
+
+- Review [Memory](/docs/customization/memory) for complementary learning
+- Check [Execution Modes](/docs/customization/modes) for other optimizations
+- Explore [HITL](/docs/guides/human-in-the-loop) for approval integration
+- See [Settings Reference](/docs/customization/settings-reference) for all configuration options
+
+## Resources
+
+- [CUGA Settings Reference](/docs/customization/settings-reference)
+- [Execution Modes Guide](/docs/customization/modes)
+- [Memory Feature Documentation](/docs/customization/memory)
+- [Advanced Usage Guide](/docs/guides)
 
 

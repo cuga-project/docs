@@ -384,12 +384,66 @@ If CUGA successfully responds with account data, your integration is working cor
 
 ---
 
+## Example Workflow: Conference Preparation
+
+CUGA includes a pre-built Langflow workflow demonstrating a multi-tool conference preparation scenario.
+
+### Workflow Overview
+
+The Conference Preparation workflow combines:
+
+- **CRM MCP Tools**: Access accounts, contacts, and opportunities
+- **File System MCP**: Read workspace files and templates
+- **Email Integration**: Send personalized emails via Composio Gmail API
+
+### Importing the Workflow
+
+1. Download the workflow file from `docs/examples/langflow/CUGA Langflow Demo - Conference Preparation.json`
+2. In Langflow, click **Import** and select the JSON file
+3. Configure your API keys and MCP server URLs
+4. Test with the Playground
+
+### Example Use Cases
+
+**Conference Attendee Outreach:**
+```
+"Read the conference attendees list, find matching contacts in the CRM,
+and send each a personalized meeting invitation email"
+```
+
+**Account Research:**
+```
+"Get the top 5 accounts by revenue, find their primary contacts,
+and save a briefing document for each to the workspace"
+```
+
+**Follow-up Automation:**
+```
+"Find all opportunities closing this month, get their contacts,
+and send a follow-up email using the template in workspace/templates"
+```
+
+### Workflow Components
+
+| Component | Purpose |
+|-----------|---------|
+| Chat Input | Receive user requests |
+| CUGA | Plan and execute multi-step tasks |
+| MCP Tools (CRM) | Access CRM data |
+| MCP Tools (File System) | Read/write workspace files |
+| Composio Gmail | Send emails |
+| Chat Output | Display results |
+
+---
+
 ## Additional Resources
 
 - [Langflow Documentation](https://docs.langflow.org/)
 - [MCP Tools Documentation](https://github.com/modelcontextprotocol)
 - [Digital Sales Application](https://samimarreed.github.io/sales/)
 - [CUGA MCP Server Guide](../guides/mcp-server)
+- [CRM Demo](/docs/guides/crm-demo)
+- [File System MCP Demo](/docs/guides/filesystem-mcp-demo)
 
 ---
 

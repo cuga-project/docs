@@ -1,0 +1,322 @@
+---
+title: Email MCP Server
+description: A Model Context Protocol server for sending and managing emails in CUGA demos
+---
+
+The Email MCP Server is a FastMCP-based server that provides email capabilities for testing CUGA with email workflows. It includes a local SMTP sink for capturing sent emails.
+
+## Overview
+
+The Email MCP Server provides:
+
+- **Send Emails**: Compose and send emails via local SMTP
+- **List Emails**: Search and browse captured emails
+- **Read Emails**: Retrieve full email content and metadata
+- **Local Storage**: All emails captured in local files for inspection
+
+## Architecture
+
+The demo consists of two components:
+
+1. **Mail Sink** (`mail_sink/`): Local SMTP server that captures sent emails
+2. **MCP Server** (`mcp_server/`): FastMCP server exposing email tools to CUGA
+
+```
+┌─────────────┐     SMTP      ┌─────────────┐
+│ MCP Server  │──────────────→│  Mail Sink  │
+│  (Port 8000)│               │ (Port 1025) │
+└─────────────┘               └─────────────┘
+       ↓                            ↓
+   MCP Tools                  ./mcp_mail/*.json
+```
+
+## Quick Start
+
+### Install Dependencies
+
+```bash
+cd docs/examples/demo_apps/email_mcp
+
+# Install mail sink
+cd mail_sink && uv sync && cd ..
+
+# Install MCP server
+cd mcp_server && uv sync && cd ..
+```
+
+### Start the Servers
+
+```bash
+# Terminal 1: Start the mail sink (SMTP server)
+cd mail_sink
+uv run python server.py
+
+# Terminal 2: Start the MCP server
+cd mcp_server
+uv run python server.py
+```
+
+### Default Ports
+
+| Component | Default Port | Environment Variable |
+|-----------|-------------|---------------------|
+| MCP Server | 8000 | `DYNACONF_SERVER_PORTS__EMAIL_MCP` |
+| Mail Sink | 1025 | `DYNACONF_SERVER_PORTS__EMAIL_SINK` |
+
+## MCP Tools
+
+### send_email
+
+Send an email via the local SMTP sink.
+
+**Parameters:**
+- `to_address` (string, required): Recipient email address
+- `subject` (string, required): Email subject line
+- `body` (string, required): Email body content
+
+**Example:**
+```python
+# From CUGA
+send_email(
+    to_address="alice@example.com",
+    subject="Meeting Tomorrow",
+    body="Hi Alice, let's meet at 2pm tomorrow."
+)
+```
+
+**Response:**
+```json
+{
+  "ok": true,
+  "message_id": "<uuid@localhost>"
+}
+```
+
+### list_emails
+
+List captured emails with optional search.
+
+**Parameters:**
+- `query` (string, optional): Case-insensitive substring search
+
+**Search Behavior:**
+- Searches across: subject, from, to, and text body
+- Case-insensitive matching
+- Literal substring match (no regex or wildcards)
+- Empty query returns all emails
+
+**Example:**
+```python
+# List all emails
+list_emails(query="")
+
+# Search for emails about reports
+list_emails(query="weekly report")
+
+# Find emails from a specific sender
+list_emails(query="ops@")
+```
+
+**Response:**
+```json
+{
+  "ok": true,
+  "result": [
+    {
+      "id": "e2b9ca97-a135-42be-94cc-9ab82a46b25d",
+      "subject": "Weekly Report",
+      "from": "alice@example.com",
+      "to": ["bob@example.com"],
+      "date": "2024-01-15T10:30:00"
+    }
+  ]
+}
+```
+
+### read_email
+
+Get the full content of a specific email.
+
+**Parameters:**
+- `id` (string, required): Email UUID from list_emails
+
+**Example:**
+```python
+read_email(id="e2b9ca97-a135-42be-94cc-9ab82a46b25d")
+```
+
+**Response:**
+```json
+{
+  "ok": true,
+  "result": {
+    "id": "e2b9ca97-a135-42be-94cc-9ab82a46b25d",
+    "subject": "Weekly Report",
+    "from": "alice@example.com",
+    "to": ["bob@example.com"],
+    "date": "2024-01-15T10:30:00",
+    "text": "Here is the weekly report...",
+    "html": null
+  }
+}
+```
+
+## Using with CUGA
+
+### Configure as MCP Server
+
+Add the Email MCP to your MCP servers configuration:
+
+```yaml
+# mcp_servers.yaml
+servers:
+  - name: email
+    type: mcp
+    url: http://localhost:8000
+    transport: sse
+```
+
+Or for Claude Desktop:
+
+```json
+{
+  "mcpServers": {
+    "local-email": {
+      "type": "sse",
+      "url": "http://127.0.0.1:8000"
+    }
+  }
+}
+```
+
+### Example Tasks to Try
+
+Test CUGA with these natural language queries:
+
+**Basic Email Operations:**
+- `Send an email to alice@example.com about the meeting tomorrow`
+- `List all emails in the inbox`
+- `Find emails about the weekly report`
+
+**Email Search:**
+- `Search for emails from the ops team`
+- `Find all emails sent to lead@customer.com`
+- `Show me emails containing "project update"`
+
+**Multi-Tool Workflows:**
+Combine with CRM or File tools:
+- `Get the contact for Apex Industries and send them an email about our new product`
+- `Read the email template file and use it to send an email to the sales team`
+- `Find all leads in California and send each a welcome email`
+
+## Email Storage
+
+Captured emails are stored in `./mcp_mail/`:
+
+```
+mcp_mail/
+├── e2b9ca97-a135-42be-94cc-9ab82a46b25d.json  # Metadata
+├── e2b9ca97-a135-42be-94cc-9ab82a46b25d.eml   # Raw email
+├── 34e8b469-be01-41b5-a3ef-139ec8fd53b0.json
+├── 34e8b469-be01-41b5-a3ef-139ec8fd53b0.eml
+└── ...
+```
+
+### JSON Format
+
+Each `.json` file contains:
+```json
+{
+  "id": "e2b9ca97-a135-42be-94cc-9ab82a46b25d",
+  "subject": "Test Email",
+  "from": "sender@example.com",
+  "to": ["recipient@example.com"],
+  "date": "2024-01-15T10:30:00",
+  "text": "Plain text body",
+  "html": "<html>...</html>"
+}
+```
+
+## Sample Emails
+
+The demo comes with sample emails for testing:
+
+- Business communications
+- Meeting invitations
+- Project updates
+- Report submissions
+
+These can be used immediately for testing search and read operations.
+
+## Troubleshooting
+
+### MCP Server Won't Start
+
+**Problem**: MCP server fails to start
+
+**Solutions:**
+1. Ensure mail sink is running first
+2. Check port availability
+3. Verify dependencies are installed:
+   ```bash
+   cd mcp_server && uv sync
+   ```
+
+### Emails Not Appearing
+
+**Problem**: Sent emails don't show in list_emails
+
+**Solutions:**
+1. Verify mail sink is running on port 1025
+2. Check `./mcp_mail/` directory for new files
+3. Review mail sink logs for errors
+
+### Search Not Finding Emails
+
+**Problem**: Query returns empty results
+
+**Solutions:**
+- Search is substring-based, not regex
+- Search is case-insensitive
+- HTML content is NOT searched, only plain text
+- Check for typos in the query
+
+### Port Conflicts
+
+**Problem**: Ports already in use
+
+**Solutions:**
+Set environment variables before starting:
+```bash
+export DYNACONF_SERVER_PORTS__EMAIL_MCP=8001
+export DYNACONF_SERVER_PORTS__EMAIL_SINK=1026
+```
+
+## Configuration
+
+### Custom Ports
+
+```bash
+# Set via environment variables
+export DYNACONF_SERVER_PORTS__EMAIL_MCP=8000
+export DYNACONF_SERVER_PORTS__EMAIL_SINK=1025
+```
+
+### Clearing Email History
+
+```bash
+# Remove all captured emails
+rm -rf mcp_mail/*.json mcp_mail/*.eml
+```
+
+## Next Steps
+
+- Review [MCP Server Integration](/docs/guides/mcp-server-integration) for configuration
+- Check [CRM Demo](/docs/guides/crm-demo) for combining with CRM data
+- Explore [File System MCP](/docs/guides/filesystem-mcp-demo) for file operations
+
+## Resources
+
+- [FastMCP Documentation](https://github.com/jlowin/fastmcp)
+- [Model Context Protocol Specification](https://modelcontextprotocol.io/)
+- [CUGA MCP Integration](/docs/guides/mcp-server-integration)

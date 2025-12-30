@@ -1,0 +1,318 @@
+---
+title: Memory & Learning
+description: Enable CUGA's memory system to learn from past interactions and improve over time
+---
+
+CUGA's memory system allows the agent to learn from past interactions, remember patterns, and improve performance on similar tasks over time. This creates a personalized, adaptive agent experience.
+
+## Overview
+
+Memory in CUGA serves two key purposes:
+
+1. **Learning from Failures**: When CUGA encounters errors, it generates "tips" - insights about what went wrong and how to avoid similar issues
+2. **Performance Improvement**: On subsequent similar tasks, CUGA uses these tips to plan better and execute faster with fewer steps
+
+## When to Use Memory
+
+Memory is beneficial when:
+
+- **Repeated Tasks**: You run similar queries multiple times
+- **Iterative Workflows**: Tasks evolve and improve over time
+- **Learning from Errors**: You want CUGA to remember and learn from mistakes
+- **Personalization**: You want CUGA to adapt to your specific domain patterns
+
+Memory is optional - CUGA works fine without it, but it can significantly reduce execution steps for repetitive workflows.
+
+## Setup
+
+### Step 1: Install Memory Dependencies
+
+Memory requires additional dependencies. Install them with:
+
+```bash
+uv sync --group memory
+```
+
+### Step 2: Configure Memory
+
+Edit `./src/cuga/settings.toml`:
+
+```toml
+[features]
+# Memory provider to use
+memory_provider = "mem0"  # Currently supports mem0
+
+[advanced_features]
+# Enable memory system
+enable_memory = true
+
+[server_ports]
+# Memory service port
+memory = 8888
+```
+
+### Step 3: Start Memory Service
+
+Start the memory service:
+
+```bash
+cuga start memory
+```
+
+You should see output indicating the memory service is running on port 8888.
+
+### Step 4: Start CUGA Demo
+
+In another terminal, start CUGA:
+
+```bash
+cuga start demo
+```
+
+Memory is now enabled and CUGA will start learning from interactions.
+
+## How Memory Works
+
+### Error Detection & Tips Generation
+
+When CUGA encounters an error (e.g., a tool call failure, API error, or logical issue):
+
+1. The error is logged and analyzed
+2. A "tip" is generated - an insight about the error and how to avoid it
+3. Tips are stored in the memory system
+4. The memory service processes and refines these tips
+
+**Tip generation takes time**: The first error may take 1-2 minutes to generate a tip. You'll see output in the terminal where `cuga start memory` runs:
+
+```
+Generating tips for error: [error details]...
+Tip generated successfully
+```
+
+### Learning on Subsequent Runs
+
+When you run a similar task again:
+
+1. CUGA retrieves relevant tips from memory
+2. Tips are integrated into the planning phase
+3. CUGA uses these insights to plan better
+4. Execution completes in fewer steps with fewer errors
+
+## Demo Workflow
+
+Here's a complete example of memory in action:
+
+### Setup Demo CRM with Sample Data
+
+```bash
+cuga start demo_crm --sample-memory-data
+```
+
+This starts a CRM demo with sample knowledge base files:
+- `cuga_workspace/cities.txt` - List of cities
+- `cuga_workspace/company.txt` - List of companies
+
+### First Run: Encounter & Learn
+
+Navigate to CUGA and run:
+
+```
+Identify the common cities between my cuga_workspace/cities.txt and cuga_workspace/company.txt
+```
+
+**What happens**:
+- CUGA attempts the task
+- You may see errors in the CodeAgent execution
+- Wait 1-2 minutes for tips to be generated
+- You'll see output in the `cuga start memory` terminal confirming tips generation
+
+### Second Run: Improved Execution
+
+Run the exact same query again:
+
+```
+Identify the common cities between my cuga_workspace/cities.txt and cuga_workspace/company.txt
+```
+
+**What happens**:
+- CUGA uses the tips generated from the first run
+- Execution completes in **significantly fewer steps**
+- No errors occur (or fewer errors)
+- Performance is noticeably faster
+
+### Monitoring Tip Generation
+
+Watch the memory service terminal for logs:
+
+```
+[INFO] Processing error insights...
+[INFO] Generating tips...
+[INFO] Tips successfully stored in memory
+```
+
+## Configuration Options
+
+### Memory Provider
+
+Currently, CUGA supports `mem0` as the memory provider:
+
+```toml
+[features]
+memory_provider = "mem0"
+```
+
+### Memory Service Port
+
+The memory service runs on a configurable port:
+
+```toml
+[server_ports]
+memory = 8888  # Default port
+```
+
+Change the port if 8888 is already in use:
+
+```toml
+[server_ports]
+memory = 8889  # Alternative port
+```
+
+## Memory Storage
+
+Memory data is persisted locally. Tips and insights are stored in your local memory store and survive:
+
+- Application restarts
+- Individual CUGA sessions
+- Multiple conversation threads
+
+Clearing memory would require manually deleting the memory store (specific location depends on memory provider implementation).
+
+## Best Practices
+
+### Enable for Production Workflows
+
+If you have repetitive workflows:
+
+1. Enable memory during initial setup
+2. Run workflows - let CUGA encounter and learn from errors
+3. Re-run workflows - CUGA executes faster and with fewer errors
+
+### Monitor Memory Service
+
+Keep the `cuga start memory` terminal open and monitored:
+
+- Watch for tip generation logs
+- Monitor for any memory service errors
+- Check memory port accessibility
+
+### Combine with Other Features
+
+Memory works well with:
+
+- **Save & Reuse**: Save successful flows alongside memory insights
+- **Human-in-the-Loop**: HITL approvals combined with memory learning
+- **Advanced Reasoning Modes**: Accurate mode with memory for high-reliability workflows
+
+## Troubleshooting
+
+### Memory Service Won't Start
+
+**Problem**: `cuga start memory` fails or hangs
+
+**Solutions**:
+1. Verify memory dependencies installed: `uv sync --group memory`
+2. Check port 8888 is not in use: `netstat -an | grep 8888`
+3. Try a different port in `settings.toml`
+4. Check logs for memory provider errors
+
+### Tips Not Generating
+
+**Problem**: After errors, no tips appear in logs
+
+**Solutions**:
+1. Wait 1-2 minutes - tip generation takes time
+2. Ensure `enable_memory = true` in settings.toml
+3. Check memory service is running: `cuga start memory`
+4. Verify error actually occurred (check CUGA logs)
+5. Check memory provider (mem0) is configured correctly
+
+### CUGA Not Using Tips
+
+**Problem**: Second run shows no improvement despite generated tips
+
+**Solutions**:
+1. Ensure memory service is still running
+2. Verify `enable_memory = true`
+3. Check that tasks are actually similar (different queries may use different tips)
+4. Review tips generation logs - tips may not apply to new query
+
+### Memory Port Conflicts
+
+**Problem**: Memory service fails to bind to port 8888
+
+**Solutions**:
+1. Find what's using port 8888: `lsof -i :8888` (macOS/Linux)
+2. Either:
+   - Kill the process: `kill -9 <PID>`
+   - Or change port in settings.toml: `memory = 8889`
+
+## Performance Impact
+
+### Startup Time
+
+Memory adds minimal startup overhead:
+- Memory service startup: under 5 seconds
+- CUGA initialization: unchanged
+
+### Execution Time
+
+First run (without tips):
+- No impact - tips aren't available yet
+- Possible errors trigger tip generation (1-2 min delay)
+
+Subsequent runs (with tips):
+- 20-50% faster execution
+- Fewer errors = fewer retries
+- Better planning = fewer wasted steps
+
+## Disabling Memory
+
+To disable memory:
+
+```toml
+[advanced_features]
+enable_memory = false
+```
+
+You can keep memory dependencies installed and re-enable anytime.
+
+## Advanced: Memory with Save & Reuse
+
+Memory and Save & Reuse can work together:
+
+1. **First run**: Encounter errors → memory learns → tips generated
+2. **Second run**: Use tips → successful execution → save workflow
+3. **Third run+**: Use saved workflow (faster) + memory tips (smarter)
+
+Configuration:
+
+```toml
+[features]
+cuga_mode = "save_reuse_fast"  # Save & Reuse mode
+memory_provider = "mem0"        # Memory enabled
+
+[advanced_features]
+enable_memory = true            # Both enabled together
+```
+
+## Next Steps
+
+- Configure [advanced settings](/docs/customization/settings-reference) for your use case
+- Review [Save & Reuse](/docs/guides/save-reuse) for complementary workflow optimization
+- Check [troubleshooting](/docs/development/troubleshooting) for detailed diagnostics
+
+## Resources
+
+- [mem0 Documentation](https://docs.mem0.ai/)
+- [CUGA Settings Reference](/docs/customization/settings-reference)
+- [Advanced Usage Guide](/docs/guides)

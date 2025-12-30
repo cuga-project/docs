@@ -1,0 +1,287 @@
+---
+title: E2B Cloud Sandbox
+description: Run CUGA with cloud-based code execution using E2B for secure, isolated sandboxes
+---
+
+CUGA supports [E2B](https://e2b.dev) for cloud-based code execution in secure, ephemeral sandboxes. This provides better isolation than local execution.
+
+## Overview
+
+E2B is a cloud sandbox service that executes code remotely in isolated, ephemeral environments. This is ideal when you need:
+
+- **Enhanced Security**: Code runs in isolated cloud environments, not on your machine
+- **Better Performance**: Cloud-native scaling with automatic resource management
+- **No Local Dependencies**: No system configurations required
+- **Cost Optimization**: Pay-per-use with per-session caching options
+
+## Benefits
+
+| Feature | E2B | Local Execution |
+|---------|-----|-----------------|
+| **Setup Complexity** | Low (API key only) | None |
+| **Execution Speed** | Fast | Fastest |
+| **Isolation Level** | High | Low |
+| **Cost** | Paid tier + free tier | Free |
+| **Scaling** | Automatic | Limited |
+| **Per-session Caching** | ✅ | N/A |
+
+## Prerequisites
+
+Before setting up E2B with CUGA, ensure you have:
+
+1. **E2B Account**: Sign up at [e2b.dev](https://e2b.dev)
+2. **ngrok Account**: For exposing your local registry (free at [ngrok.com](https://ngrok.com))
+
+## Setup Steps
+
+### Step 1: Get E2B API Key
+
+1. Visit [e2b.dev](https://e2b.dev)
+2. Sign up or log in to your account
+3. Navigate to your [dashboard](https://e2b.dev/dashboard)
+4. Create a new API key and copy it
+
+### Step 2: Install E2B Dependencies
+
+```bash
+# Install E2B-specific Python dependencies
+uv sync --group e2b
+```
+
+### Step 3: Configure Environment
+
+Add your E2B API key to your `.env` file:
+
+```bash
+E2B_API_KEY=your-e2b-api-key-here
+```
+
+You can get your API key from the [E2B dashboard](https://e2b.dev/dashboard).
+
+## Registry Exposure with ngrok
+
+E2B runs in the cloud and needs to call your local API registry to execute tools. You must expose your local registry publicly using [ngrok](https://ngrok.com), a tunneling service.
+
+### Option 1: Expose Registry Directly (Port 8001)
+
+Best if you have multiple ports available.
+
+```bash
+# In a separate terminal, start ngrok tunnel to the registry
+ngrok http 8001
+```
+
+You'll see output like:
+```
+Forwarding    https://abc123.ngrok.io -> http://localhost:8001
+```
+
+Copy the HTTPS URL (`https://abc123.ngrok.io`).
+
+Then edit `./src/cuga/settings.toml`:
+
+```toml
+[server_ports]
+function_call_host = "https://abc123.ngrok.io"  # Your ngrok URL
+```
+
+### Option 2: Expose CUGA Port with Proxy (Port 7860)
+
+Best if you're restricted to exposing only 1 port. CUGA will automatically proxy tool calls to the registry.
+
+```bash
+# In a separate terminal, start ngrok tunnel to CUGA
+ngrok http 7860
+```
+
+You'll see output like:
+```
+Forwarding    https://xyz789.ngrok.io -> http://localhost:7860
+```
+
+Copy the HTTPS URL (`https://xyz789.ngrok.io`).
+
+Then edit `./src/cuga/settings.toml`:
+
+```toml
+[server_ports]
+function_call_host = "https://xyz789.ngrok.io"  # Your ngrok URL
+```
+
+CUGA automatically proxies `/functions/call` requests to the registry when using this configuration.
+
+## Configuration
+
+Edit `./src/cuga/settings.toml` to enable and configure E2B:
+
+```toml
+[advanced_features]
+# Enable E2B cloud sandbox
+e2b_sandbox = true
+
+# Sandbox lifecycle mode
+e2b_sandbox_mode = "per-session"  # Options: "per-session" | "single" | "per-call"
+
+# Idle timeout before sandbox expires (seconds)
+e2b_sandbox_idle_ttl = 600  # Default: 10 minutes
+
+# Max age for "single" mode sandboxes (seconds)
+# 0 = disabled, 86400 = 24 hours
+e2b_sandbox_max_age = 86400
+
+# Safety buffer before E2B timeout (seconds)
+e2b_sandbox_ttl_buffer = 60
+
+# Run cleanup when creating new sandboxes
+e2b_cleanup_on_create = true
+
+# Check all sandboxes every N get_or_create calls (0 = only on create)
+e2b_cleanup_frequency = 0
+```
+
+### Sandbox Modes
+
+E2B offers three sandbox lifecycle modes:
+
+#### per-session (Default - Recommended)
+- **Behavior**: One sandbox per conversation thread, cached for reuse
+- **Best for**: Most use cases with reasonable isolation
+- **Cost**: Moderate (caching reduces cost)
+- **Configuration**:
+  ```toml
+  e2b_sandbox_mode = "per-session"
+  e2b_sandbox_idle_ttl = 600  # 10 minutes idle timeout
+  ```
+
+#### single
+- **Behavior**: Single shared sandbox across all threads
+- **Best for**: Development, testing, cost optimization
+- **Cost**: Lowest
+- **Trade-off**: All conversations share the same sandbox environment
+- **Configuration**:
+  ```toml
+  e2b_sandbox_mode = "single"
+  e2b_sandbox_max_age = 86400  # Recreate after 24 hours
+  ```
+
+#### per-call
+- **Behavior**: New sandbox created for each execution
+- **Best for**: Maximum isolation, critical operations
+- **Cost**: Highest
+- **Trade-off**: Slower execution, higher costs
+- **Configuration**:
+  ```toml
+  e2b_sandbox_mode = "per-call"
+  ```
+
+## Running CUGA with E2B
+
+Once configured, start CUGA normally. Make sure ngrok is running in a separate terminal:
+
+```bash
+# Terminal 1: Start ngrok tunnel
+ngrok http 8001  # or 7860 if using Option 2
+
+# Terminal 2: Start CUGA with E2B enabled
+cuga start demo
+```
+
+When E2B is active, you'll see logs indicating:
+```
+CODE SENT TO E2B SANDBOX
+```
+
+This confirms that code execution is happening in E2B's cloud sandbox, not locally.
+
+## Monitoring & Logs
+
+CUGA logs E2B activity. Look for:
+- `CODE SENT TO E2B SANDBOX` - Code successfully sent to E2B
+- Sandbox creation and expiration messages
+- Connection issues or authentication errors
+
+For detailed E2B logs, check your E2B dashboard at [e2b.dev/dashboard](https://e2b.dev/dashboard).
+
+## Troubleshooting
+
+### Error: "function_call_host not configured"
+
+**Problem**: E2B cannot reach your local registry.
+
+**Solution**:
+1. Ensure ngrok is running in another terminal
+2. Verify `function_call_host` is set in `settings.toml`
+3. Use the full HTTPS URL from ngrok (e.g., `https://abc123.ngrok.io`)
+4. Don't use `http://` - E2B requires HTTPS
+
+### Tool execution fails
+
+**Problem**: E2B can execute code but tools aren't responding.
+
+**Solution**:
+1. Verify ngrok is still running (connections expire after ~2 hours)
+2. Check that the URL in `function_call_host` matches your current ngrok URL
+3. Make sure your API registry is running locally (`cuga start api-registry`)
+4. Check firewall rules allowing ngrok connections
+
+### Connection timeout
+
+**Problem**: E2B times out when trying to reach your registry.
+
+**Solution**:
+1. Check that your firewall allows ngrok connections
+2. Test ngrok connectivity: `curl https://<your-ngrok-url>`
+3. Verify `E2B_API_KEY` is set correctly
+4. Check network connectivity between E2B and your machine
+
+### Sandbox creation fails
+
+**Problem**: E2B cannot create a new sandbox.
+
+**Solution**:
+1. Verify your E2B account has free tier or paid credits available
+2. Check E2B dashboard for account limits or restrictions
+3. Verify `E2B_API_KEY` is set correctly in your `.env` file
+
+### High costs
+
+**Problem**: E2B usage is more expensive than expected.
+
+**Solution**:
+- Use **`per-session` mode** with caching (reduces cost)
+- Set appropriate `e2b_sandbox_idle_ttl` values
+- Consider **`single` mode** for development
+- Monitor usage on [e2b.dev/dashboard](https://e2b.dev/dashboard)
+
+## Pricing & Limits
+
+E2B offers:
+
+- **Free Tier**: Limited executions per month, great for testing
+- **Paid Tier**: Pay-per-execution with volume discounts
+- **Custom Plans**: For enterprise deployments
+
+Check [e2b.dev/pricing](https://e2b.dev/pricing) for current rates and limits.
+
+## E2B vs Local Execution
+
+| Aspect | E2B | Local |
+|--------|-----|-------|
+| **Security** | Excellent | Low |
+| **Speed** | Fast | Fastest |
+| **Resource Usage** | Cloud | Local machine |
+| **Scaling** | Automatic | Limited |
+| **Cost** | Paid | Free |
+| **Best for** | Production, enterprise | Development |
+
+## Next Steps
+
+- Configure [advanced settings](/docs/customization/settings-reference) for your environment
+- Check out [demo applications](/docs/guides) to test E2B with real examples
+
+## Resources
+
+- [E2B Documentation](https://docs.e2b.dev)
+- [E2B Dashboard](https://e2b.dev/dashboard)
+- [ngrok Documentation](https://ngrok.com/docs)
+- [CUGA Configuration Reference](/docs/customization/settings-reference)

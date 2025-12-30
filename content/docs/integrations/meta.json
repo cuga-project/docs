@@ -4,6 +4,7 @@
   "defaultOpen": false,
   "pages": [
     "cuga-as-mcp",
-    "langflow"
+    "langflow",
+    "huggingface-spaces"
   ]
 }

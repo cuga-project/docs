@@ -1,0 +1,391 @@
+---
+title: Human-in-the-Loop (HITL)
+description: Enable CUGA to pause at critical decision points and request human approval
+---
+
+Human-in-the-Loop (HITL) enables CUGA to pause execution at critical decision points and request human approval before proceeding. This is essential for enterprise workflows where certain decisions require human judgment or oversight.
+
+## Overview
+
+With HITL enabled, CUGA:
+
+1. **Analyzes the task** and identifies critical decision points
+2. **Pauses execution** before making important decisions
+3. **Shows the planned action** to the human operator
+4. **Waits for approval** before proceeding
+5. **Continues or adjusts** based on human feedback
+
+This creates a collaborative workflow where CUGA handles routine operations while humans maintain control over critical decisions.
+
+## When to Use HITL
+
+HITL is essential for:
+
+- **Financial Transactions**: Approvals before money transfers or high-value operations
+- **Data Modifications**: Permission before deleting or updating critical data
+- **Policy-Critical Decisions**: Actions that must comply with organizational policies
+- **High-Risk Operations**: Tasks with significant business impact
+- **Regulatory Compliance**: Operations requiring audit trails and approval documentation
+
+## Setup
+
+### Step 1: Enable HITL in Settings
+
+Edit `./src/cuga/settings.toml`:
+
+```toml
+[advanced_features]
+api_planner_hitl = true
+```
+
+### Step 2: Start CUGA
+
+```bash
+cuga start demo
+```
+
+HITL is now active. CUGA will pause at critical decision points and request approval.
+
+## How HITL Works
+
+### Decision Point Detection
+
+CUGA's planning system automatically identifies operations that require approval:
+
+- **High-impact operations**: Large-scale data modifications
+- **Irreversible actions**: Deletions, account closures
+- **Policy-critical decisions**: Actions governed by business rules
+- **Multi-step workflows**: Complex operations with multiple decision points
+
+### Approval Workflow
+
+When CUGA encounters a critical decision:
+
+1. **Planning Phase**: CUGA analyzes the task and creates a plan
+2. **Detection**: The system identifies a decision point requiring approval
+3. **Pause**: Execution pauses and presents the plan
+4. **Review**: The human reviews the planned action
+5. **Approval**: Human approves, rejects, or requests modifications
+6. **Execution**: Upon approval, CUGA executes the planned action
+
+### UI Presentation
+
+In the CUGA interface, you'll see:
+
+```
+⏸️ Action Requires Approval
+
+Planned Action:
+[Detailed description of what CUGA plans to do]
+
+Affected Data:
+[Details about data that will be modified]
+
+Options:
+[✅ Approve] [❌ Reject] [🔄 Modify Plan]
+```
+
+## Demo: HITL in Action
+
+### Setup
+
+Ensure HITL is enabled in `settings.toml`:
+
+```toml
+[advanced_features]
+api_planner_hitl = true
+```
+
+Start CUGA:
+
+```bash
+cuga start demo
+```
+
+### Try a High-Impact Task
+
+Send the task:
+
+```
+get best accounts
+```
+
+**What happens**:
+
+1. CUGA analyzes the task: "Get the best accounts"
+2. CUGA determines this requires fetching data and possibly filtering
+3. At critical decision points, CUGA pauses
+4. CUGA shows you:
+   - The plan for finding "best accounts" (by what metric?)
+   - Data that will be retrieved
+   - Actions that will be taken
+5. You approve or modify the plan
+6. CUGA executes the approved actions
+7. Results are returned with audit trail
+
+### Review the Execution
+
+After approval and execution:
+- View the approval history
+- See exactly what was approved
+- Track the decision audit trail
+
+## Common Approval Scenarios
+
+### Scenario 1: Data Modification
+
+**User Task**: "Update all inactive accounts to archived status"
+
+**HITL Pauses**:
+```
+⏸️ Action Requires Approval
+
+Planned Action:
+- Query: Find all inactive accounts
+- Result: 247 accounts matching criteria
+- Action: Update status to 'archived'
+- Impact: 247 records will be modified
+
+Options: [Approve] [Reject] [Modify Criteria]
+```
+
+### Scenario 2: Financial Operation
+
+**User Task**: "Create an invoice for $50,000"
+
+**HITL Pauses**:
+```
+⏸️ Action Requires Approval
+
+Planned Action:
+- Customer: ABC Corporation
+- Amount: $50,000.00
+- Terms: Net 30
+- Action: Create and send invoice
+
+Options: [Approve] [Reject] [Adjust Amount]
+```
+
+### Scenario 3: Irreversible Action
+
+**User Task**: "Delete the old customer records from 2020"
+
+**HITL Pauses**:
+```
+⏸️ Action Requires Approval
+
+Planned Action:
+- Scope: Delete records from 2020
+- Count: 1,247 records
+- Action: Permanent deletion (cannot be undone)
+- Impact: Audit trail preserved, data cannot be recovered
+
+Options: [Approve] [Reject]
+```
+
+## Integration with Enterprise Workflows
+
+### Multi-Level Approvals
+
+While CUGA's HITL provides single-level approval, you can combine it with workflows:
+
+1. CUGA detects need for approval → pauses
+2. Human reviews and approves (or rejects)
+3. For high-value operations, integrate with external approval systems
+
+### Audit Trails
+
+HITL automatically creates audit trails:
+
+- **What was approved**: Exact action description
+- **When**: Timestamp of approval
+- **Who approved**: User or role that approved
+- **Outcome**: What executed as a result
+
+### Policy Enforcement
+
+Use HITL with policy-driven instructions:
+
+1. Configure HITL instructions in `configurations/instructions/`
+2. Instructions specify what decisions require approval
+3. CUGA enforces policies automatically
+
+## Configuration Options
+
+### Basic HITL
+
+```toml
+[advanced_features]
+api_planner_hitl = true
+```
+
+### HITL with Policy Instructions
+
+Create policy-driven instructions in:
+```
+./src/cuga/configurations/instructions/
+```
+
+Example policy structure:
+```
+- Financial operations > $10,000 require approval
+- Delete operations require approval
+- Account modifications require approval
+- API integrations with external systems require approval
+```
+
+## Troubleshooting
+
+### HITL Not Pausing
+
+**Problem**: CUGA doesn't pause for approval, executes without asking
+
+**Solutions**:
+1. Verify `api_planner_hitl = true` in settings.toml
+2. Check that tasks involve actual decision points
+3. Some simple queries may not trigger HITL (by design)
+4. Restart CUGA after changing settings
+5. Check CUGA logs for HITL initialization
+
+### Approval Interface Not Showing
+
+**Problem**: Can't see the approval dialog or buttons
+
+**Solutions**:
+1. Ensure you're using the web interface (not API-only mode)
+2. Check browser console for errors
+3. Verify CUGA is in correct execution mode
+4. Try a simpler approval task
+
+### Approval Timeout
+
+**Problem**: CUGA times out waiting for approval
+
+**Solutions**:
+1. Click "Approve" or "Reject" before timeout
+2. Increase timeout in CUGA configuration (if available)
+3. Check browser connection is active
+4. Restart the session if connection drops
+
+## Best Practices
+
+### Clear Policy Definition
+
+Define clear policies for what requires approval:
+
+```toml
+# Example policy in instructions
+[hitl_policies]
+financial_threshold = 10000  # Amounts > $10k need approval
+high_impact_operations = ["delete", "archive", "migrate"]
+external_systems = ["payment_gateway", "crm_export"]
+```
+
+### User Training
+
+Train users on:
+
+- Recognizing HITL pause states
+- What information to review before approving
+- How to request plan modifications
+- When to reject actions
+
+### Combine with Other Features
+
+HITL works well with:
+
+- **Memory**: Remember past approvals and patterns
+- **Vision**: Review visual representations of proposed changes
+- **Logging**: Maintain detailed audit trails
+- **Save & Reuse**: Reuse approved workflows
+
+### Monitor Approvals
+
+Regularly review:
+
+- Approval patterns and trends
+- Rejected actions (why were they rejected?)
+- Time-to-approval metrics
+- Audit trail for compliance
+
+## Examples
+
+### Example 1: Account Management
+
+Task: "Find my top 5 customers by revenue and apply a loyalty discount"
+
+```
+[HITL Pauses]
+Planned Actions:
+1. Query: Top 5 customers by revenue
+   Result: [List of customers]
+
+2. Apply: 10% loyalty discount
+   Impact: 5 customers affected, ~$50,000 annual revenue impact
+
+[User Reviews and Approves]
+[CUGA Executes and Returns Results]
+```
+
+### Example 2: Data Cleanup
+
+Task: "Archive all inactive accounts from Q1"
+
+```
+[HITL Pauses]
+Planned Actions:
+1. Query: Inactive accounts from Q1
+   Result: 247 accounts identified
+
+2. Action: Move to archive status
+   Impact: 247 records modified, searchable but excluded from active dashboards
+
+[User Reviews, Requests Additional Filtering]
+[CUGA Refines and Re-Proposes]
+[User Approves Modified Plan]
+[CUGA Executes]
+```
+
+### Example 3: Financial Operation
+
+Task: "Reconcile outstanding invoices and prepare payment proposal"
+
+```
+[HITL Pauses]
+Planned Actions:
+1. Query: Outstanding invoices over 30 days
+   Result: 12 invoices totaling $85,000
+
+2. Analysis: Payment schedule and cash flow impact
+
+3. Action: Prepare payment recommendation
+   Impact: No execution yet, awaiting review
+
+[User Reviews Payment Plan and Approves]
+[CUGA Executes Approved Actions]
+```
+
+## Advanced: Custom HITL Policies
+
+For advanced users, HITL can be customized through:
+
+1. **Special Instructions**: Define domain-specific policies
+2. **Approval Rules**: Configure what triggers approval
+3. **Escalation Paths**: Route critical approvals to specific people
+4. **External Integration**: Connect with external approval systems
+
+See [Special Instructions Configuration](/docs/customization/special-instructions) for details.
+
+## Next Steps
+
+- Review [Memory](/docs/customization/memory) for learning from past approvals
+- Explore [Save & Reuse](/docs/guides/save-reuse) for workflow optimization
+- Check [Policy-Aware Instructions](/docs/customization/special-instructions) for advanced configurations
+- Examine [Settings Reference](/docs/customization/settings-reference) for all configuration options
+
+## Resources
+
+- [CUGA Settings Reference](/docs/customization/settings-reference)
+- [Special Instructions Configuration](/docs/customization/special-instructions)
+- [Advanced Usage Guide](/docs/guides)
+- [Enterprise Deployment Guide](/docs/development)

@@ -1,0 +1,338 @@
+---
+title: CRM Demo Application
+description: Use the CRM demo API to test CUGA with realistic enterprise data
+---
+
+The CRM Demo Application is a comprehensive FastAPI-based CRM system designed specifically for testing CUGA with realistic enterprise data scenarios.
+
+## Overview
+
+The CRM demo provides:
+
+- **Full CRUD Operations**: Accounts, Leads, Contacts, and Opportunities
+- **Pagination Support**: 20 records per page by default
+- **Advanced Query Endpoints**: Complex queries for agent testing
+- **Comprehensive Test Data**: 16,000+ records for realistic testing
+- **RESTful API**: Automatic OpenAPI documentation
+
+## Quick Start
+
+### Install and Run
+
+```bash
+# Navigate to CRM demo directory
+cd docs/examples/demo_apps/crm
+
+# Install dependencies
+uv sync
+
+# Run the CRM API
+uv run python -m crm_api.main
+```
+
+### Access the API
+
+- **API Documentation**: http://localhost:8007/docs
+- **Alternative Docs**: http://localhost:8007/redoc
+
+### Command Line Options
+
+```bash
+python -m crm_api.main --help
+# Options: --host, --port, --reload
+```
+
+## Sample Data
+
+The CRM comes pre-populated with comprehensive test data:
+
+| Entity | Count | Details |
+|--------|-------|---------|
+| **Accounts** | 1,000 | Various industries and regions |
+| **Leads** | 2,000 | Different sources and statuses |
+| **Contacts** | 5,000+ | 3-8 per account |
+| **Opportunities** | 8,000+ | 2-10 per account, varying values |
+| **Total** | 16,000+ | Comprehensive agent testing dataset |
+
+## Data Models
+
+### Account
+
+Company information including:
+- Basic info: name, industry, website
+- Location: address, city, state, country, region
+- Business metrics: annual revenue, employee count
+
+### Lead
+
+Prospect information:
+- Personal: name, email, phone
+- Company: company name, job title, industry
+- Management: source, status, score, notes
+
+### Contact
+
+Person at an account:
+- Personal: name, email, phone
+- Professional: job title, department
+- Relationship: linked account, primary contact flag
+
+### Opportunity
+
+Sales opportunity:
+- Details: name, description, value, currency
+- Sales process: stage, probability, close date
+- Relationship: linked account
+
+## API Endpoints
+
+### Standard CRUD Operations
+
+#### Accounts
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/accounts/` | List all accounts (paginated) |
+| POST | `/accounts/` | Create new account |
+| GET | `/accounts/{id}` | Get account by ID |
+| PUT | `/accounts/{id}` | Update account |
+| DELETE | `/accounts/{id}` | Delete account |
+
+#### Leads
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/leads/` | List all leads (paginated) |
+| POST | `/leads/` | Create new lead |
+| GET | `/leads/{id}` | Get lead by ID |
+| PUT | `/leads/{id}` | Update lead |
+| DELETE | `/leads/{id}` | Delete lead |
+
+#### Contacts
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/contacts/` | List all contacts (paginated) |
+| POST | `/contacts/` | Create new contact |
+| GET | `/contacts/{id}` | Get contact by ID |
+| PUT | `/contacts/{id}` | Update contact |
+| DELETE | `/contacts/{id}` | Delete contact |
+
+#### Opportunities
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/opportunities/` | List all opportunities (paginated) |
+| POST | `/opportunities/` | Create new opportunity |
+| GET | `/opportunities/{id}` | Get opportunity by ID |
+| PUT | `/opportunities/{id}` | Update opportunity |
+| DELETE | `/opportunities/{id}` | Delete opportunity |
+
+### Advanced Query Endpoints
+
+These endpoints are specifically designed for testing CUGA with complex queries.
+
+#### Find Contacts from High-Value Opportunities
+
+```
+GET /advanced/contacts/from-accounts/
+```
+
+**Parameters:**
+- `min_value` (float): Minimum opportunity value (default: 10000)
+- `min_likelihood` (float): Minimum likelihood percentage (default: 0.5)
+- `skip` (int): Pagination offset (default: 0)
+- `limit` (int): Records per page (default: 20)
+
+**Example:**
+```bash
+# Find contacts from accounts with opportunities >= $10k and >= 50% likelihood
+curl "http://localhost:8007/advanced/contacts/from-accounts/?min_value=10000&min_likelihood=0.5"
+```
+
+#### Find Opportunities by Region
+
+```
+GET /advanced/opportunities/by-region/
+```
+
+**Parameters:**
+- `min_value` (float): Minimum opportunity value (default: 10000)
+- `month` (int): Month 1-12 (default: 11)
+- `year` (int): Year (default: 2024)
+- `skip` (int): Pagination offset (default: 0)
+- `limit` (int): Records per page (default: 20)
+
+**Example:**
+```bash
+# Find opportunities >= $10k for November 2024, grouped by region
+curl "http://localhost:8007/advanced/opportunities/by-region/?min_value=10000&month=11&year=2024"
+```
+
+## Pagination
+
+All list endpoints support pagination:
+
+| Parameter | Default | Max | Description |
+|-----------|---------|-----|-------------|
+| `skip` | 0 | - | Records to skip |
+| `limit` | 20 | 100 | Records per page |
+
+**Response format:**
+```json
+{
+  "items": [...],
+  "total": 1000,
+  "page": 1,
+  "pages": 50,
+  "per_page": 20
+}
+```
+
+## Using with CUGA
+
+### Configure as Tool
+
+Add the CRM API to your MCP servers configuration:
+
+```yaml
+# mcp_servers.yaml
+servers:
+  - name: crm_api
+    type: openapi
+    spec_url: http://localhost:8007/openapi.json
+```
+
+### Start CRM with CUGA Demo
+
+```bash
+# Terminal 1: Start CRM API
+cd docs/examples/demo_apps/crm
+uv run python -m crm_api.main
+
+# Terminal 2: Start CUGA with CRM demo
+cuga start demo_crm
+```
+
+### Example Tasks to Try
+
+Test CUGA with these natural language queries:
+
+**Basic Queries:**
+- `List all accounts`
+- `Find the top 5 accounts by revenue`
+- `Show me leads from the Technology industry`
+
+**Complex Queries:**
+- `Find all contacts from my CRM accounts for opportunities $10k and 50% likelihood`
+- `Find all opportunities above $10k for November, grouped by region`
+- `Who is the contact for the account with the highest revenue?`
+
+**Multi-Step Tasks:**
+- `Find the VP of Sales and list their high-value accounts`
+- `Get contacts for our top 3 accounts and draft an email to each`
+- `Identify accounts with opportunities closing this month`
+
+## Testing
+
+### Run E2E Tests
+
+```bash
+cd docs/examples/demo_apps/crm
+
+# Using the test script
+python run_tests.py
+
+# Or using pytest directly
+uv run python -m pytest -v tests/
+```
+
+### Test Coverage
+
+The e2e tests cover:
+- Real database operations with SQLite
+- Full API integration with HTTP requests
+- Business logic for complex CRM queries
+- Parameter validation and error handling
+- Pagination with real data
+- Data consistency verification
+
+### Test Data Examples
+
+Tests use realistic sample data:
+- **Test Corp**: Tech industry, $50k revenue
+- **Another Corp**: Finance industry, $20k revenue
+- **Opportunities**: Values from $5k-$25k, probabilities 30%-70%
+- **Contacts**: CEO, CTO, CFO with realistic details
+
+## Database
+
+The CRM uses SQLite by default:
+
+- Automatic initialization on first run
+- Pre-seeded with test data
+- Foreign key relationships maintained
+- Easily configurable for PostgreSQL
+
+## Troubleshooting
+
+### Port Already in Use
+
+**Problem**: Port 8005 is already in use
+
+**Solution**:
+```bash
+# Use a different port
+python -m crm_api.main --port 8006
+```
+
+### No Data Returned
+
+**Problem**: API returns empty results
+
+**Solutions**:
+1. Check database was initialized: look for SQLite file
+2. Verify pagination parameters
+3. Check filter values aren't too restrictive
+
+### CUGA Can't Connect
+
+**Problem**: CUGA can't access CRM API
+
+**Solutions**:
+1. Ensure CRM API is running on expected port
+2. Check MCP server configuration URL
+3. Verify no firewall blocking localhost
+
+## Advanced Usage
+
+### Custom Port Configuration
+
+Edit `settings.toml`:
+```toml
+[server_ports]
+crm_api = 8007  # Custom port
+```
+
+### Adding Custom Data
+
+Modify the seed data in the CRM application:
+```python
+# Edit crm_api/seed.py to customize test data
+```
+
+### PostgreSQL Setup
+
+For production-like testing:
+```python
+# Configure database URL in crm_api/config.py
+DATABASE_URL = "postgresql://user:pass@localhost/crm"
+```
+
+## Next Steps
+
+- Review [OpenAPI Integration](/docs/guides/openapi-integration) for tool configuration
+- Check [Testing Guide](/docs/development/testing) for more testing scenarios
+- Explore [Digital Sales API](/docs/guides/digital-sales-api) for another demo API
+
+## Resources
+
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [SQLAlchemy Documentation](https://docs.sqlalchemy.org/)
+- [CUGA OpenAPI Integration](/docs/guides/openapi-integration)

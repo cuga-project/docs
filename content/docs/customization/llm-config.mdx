@@ -12,6 +12,7 @@ CUGA supports multiple LLM providers with flexible configuration options. You ca
 - **Azure OpenAI** - Microsoft's Azure OpenAI service
 - **Groq** - Groq's LLM platform
 - **OpenRouter** - LLM API gateway provider
+- **RITS** - IBM Research Internal Token Service (IBM internal)
 
 ### Option 1: OpenAI 🌐
 
@@ -130,6 +131,32 @@ MODEL_NAME="openai/gpt-4o"
 
 **Note:** OpenRouter provides access to multiple model providers. Refer to [OpenRouter's model documentation](https://openrouter.ai/models) for available models and their pricing.
 
+### Option 6: RITS (IBM Internal)
+
+RITS (Research Internal Token Service) is an IBM-internal LLM gateway service.
+
+**Setup Instructions:**
+
+1. Get your RITS API key from the internal service
+2. Add to your `.env` file:
+   ```bash
+   # For RITS
+   AGENT_SETTING_CONFIG="settings.rits.toml"
+   RITS_API_KEY="XXXXXX"
+   ```
+
+**Default Values:**
+- Model: `rits/openai/gpt-oss-120b`
+- URL: `http://localhost:4000`
+
+**Environment Variable Override:**
+You can override the model name using:
+```bash
+MODEL_NAME="rits/openai/gpt-4o"
+```
+
+**Note:** RITS is only available for IBM Research users with access to the internal service.
+
 ### LiteLLM Support
 
 CUGA supports LiteLLM through the OpenAI configuration by overriding the base URL:
@@ -153,10 +180,11 @@ MODEL_NAME="gpt-4-turbo"
 CUGA uses TOML configuration files located in `src/cuga/configurations/models/`:
 
 - `settings.openai.toml` - OpenAI configuration (also supports LiteLLM via base URL override)
-- `settings.watsonx.toml` - WatsonX configuration  
+- `settings.watsonx.toml` - WatsonX configuration
 - `settings.azure.toml` - Azure OpenAI configuration
 - `settings.groq.toml` - Groq configuration
 - `settings.openrouter.toml` - OpenRouter configuration
+- `settings.rits.toml` - RITS configuration (IBM internal)
 
 Each file contains agent-specific model settings that can be overridden by environment variables.
 
@@ -233,7 +261,7 @@ temperature = 0.1
 max_tokens = 7000
 ```
 
-## 🔄 Switching Between Providers
+## Switching Between Providers
 
 ### Method 1: Environment Variable
 
@@ -252,6 +280,9 @@ export AGENT_SETTING_CONFIG="settings.groq.toml"
 
 # Switch to OpenRouter
 export AGENT_SETTING_CONFIG="settings.openrouter.toml"
+
+# Switch to RITS (IBM internal)
+export AGENT_SETTING_CONFIG="settings.rits.toml"
 ```
 
 ### Method 2: Edit .env File

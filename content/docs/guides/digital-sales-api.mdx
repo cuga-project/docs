@@ -1,0 +1,272 @@
+---
+title: Digital Sales API
+description: A sales territory and contact management API for testing CUGA with enterprise data
+---
+
+The Digital Sales API is a FastAPI-based sales management system designed for testing CUGA with realistic sales territory data.
+
+## Overview
+
+The Digital Sales API provides:
+
+- **Territory Management**: View accounts assigned to your territory
+- **Third-Party Accounts**: Access external lead sources with campaign filtering
+- **Contact Lookup**: Find contacts by account and job title
+- **Job Title Discovery**: Get job titles for contacts at specific accounts
+
+## Quick Start
+
+### Install and Run
+
+```bash
+# Navigate to Digital Sales API directory
+cd docs/examples/digital_sales_openapi
+
+# Run the API
+uv run python main.py
+```
+
+### Access the API
+
+- **API Documentation**: http://localhost:8888/docs
+- **Alternative Docs**: http://localhost:8888/redoc
+
+## Sample Data
+
+The API comes pre-populated with comprehensive test data:
+
+| Entity | Count | Details |
+|--------|-------|---------|
+| **Accounts** | 100 | Various states and revenue levels |
+| **Contacts** | ~200 | 1-3 contacts per account |
+| **Job Titles** | 10 | From CEO to Software Engineer |
+
+### Account Distribution
+
+Accounts span across US states with revenues ranging from $300,000 to $10,000,000:
+
+- High-value accounts (>$5M): ~30 accounts
+- California and Texas: Most concentrated regions
+- Third-party accounts: 50% of all accounts (even-numbered IDs)
+
+## Data Models
+
+### Account
+
+Sales account information:
+- `id`: Unique identifier (e.g., "acc_1")
+- `name`: Company name
+- `state`: US state code (e.g., "CA", "NY")
+- `revenue`: Annual revenue in dollars
+- `is_third_party`: Whether from external provider
+
+### Contact
+
+Person at an account:
+- `id`: Unique identifier (e.g., "con_1")
+- `name`: Full name
+- `email`: Email address
+- `account_id`: Linked account
+- `job_title`: Role at the company
+
+### Job Title
+
+Available job titles include:
+- Chief Executive Officer
+- Chief Technology Officer
+- Chief Financial Officer
+- Vice President of Sales
+- Director of Marketing
+- Sales Manager
+- Product Manager
+- Account Executive
+- Data Scientist
+- Software Engineer
+
+## API Endpoints
+
+### Get My Territory Accounts
+
+```
+GET /my-accounts
+```
+
+Returns accounts assigned to the current user's territory (odd-numbered account IDs).
+
+**Response:**
+```json
+{
+  "accounts": [...],
+  "coverage_id": "COV-001",
+  "client_status": "Active"
+}
+```
+
+### Get Third-Party Accounts
+
+```
+GET /third-party-accounts
+```
+
+Returns accounts from external providers (even-numbered account IDs).
+
+**Parameters:**
+- `campaign_name` (optional): Filter by campaign
+
+**Campaign Filters:**
+- `"Tech Transformation"`: Returns accounts with revenue > $5M
+- `"High Value Outreach"`: Returns accounts in CA or NY
+
+**Example:**
+```bash
+# Get all third-party accounts
+curl "http://localhost:8888/third-party-accounts"
+
+# Filter for Tech Transformation campaign
+curl "http://localhost:8888/third-party-accounts?campaign_name=Tech%20Transformation"
+
+# Filter for High Value Outreach campaign
+curl "http://localhost:8888/third-party-accounts?campaign_name=High%20Value%20Outreach"
+```
+
+### Get Job Titles by Account
+
+```
+GET /accounts/{account_id}/job-titles
+```
+
+Returns unique job titles for contacts at the specified account.
+
+**Example:**
+```bash
+curl "http://localhost:8888/accounts/acc_1/job-titles"
+```
+
+**Response:**
+```json
+{
+  "job_titles": [
+    {"title": "Vice President of Sales"},
+    {"title": "Data Scientist"}
+  ]
+}
+```
+
+### Get Contacts
+
+```
+GET /contacts
+```
+
+Returns contacts with optional filtering.
+
+**Parameters:**
+- `account_id` (optional): Filter by account
+- `job_title` (optional): Filter by job title (case-insensitive)
+
+**Examples:**
+```bash
+# Get all contacts
+curl "http://localhost:8888/contacts"
+
+# Get contacts for a specific account
+curl "http://localhost:8888/contacts?account_id=acc_1"
+
+# Get all VPs of Sales
+curl "http://localhost:8888/contacts?job_title=Vice%20President%20of%20Sales"
+
+# Combined filters
+curl "http://localhost:8888/contacts?account_id=acc_1&job_title=CEO"
+```
+
+## Using with CUGA
+
+### Configure as Tool
+
+Add the Digital Sales API to your MCP servers configuration:
+
+```yaml
+# mcp_servers.yaml
+servers:
+  - name: digital_sales_api
+    type: openapi
+    spec_url: http://localhost:8888/openapi.json
+```
+
+### Example Tasks to Try
+
+Test CUGA with these natural language queries:
+
+**Basic Queries:**
+- `List all accounts in my territory`
+- `Show me third-party accounts for the Tech Transformation campaign`
+- `Find contacts at Apex Industries`
+
+**Sales Analysis:**
+- `What is the total revenue of my territory accounts?`
+- `Find the highest revenue account in my territory`
+- `List all accounts in California sorted by revenue`
+
+**Contact Discovery:**
+- `Who are the VPs of Sales at third-party accounts?`
+- `Find contacts for accounts over $5M revenue`
+- `Get the CEO contact for my top account`
+
+**Campaign Tasks:**
+- `Find Tech Transformation campaign accounts and their contacts`
+- `List High Value Outreach accounts with their job titles`
+- `Get all Data Scientists from third-party accounts`
+
+**Multi-Step Workflows:**
+- `Find my top 3 accounts by revenue and list their contacts`
+- `For Tech Transformation campaign accounts, find all VP-level contacts`
+- `Compare total revenue between my territory and third-party accounts`
+
+## Territory Logic
+
+The API simulates territory assignment:
+
+- **My Territory**: Accounts with odd IDs (acc_1, acc_3, acc_5, ...)
+- **Third-Party**: Accounts with even IDs (acc_2, acc_4, acc_6, ...)
+
+This deterministic assignment ensures consistent results for testing.
+
+## Troubleshooting
+
+### Port Already in Use
+
+**Problem**: Port 8888 is already in use
+
+**Solution**:
+```python
+# Edit main.py and change the port
+uvicorn.run(app, host="0.0.0.0", port=8889)
+```
+
+### No Contacts for Account
+
+**Problem**: Account returns empty contacts
+
+**Solution**:
+- Verify the account ID exists (check `/third-party-accounts` or `/my-accounts`)
+- Account IDs use format `acc_N` where N is 1-100
+
+### Campaign Filter Not Working
+
+**Problem**: Campaign filter returns unexpected results
+
+**Solution**:
+- Campaign names are case-insensitive
+- Exact match required: "Tech Transformation" or "High Value Outreach"
+- Other campaign names return all third-party accounts
+
+## Next Steps
+
+- Review [OpenAPI Integration](/docs/guides/openapi-integration) for tool configuration
+- Check [CRM Demo](/docs/guides/crm-demo) for a more comprehensive API example
+- Explore [Testing Guide](/docs/development/testing) for testing scenarios
+
+## Resources
+
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [CUGA OpenAPI Integration](/docs/guides/openapi-integration)
