@@ -3,7 +3,8 @@
   "icon": "Package",
   "defaultOpen": false,
   "pages": [
-    "cuga_agent"
+    "cuga_agent",
+    "policies"
   ]
 }
 
