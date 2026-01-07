@@ -1,0 +1,104 @@
+---
+title: Playbook
+description: Provide guided workflows and standard operating procedures.
+---
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+
+# Playbook
+
+Playbooks provide guided workflows or standard operating procedures (SOPs) to the agent when specific topics are triggered. They help ensure consistent, step-by-step execution of complex processes.
+
+## Overview
+
+Playbooks are markdown-formatted guides that the agent follows when specific intents are detected. They can be automatically refined based on conversation history to focus on remaining tasks.
+
+## Usage
+
+<Tabs items={['Python API', 'JSON Config']}>
+<Tab value="Python API">
+```python
+await agent.policies.add_playbook(
+    name="Onboarding Guide",
+    keywords=["onboard", "new user"],
+    content="""
+    # Customer Onboarding Protocol
+    1. Collect user email
+    2. Verify identity
+    3. Create account in CRM
+    """
+)
+```
+</Tab>
+<Tab value="JSON Config">
+```json
+{
+  "name": "Onboarding Guide",
+  "type": "playbook",
+  "triggers": [
+      { "type": "keyword", "value": ["onboard"] }
+  ],
+  "markdown_content": "# Customer Onboarding Protocol..."
+}
+```
+</Tab>
+</Tabs>
+
+## Advanced Example with Natural Language Trigger
+
+For semantic intent matching:
+
+```python
+await agent.policies.add_playbook(
+    name="Customer Support Escalation",
+    description="Guide for handling customer complaints",
+    natural_language_trigger=[
+        "customer complaint",
+        "unhappy customer",
+        "customer issue",
+        "support request"
+    ],
+    threshold=0.75,
+    content="# Customer Support Escalation Protocol..."
+)
+```
+
+## Playbook Refinement
+
+Playbooks can be automatically refined based on the current context and conversation history. When enabled, the system analyzes what the user has already accomplished and adjusts the playbook to focus on remaining steps.
+
+<Accordions>
+<Accordion title="Enable Playbook Refinement">
+Set the environment variable to enable automatic playbook refinement:
+
+```bash
+export DYNACONF_POLICY__PLAYBOOK_REFINE=true
+```
+
+When enabled, the system will:
+- Analyze conversation history to understand what steps have been completed
+- Refine the playbook content to focus on remaining tasks
+- Adapt the playbook based on user progress
+- Provide context-aware guidance
+
+This feature uses LLM-based analysis to understand user progress and dynamically adjust the playbook content accordingly.
+</Accordion>
+</Accordions>
+
+## Content Format
+
+Playbooks use markdown format, allowing you to:
+- Create structured step-by-step instructions
+- Include code blocks and examples
+- Add formatting for better readability
+- Embed links and references
+
+## Use Cases
+
+- **Onboarding Processes**: Guide new users through setup
+- **Support Workflows**: Standardize customer support procedures
+- **Compliance Procedures**: Ensure regulatory compliance steps
+- **Complex Workflows**: Break down multi-step processes
+
+For detailed trigger configuration, see [Triggers](./triggers).
+

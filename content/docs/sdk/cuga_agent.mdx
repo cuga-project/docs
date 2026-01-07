@@ -1,750 +1,206 @@
 ---
-title: Python SDK - CugaAgent
-description: Use CUGA as a Python library in your applications
-icon: Code
+title: CugaAgent
+description: The main entry point for interacting with the CUGA agent.
 ---
-
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Steps, Step } from 'fumadocs-ui/components/steps';
-import { Cards, Card } from 'fumadocs-ui/components/card';
-import { Code, Wrench, Network } from 'lucide-react';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 
-# CugaAgent Python SDK
+# CugaAgent
 
-CugaAgent can be easily integrated into your Python applications as a library. The SDK provides a clean, minimal API for creating and invoking agents with custom tools.
+The `CugaAgent` class provides a simple, high-level interface for creating and running CUGA agents. It wraps the underlying LangGraph execution complexity, offering an easy way to manage tools, handle conversations, and integrate policies.
 
-<Callout type="info">
-All examples in this guide are tested and working. See the [integration tests](https://github.com/cuga-project/cuga-agent/blob/main/tests/integration/test_sdk_integration.py) for the full test suite.
-</Callout>
+## Model Configuration
 
-## Installation
+CUGA supports multiple LLM providers (OpenAI, IBM WatsonX, Azure OpenAI, Groq, OpenRouter, and more). Configure the model provider and settings using environment variables in a `.env` file, or override programmatically by passing a `model` parameter to `CugaAgent`.
 
-```bash
-pip install cuga
-# or
-uv add cuga
-```
+For detailed configuration instructions and all supported providers, see the [Model Configuration documentation](/docs/customization/llm-config).
 
-## Quick Start
-
-Create an agent with custom tools and invoke it with a task:
-
-```python
-from cuga import CugaAgent
-from langchain_core.tools import tool
-
-# Define your custom tools
-@tool
-def add_numbers(a: int, b: int) -> int:
-    '''Add two numbers together'''
-    return a + b
-
-@tool
-def multiply_numbers(a: int, b: int) -> int:
-    '''Multiply two numbers together'''
-    return a * b
-
-# Create and invoke the agent
-agent = CugaAgent(tools=[add_numbers, multiply_numbers])
-result = await agent.invoke("What is 10 + 5?")
-print(result)  # Agent uses add_numbers tool and returns "15"
-```
-
-## Core Concepts
-
-### CugaAgent Class
-
-The main interface for creating and using CugaAgent instances.
-
-```python
-from cuga import CugaAgent
-
-agent = CugaAgent(
-    tools=[...],          # List of LangChain tools
-    tool_provider=None,   # Custom tool provider (advanced)
-    model=None,           # Custom LLM (defaults to configured model)
-    callbacks=None,       # LangChain callbacks
-)
-```
-
-### Methods
-
-#### `invoke()`
-
-Invoke the agent with a message and get the response.
-
-```python
-result = await agent.invoke(
-    message="What is 10 + 5?",      # str or List[BaseMessage]
-    thread_id=None,                  # Optional thread ID for state isolation
-    config=None,                     # Optional LangGraph config
-)
-```
-
-#### `stream()`
-
-Stream the agent's execution step by step for real-time monitoring.
-
-```python
-async for state in agent.stream("Calculate 20 + 22"):
-    for node_name, node_state in state.items():
-        if isinstance(node_state, dict) and 'script' in node_state:
-            print(f"Executing: {node_state['script']}")
-```
-
-## Usage Examples
-
-### Basic Tool Usage
-
-<Tabs items={['Simple Math', 'Multi-Step', 'Custom Tools']}>
-<Tab value="Simple Math">
-
-```python
-from cuga import CugaAgent
-from langchain_core.tools import tool
-
-@tool
-def add_numbers(a: int, b: int) -> int:
-    '''Add two numbers together'''
-    return a + b
-
-agent = CugaAgent(tools=[add_numbers])
-result = await agent.invoke("What is 10 + 5?")
-print(result)  # "15"
-```
-
-</Tab>
-
-<Tab value="Multi-Step">
-
-```python
-from cuga import CugaAgent
-from langchain_core.tools import tool
-
-@tool
-def add_numbers(a: int, b: int) -> int:
-    '''Add two numbers together'''
-    return a + b
-
-@tool
-def multiply_numbers(a: int, b: int) -> int:
-    '''Multiply two numbers together'''
-    return a * b
-
-agent = CugaAgent(tools=[add_numbers, multiply_numbers])
-result = await agent.invoke("Calculate (10 + 5) * 3")
-print(result)  # Agent uses both tools and returns "45"
-```
-
-</Tab>
-
-<Tab value="Custom Tools">
-
-```python
-from cuga import CugaAgent
-from langchain_core.tools import tool
-
-@tool
-def get_user_count() -> int:
-    '''Get the number of users in the system'''
-    # Your custom logic here
-    return 150
-
-@tool
-def get_greeting(name: str) -> str:
-    '''Get a greeting for a person'''
-    return f"Hello, {name}!"
-
-agent = CugaAgent(tools=[get_user_count, get_greeting])
-result = await agent.invoke("How many users do we have?")
-print(result)  # "150"
-```
-
-</Tab>
-</Tabs>
-
-### State Isolation with Thread ID
-
-Use `thread_id` for per-user state management and E2B sandbox caching:
-
-```python
-agent = CugaAgent(tools=[add_numbers])
-
-# User 1's session
-result1 = await agent.invoke(
-    "What is 10 + 5?",
-    thread_id="user-alice"
-)
-
-# User 2's session (isolated from User 1)
-result2 = await agent.invoke(
-    "What is 20 + 22?",
-    thread_id="user-bob"
-)
-```
-
-### Streaming Execution
-
-Monitor agent execution in real-time:
-
-```python
-agent = CugaAgent(tools=[add_numbers, multiply_numbers])
-
-async for state in agent.stream("Calculate 20 + 22"):
-    for node_name, node_state in state.items():
-        print(f"📍 Node: {node_name}")
-        
-        if isinstance(node_state, dict):
-            # Observe code generation
-            if 'script' in node_state and node_state['script']:
-                print(f"💻 Code: {node_state['script']}")
-            
-            # Get final answer
-            if 'final_answer' in node_state:
-                print(f"✅ Answer: {node_state['final_answer']}")
-```
-
-### Dynamic Tool Management
-
-Add tools after agent creation:
-
-```python
-agent = CugaAgent(tools=[add_numbers])
-
-# First invocation
-result1 = await agent.invoke("What is 8 + 9?")
-print(result1)  # "17"
-
-# Add new tool
-agent.add_tool(multiply_numbers)
-
-# Now can use the new tool
-result2 = await agent.invoke("What is 4 * 5?")
-print(result2)  # "20"
-```
-
-## Advanced Features
-
-### Custom Tool Provider
-
-For advanced scenarios, implement a custom tool provider:
-
-```python
-from cuga import CugaAgent
-from cuga.backend.cuga_graph.nodes.cuga_lite.tool_provider_interface import (
-    ToolProviderInterface,
-    AppDefinition,
-)
-
-class MyToolProvider(ToolProviderInterface):
-    def __init__(self, tools):
-        self.tools = tools
-        self.initialized = False
-    
-    async def initialize(self):
-        self.initialized = True
-    
-    async def get_apps(self):
-        return [
-            AppDefinition(
-                name="my_app",
-                description="My custom application",
-                type="api"
-            )
-        ]
-    
-    async def get_tools(self, app_name: str):
-        if app_name == "my_app":
-            return self.tools
-        return []
-    
-    async def get_all_tools(self):
-        return self.tools
-
-# Use custom provider
-tool_provider = MyToolProvider(tools=[add_numbers, multiply_numbers])
-agent = CugaAgent(tool_provider=tool_provider)
-result = await agent.invoke("Calculate 5 + 6")
-```
-
-### Custom Model Configuration
-
-Use a custom LLM model:
-
-```python
-from cuga import CugaAgent
-from cuga.backend.llm.models import LLMManager
-from cuga.config import settings
-
-# Get custom model
-llm_manager = LLMManager()
-custom_model = llm_manager.get_model(settings.agent.code.model)
-
-# Create agent with custom model
-agent = CugaAgent(tools=[add_numbers], model=custom_model)
-result = await agent.invoke("What is 5 + 6?")
-```
-
-### LangGraph Integration
-
-Access the underlying LangGraph for advanced use cases:
-
-```python
-from cuga import CugaAgent
-from langgraph.checkpoint.memory import MemorySaver
-
-agent = CugaAgent(tools=[add_numbers])
-
-# Access the compiled LangGraph
-compiled_graph = agent.graph
-
-# Use with custom checkpointer
-checkpointer = MemorySaver()
-
-# You can now use the graph with LangGraph features
-result = await compiled_graph.ainvoke(
-    {"chat_messages": [HumanMessage(content="What is 2+2?")]},
-    config={"configurable": {"thread_id": "user-123"}}
-)
-```
-
-### Convenience Function
-
-For one-off invocations without creating an agent instance:
-
-```python
-from cuga import run_agent
-
-result = await run_agent(
-    "What is 12 + 13?",
-    tools=[add_numbers]
-)
-print(result)  # "25"
-```
-
-## Best Practices
+## Initialization
 
 <Steps>
+<Step>
+### Import
+Import the agent and necessary tools from `cuga` and `langchain_core`.
+
+```python
+from cuga import CugaAgent
+from langchain_core.tools import tool
+```
+</Step>
 
 <Step>
-### Define Clear Tool Descriptions
-
-The LLM reads tool docstrings to understand when to use them. Make them clear and specific:
+### Define Tools
+Create the tools your agent will use.
 
 ```python
 @tool
 def get_weather(city: str) -> str:
-    '''Get current weather information for a specific city.
-    
-    Args:
-        city: Name of the city (e.g., "San Francisco", "New York")
-    
-    Returns:
-        Weather description including temperature and conditions
-    '''
+    """Get weather for a city"""
     return f"Weather in {city}: Sunny, 72°F"
 ```
-
 </Step>
 
 <Step>
-### Use Type Hints
-
-Always include type hints for tool parameters:
-
-```python
-@tool
-def calculate_discount(price: float, discount_percent: int) -> float:
-    '''Calculate discounted price'''
-    return price * (1 - discount_percent / 100)
-```
-
-</Step>
-
-<Step>
-### Handle Errors Gracefully
-
-Return meaningful error messages from tools:
+### Create Agent
+Initialize the `CugaAgent` with your tools and optional model configuration.
 
 ```python
-@tool
-def divide_numbers(a: float, b: float) -> str:
-    '''Divide two numbers'''
-    if b == 0:
-        return "Error: Cannot divide by zero"
-    return str(a / b)
-```
-
-</Step>
-
-<Step>
-### Use Thread IDs for State Isolation
-
-When building multi-user applications, always use thread IDs:
-
-```python
-# Per-user isolation
-result = await agent.invoke(
-    message="What is my balance?",
-    thread_id=f"user-{user_id}"
+agent = CugaAgent(
+    tools=[get_weather],
+    # model=... (optional)
 )
 ```
-
 </Step>
-
 </Steps>
 
-## Configuration
+### Parameters
 
-CugaAgent uses [Dynaconf](https://www.dynaconf.com/) for configuration management, which allows you to configure the agent through both `settings.toml` files and environment variables.
+<TypeTable
+  type={{
+    tools: {
+      description: 'Optional list of LangChain tools (BaseTool or @tool decorated functions).',
+      type: 'List[BaseTool]',
+      default: 'None'
+    },
+    tool_provider: {
+      description: 'Optional custom tool provider for advanced usage. Overrides tools.',
+      type: 'ToolProviderInterface',
+      default: 'None'
+    },
+    model: {
+      description: 'Optional language model. Defaults to the system configured model.',
+      type: 'BaseChatModel',
+      default: 'None'
+    },
+    callbacks: {
+      description: 'Optional list of callback handlers for monitoring.',
+      type: 'List[BaseCallbackHandler]',
+      default: 'None'
+    },
+     policy_system: {
+      description: 'Optional policy configuration instance.',
+      type: 'PolicyConfigurable',
+      default: 'None'
+    }
+  }}
+/>
 
-### Configuration Hierarchy
+## Tool Provider
 
-Settings can be defined in multiple ways (in order of precedence):
+The `tool_provider` parameter allows you to customize how tools are provided to the agent. By default, CUGA uses `CombinedToolProvider` internally. For advanced use cases, you can implement a custom tool provider or use one of the built-in implementations.
 
-1. **Environment Variables** (highest priority)
-2. **`.env` file**
-3. **`settings.toml` file**
-4. **Default values** (lowest priority)
+For detailed information about tool providers, including built-in implementations and how to create custom providers, see the [Tool Provider documentation](./tool_provider).
 
-### Environment Variable Format
+## Core Methods
 
-All settings in `settings.toml` can be overridden using environment variables with the format:
+### `invoke`
 
-```
-DYNACONF_<SECTION>__<SUBSECTION>__<KEY>=value
-```
+Run the agent with a message.
 
-<Callout type="info">
-Note the double underscore `__` between sections and single underscore `_` within names.
-</Callout>
-
-### Basic Environment Variables
-
-Set these in your `.env` file:
-
-```bash
-# Required: LLM API key
-OPENAI_API_KEY=sk-...
-
-# Optional: Model configuration
-AGENT_SETTING_CONFIG="settings.openai.toml"
-MODEL_NAME=gpt-4o
-```
-
-### Advanced Configuration
-
-#### E2B Sandbox Mode
-
-Enable remote code execution in E2B sandboxes for enhanced security:
-
-```bash
-# Enable E2B sandbox for code execution
-DYNACONF_ADVANCED_FEATURES__E2B_SANDBOX=true
-
-# Set your E2B API key
-E2B_API_KEY=your-e2b-api-key
-
-# Optional: Configure E2B timeout (in seconds)
-DYNACONF_ADVANCED_FEATURES__E2B_TIMEOUT=300
-```
-
-<Tabs items={['Python', 'Environment']}>
-<Tab value="Python">
-
+<Tabs items={['Single Turn', 'Multi-turn / Resume']}>
+<Tab value="Single Turn">
 ```python
-from cuga import CugaAgent
-import os
+result = await agent.invoke("What is the weather in Tokyo?")
+print(result)
+```
+</Tab>
+<Tab value="Multi-turn / Resume">
+```python
+from langchain_core.messages import HumanMessage, AIMessage
 
-# Enable E2B mode
-os.environ["DYNACONF_ADVANCED_FEATURES__E2B_SANDBOX"] = "true"
-os.environ["E2B_API_KEY"] = "your-api-key"
+# Multi-turn with list of messages
+result = await agent.invoke([
+    HumanMessage(content="My name is Alice"),
+    AIMessage(content="Hello Alice"),
+    HumanMessage(content="What is my name?")
+])
 
-agent = CugaAgent(tools=[add_numbers])
+# Resume execution (e.g. after tool approval)
 result = await agent.invoke(
-    "What is 10 + 5?",
-    thread_id="user-123"  # E2B caches sandboxes per thread_id
+    None,
+    thread_id="user-123",
+    action_response=approval_response
 )
 ```
-
-</Tab>
-
-<Tab value="Environment">
-
-```bash
-# In your .env file
-DYNACONF_ADVANCED_FEATURES__E2B_SANDBOX=true
-E2B_API_KEY=your-e2b-api-key
-```
-
 </Tab>
 </Tabs>
 
-#### Tool Shortlisting
+**Signature Parameters**
 
-When you have many tools, CugaAgent can automatically enable tool shortlisting to improve performance:
+<TypeTable
+  type={{
+    message: {
+      description: 'User message (string), list of messages, or None to resume execution.',
+      type: 'Union[str, List[BaseMessage], None]',
+      default: 'None'
+    },
+    thread_id: {
+      description: 'Thread ID (required for resume, auto-generated for new conversations).',
+      type: 'Optional[str]',
+      default: 'None'
+    },
+    config: {
+      description: 'Optional LangGraph config (for advanced usage).',
+      type: 'Optional[Dict[str, Any]]',
+      default: 'None'
+    },
+    action_response: {
+      description: 'Optional ActionResponse for resuming after approval/interruption.',
+      type: 'Optional[Any]',
+      default: 'None'
+    }
+  }}
+/>
 
-```bash
-# Set threshold for automatic tool shortlisting (default: 10)
-DYNACONF_ADVANCED_FEATURES__SHORTLISTING_TOOL_THRESHOLD=10
-```
+### `stream`
 
-When the number of tools exceeds this threshold, CugaAgent will:
-1. Use an LLM to identify relevant tools for the task
-2. Only expose those tools to the agent
-3. Reduce token usage and improve response time
-
-<Callout type="tip">
-Tool shortlisting is automatic! If you have more than 10 tools, CugaAgent will automatically use the `find_tools` mechanism to select the most relevant ones.
-</Callout>
-
-```python
-from cuga import CugaAgent
-
-# With 15 tools, shortlisting is automatically enabled
-agent = CugaAgent(tools=[tool1, tool2, ..., tool15])
-
-# CUGA will:
-# 1. Analyze the user's task
-# 2. Select the 4 most relevant tools
-# 3. Execute with only those tools
-result = await agent.invoke("Calculate something")
-```
-
-<Callout type="info">
-**Note:** The CugaAgent SDK currently exposes the API-based agent for tool execution and code generation. Browser automation capabilities are not yet available through the SDK but will be added in a future release.
-</Callout>
-
-#### Step Limits
-
-Control the maximum number of execution steps:
-
-```bash
-# Maximum steps before stopping (default: 20)
-DYNACONF_ADVANCED_FEATURES__CUGA_LITE_MAX_STEPS=20
-```
+Stream the agent's execution step-by-step.
 
 ```python
-from cuga import CugaAgent
-import os
-
-# Set custom step limit
-os.environ["DYNACONF_ADVANCED_FEATURES__CUGA_LITE_MAX_STEPS"] = "30"
-
-agent = CugaAgent(tools=[...])
-# Agent will stop after 30 steps if task isn't complete
+async for state in agent.stream("Analyze this dataset"):
+    print(state)
 ```
 
-#### Security Settings
+**Signature Parameters**
 
-Configure code execution security:
+<TypeTable
+  type={{
+    message: {
+      description: 'User message or list of messages.',
+      type: 'Union[str, List[BaseMessage], None]',
+      default: 'None'
+    },
+    thread_id: {
+        description: 'Thread ID.',
+        type: 'Optional[str]',
+        default: 'None'
+    },
+    config: {
+        description: 'LangGraph config',
+        type: 'Optional[Dict[str, Any]]'
+    },
+    action_response: {
+        description: 'Resume action response',
+        type: 'Optional[Any]'
+    }
+  }}
+/>
 
-```bash
-# Execution timeout (seconds)
-DYNACONF_ADVANCED_FEATURES__CODE_EXECUTION_TIMEOUT=60
+## Properties
 
-# Enable Docker isolation (alternative to E2B)
-DYNACONF_FEATURES__DOCKER_SANDBOX=true
-```
+### `graph`
 
-### Common Configuration Examples
-
-#### Development Setup
-
-```bash
-# .env for development
-OPENAI_API_KEY=sk-...
-AGENT_SETTING_CONFIG="settings.openai.toml"
-DYNACONF_FEATURES__LOCAL_SANDBOX=true
-DYNACONF_ADVANCED_FEATURES__CUGA_LITE_MAX_STEPS=20
-```
-
-#### Production with E2B
-
-```bash
-# .env for production
-OPENAI_API_KEY=sk-...
-E2B_API_KEY=e2b-...
-AGENT_SETTING_CONFIG="settings.openai.toml"
-DYNACONF_ADVANCED_FEATURES__E2B_SANDBOX=true
-DYNACONF_ADVANCED_FEATURES__SHORTLISTING_TOOL_THRESHOLD=10
-DYNACONF_ADVANCED_FEATURES__CUGA_LITE_MAX_STEPS=30
-```
-
-#### High-Performance Setup
-
-```bash
-# .env for high performance
-OPENAI_API_KEY=sk-...
-MODEL_NAME=gpt-4o-mini  # Faster model
-DYNACONF_ADVANCED_FEATURES__SHORTLISTING_TOOL_THRESHOLD=5  # Aggressive shortlisting
-DYNACONF_ADVANCED_FEATURES__CUGA_LITE_MAX_STEPS=15  # Lower step limit
-DYNACONF_FEATURES__LOCAL_SANDBOX=true  # Faster than E2B
-```
-
-### Programmatic Configuration
-
-You can also configure settings programmatically:
+Access the underlying compiled LangGraph `StateGraph`.
 
 ```python
-from cuga import CugaAgent
-from cuga.config import settings
-import os
-
-# Override settings via environment
-os.environ["DYNACONF_ADVANCED_FEATURES__E2B_SANDBOX"] = "true"
-os.environ["DYNACONF_ADVANCED_FEATURES__SHORTLISTING_TOOL_THRESHOLD"] = "5"
-
-# Access settings
-print(f"E2B enabled: {settings.advanced_features.e2b_sandbox}")
-print(f"Shortlisting threshold: {settings.advanced_features.shortlisting_tool_threshold}")
-
-# Create agent (will use updated settings)
-agent = CugaAgent(tools=[...])
+compiled_graph = agent.graph
+# Use the graph directly
+await compiled_graph.ainvoke(...)
 ```
 
-### Configuration Reference
+### `policies`
 
-| Setting | Environment Variable | Default | Description |
-|---------|---------------------|---------|-------------|
-| E2B Sandbox | `DYNACONF_ADVANCED_FEATURES__E2B_SANDBOX` | `false` | Enable remote E2B sandbox execution |
-| E2B API Key | `E2B_API_KEY` | - | Your E2B API key |
-| Tool Threshold | `DYNACONF_ADVANCED_FEATURES__SHORTLISTING_TOOL_THRESHOLD` | `10` | Auto-enable shortlisting above this count |
-| Max Steps | `DYNACONF_ADVANCED_FEATURES__CUGA_LITE_MAX_STEPS` | `20` | Maximum execution steps |
-| Local Sandbox | `DYNACONF_FEATURES__LOCAL_SANDBOX` | `true` | Use local sandbox vs E2B |
-| Code Timeout | `DYNACONF_ADVANCED_FEATURES__CODE_EXECUTION_TIMEOUT` | `60` | Code execution timeout (seconds) |
-
-### Model Selection
-
-Configure different models for different use cases:
-
-```python
-from langchain_openai import ChatOpenAI
-from cuga import CugaAgent
-
-# Use GPT-4 for complex reasoning
-model = ChatOpenAI(model="gpt-4o", temperature=0)
-agent = CugaAgent(tools=[...], model=model)
-```
-
-Or via environment:
-
-```bash
-# Use specific model
-MODEL_NAME=gpt-4o
-AGENT_SETTING_CONFIG="settings.openai.toml"
-```
-
-## API Reference
-
-### CugaAgent
-
-```python
-class CugaAgent:
-    def __init__(
-        self,
-        tools: Optional[List[BaseTool]] = None,
-        tool_provider: Optional[ToolProviderInterface] = None,
-        model: Optional[BaseChatModel] = None,
-        callbacks: Optional[List[BaseCallbackHandler]] = None,
-    )
-    
-    async def invoke(
-        self,
-        message: Union[str, List[BaseMessage]],
-        thread_id: Optional[str] = None,
-        config: Optional[Dict[str, Any]] = None,
-    ) -> str
-    
-    async def stream(
-        self,
-        message: Union[str, List[BaseMessage]],
-        thread_id: Optional[str] = None,
-        config: Optional[Dict[str, Any]] = None,
-    )
-    
-    def add_tool(self, tool: BaseTool)
-    
-    def add_tools(self, tools: List[BaseTool])
-    
-    @property
-    def graph(self) -> CompiledGraph
-```
-
-### run_agent()
-
-```python
-async def run_agent(
-    message: str,
-    tools: Optional[List[BaseTool]] = None,
-    model: Optional[BaseChatModel] = None,
-) -> str
-```
-
-## Examples
-
-### Complete Working Examples
-
-- [Basic Usage](https://github.com/cuga-project/cuga-agent/blob/main/docs/examples/sdk_basic_usage.py) - Simple tool usage and invocation
-- [Streaming](https://github.com/cuga-project/cuga-agent/blob/main/docs/examples/sdk_streaming_example.py) - Real-time execution monitoring
-- [LangGraph Integration](https://github.com/cuga-project/cuga-agent/blob/main/docs/examples/sdk_langgraph_integration.py) - Advanced graph usage
-
-### Integration Tests
-
-See the [full test suite](https://github.com/cuga-project/cuga-agent/blob/main/tests/integration/test_sdk_integration.py) for more examples and usage patterns.
-
-## Troubleshooting
-
-### Import Errors
-
-If you get import errors, ensure CugaAgent is installed:
-
-```bash
-pip install cuga
-# or
-uv sync  # if developing from source
-```
-
-### Model Configuration
-
-If the agent fails to initialize, check your `.env` file:
-
-```bash
-# Verify environment variables are set
-cat .env | grep OPENAI_API_KEY
-```
-
-### Tool Execution Errors
-
-If tools aren't being called:
-
-- ✅ Check tool docstrings are clear and descriptive
-- ✅ Ensure tool parameters have type hints
-- ✅ Verify tools return string or JSON-serializable values
-- ✅ Check logs for security validation errors
-
-<Callout type="warning">
-CugaAgent requires that all generated code contains at least one `print()` statement. This is enforced by the security validator.
-</Callout>
-
-## Next Steps
-
-<Cards>
-  <Card title="Tool Integration" href="/docs/tools" icon={<Wrench />}>
-    Learn how to integrate OpenAPI specs and MCP servers
-  </Card>
-  <Card title="LangGraph" href="/docs/langgraph" icon={<Network />}>
-    Deep dive into LangGraph integration
-  </Card>
-  <Card title="Examples" href="/docs/examples" icon={<Code />}>
-    Explore more complete examples
-  </Card>
-</Cards>
-
-## Support
-
-- **Documentation**: [https://cuga.dev](https://cuga.dev)
-- **GitHub**: [https://github.com/cuga-project/cuga-agent](https://github.com/cuga-project/cuga-agent)
-- **Discord**: [Join our community](https://discord.gg/aH6rAEEW)
+Access the `PoliciesManager`. See [Policies](../policies).
 

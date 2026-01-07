@@ -1,0 +1,15 @@
+{
+  "title": "Policies",
+  "icon": "Shield",
+  "defaultOpen": false,
+  "pages": [
+    "index",
+    "intent-guard",
+    "playbook",
+    "tool-enrichment",
+    "tool-approval",
+    "output-formatter",
+    "triggers"
+  ]
+}
+

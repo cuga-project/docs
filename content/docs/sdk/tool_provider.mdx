@@ -1,0 +1,231 @@
+---
+title: Tool Provider
+description: Organize and group tools from multiple applications using tool providers.
+---
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+# Tool Provider
+
+The `tool_provider` parameter allows you to customize how tools are provided to the agent. By default, if you pass `tools` directly, CUGA uses `DirectLangChainToolsProvider` internally. For advanced use cases, you can implement a custom tool provider or use one of the built-in implementations.
+
+## Why Import First?
+
+When working with multiple applications and tools, you need to import the tool provider **first** to properly define and group tools by application. This allows you to:
+
+- **Organize tools by application**: Group related tools together (e.g., all Slack tools, all GitHub tools)
+- **Manage tool namespaces**: Avoid naming conflicts when tools from different apps have similar names
+- **Control tool visibility**: Selectively load tools from specific applications
+- **Enable multi-app workflows**: Use tools from multiple services in a single agent execution
+
+By importing and configuring the tool provider before creating the agent, you establish the tool structure that the agent will use throughout its execution.
+
+## ToolProviderInterface
+
+All tool providers implement the `ToolProviderInterface` abstract class, which defines the following interface:
+
+<TypeTable
+  type={{
+    get_apps: {
+      description: 'Get list of available applications/services that provide tools.',
+      type: 'async def get_apps() -> List[AppDefinition]',
+      returns: 'List[AppDefinition]'
+    },
+    get_tools: {
+      description: 'Get tools for a specific application by name.',
+      type: 'async def get_tools(app_name: str) -> List[StructuredTool]',
+      parameters: {
+        app_name: 'Name of the application'
+      },
+      returns: 'List[StructuredTool]'
+    },
+    get_all_tools: {
+      description: 'Get all available tools from all applications.',
+      type: 'async def get_all_tools() -> List[StructuredTool]',
+      returns: 'List[StructuredTool]'
+    },
+    initialize: {
+      description: 'Initialize the tool provider (e.g., connect to registry, validate tools).',
+      type: 'async def initialize() -> None',
+      returns: 'None'
+    }
+  }}
+/>
+
+## AppDefinition Schema
+
+Applications are represented using the `AppDefinition` model:
+
+<TypeTable
+  type={{
+    name: {
+      description: 'Name of the application/service.',
+      type: 'str',
+      required: true
+    },
+    url: {
+      description: 'Optional URL where the application is hosted.',
+      type: 'Optional[str]',
+      default: 'None'
+    },
+    description: {
+      description: 'Optional description of the application.',
+      type: 'Optional[str]',
+      default: 'None'
+    },
+    type: {
+      description: 'Type of application (e.g., "api", "langchain", "mcp").',
+      type: 'str',
+      default: '"api"'
+    }
+  }}
+/>
+
+## CombinedToolProvider
+
+The `CombinedToolProvider` is the recommended provider for production use. It combines tools from both runtime tracker tools and the MCP registry, allowing you to execute tools against the registry while also supporting local runtime tools.
+
+> **Note**: The `CombinedToolProvider` is used internally when you start `cuga demo`. It requires the registry to be running and properly configured. To understand how the registry works and how to set it up, see the [registry documentation](https://github.com/cuga-project/cuga-agent/tree/main/src/cuga/backend/tools_env/registry).
+
+### How It Works
+
+The `CombinedToolProvider` uses a two-tier approach:
+
+1. **Runtime Tools (Priority)**: First checks the activity tracker for runtime tools that were dynamically added during execution
+2. **Registry Tools (Fallback)**: Falls back to the MCP registry to load tools from OpenAPI specs or MCP servers
+
+This allows the agent to execute tools against the registry while maintaining the flexibility to use locally defined runtime tools.
+
+### Executing Tools Against Registry
+
+When tools are loaded from the registry, they are executed through the registry's execution layer. This means:
+
+- **OpenAPI Tools**: Tools defined in OpenAPI specifications are executed via HTTP requests to the specified endpoints
+- **MCP Tools**: Tools from MCP servers are executed through the MCP protocol
+
+The registry handles authentication, request formatting, and response parsing automatically.
+
+### Usage
+
+> **Prerequisite**: The registry must be running before using `CombinedToolProvider`. See the [registry documentation](https://github.com/cuga-project/cuga-agent/tree/main/src/cuga/backend/tools_env/registry) for setup instructions.
+
+```python
+from cuga import CugaAgent
+from cuga.backend.cuga_graph.nodes.cuga_lite.combined_tool_provider import CombinedToolProvider
+
+# Load from both tracker and registry (all available apps)
+provider = CombinedToolProvider()
+await provider.initialize()  # Initialize connection to registry
+agent = CugaAgent(tool_provider=provider)
+
+# Load specific apps only from registry
+provider = CombinedToolProvider(app_names=["slack", "github", "jira"])
+await provider.initialize()
+agent = CugaAgent(tool_provider=provider)
+```
+
+**Constructor Parameters:**
+
+<TypeTable
+  type={{
+    app_names: {
+      description: 'Optional list of specific app names to load from registry. If None, loads all available apps from both tracker and registry.',
+      type: 'Optional[List[str]]',
+      default: 'None'
+    }
+  }}
+/>
+
+### Complete Example
+
+```python
+import asyncio
+from cuga import CugaAgent
+from cuga.backend.cuga_graph.nodes.cuga_lite.combined_tool_provider import CombinedToolProvider
+
+async def main():
+    # Create provider that will execute tools against registry
+    provider = CombinedToolProvider(app_names=["slack", "github"])
+    
+    # Initialize connection to registry
+    await provider.initialize()
+    
+    # Create agent with the provider
+    agent = CugaAgent(tool_provider=provider)
+    
+    # Agent can now use tools from both runtime tracker and registry
+    # Tools from registry will be executed through the registry's execution layer
+    result = await agent.invoke(
+        "Send a message to #general channel in Slack and create a GitHub issue"
+    )
+    print(result)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### Registry Execution Benefits
+
+- **Centralized Tool Management**: All tools are managed through the registry
+- **Automatic Authentication**: Registry handles API keys and authentication tokens
+- **Service Discovery**: Automatically discovers available tools from registered services
+- **Unified Interface**: Single interface for tools from different sources (OpenAPI, MCP)
+- **Runtime Flexibility**: Can still use runtime tools when needed
+
+## Custom Tool Provider
+
+You can create a custom tool provider by implementing the `ToolProviderInterface` to integrate with your own tool sources or add custom logic.
+
+### Implementation Example
+
+```python
+from typing import List
+from cuga.backend.cuga_graph.nodes.cuga_lite.tool_provider_interface import (
+    ToolProviderInterface,
+    AppDefinition
+)
+from langchain_core.tools import StructuredTool
+from langchain_core.tools import tool
+
+class MyCustomToolProvider(ToolProviderInterface):
+    def __init__(self, custom_tools: List[StructuredTool] = None):
+        self.custom_tools = custom_tools or []
+        self.apps = []
+    
+    async def initialize(self):
+        # Initialize your tool source
+        # Connect to databases, APIs, or other services
+        # Validate tools and prepare app definitions
+        self.apps = [
+            AppDefinition(
+                name="custom_app",
+                url="https://api.example.com",
+                description="My custom application",
+                type="api"
+            )
+        ]
+    
+    async def get_apps(self) -> List[AppDefinition]:
+        # Return list of available apps from your custom source
+        return self.apps
+    
+    async def get_tools(self, app_name: str) -> List[StructuredTool]:
+        # Return tools for the specified app
+        if app_name == "custom_app":
+            return self.custom_tools
+        return []
+    
+    async def get_all_tools(self) -> List[StructuredTool]:
+        # Return all tools from all apps
+        return self.custom_tools
+
+# Usage
+@tool
+def custom_tool(query: str) -> str:
+    """A custom tool"""
+    return f"Result: {query}"
+
+provider = MyCustomToolProvider(custom_tools=[custom_tool])
+await provider.initialize()
+agent = CugaAgent(tool_provider=provider)
+```
+
