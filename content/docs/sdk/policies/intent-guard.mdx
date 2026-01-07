@@ -1,0 +1,83 @@
+---
+title: Intent Guard
+description: Block forbidden intents and provide custom responses.
+---
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+# Intent Guard
+
+Intent Guards block the agent from executing actions that match specific forbidden intents. They intercept user requests and provide custom responses, making them ideal for security guardrails and policy enforcement.
+
+## Overview
+
+Intent Guards are triggered when user input matches configured patterns. When triggered, they can:
+- Block the action completely
+- Provide a custom response explaining why the action is blocked
+- Allow override (optional) for certain scenarios
+
+## Usage
+
+<Tabs items={['Python API', 'JSON Config']}>
+<Tab value="Python API">
+```python
+await agent.policies.add_intent_guard(
+    name="Block Deletions",
+    description="Prevent data deletion",
+    keywords=["delete", "remove", "drop"],
+    response="I cannot perform deletion operations."
+)
+```
+</Tab>
+<Tab value="JSON Config">
+```json
+{
+  "name": "Block Deletions",
+  "type": "intent_guard",
+  "triggers": [
+      { "type": "keyword", "value": ["delete", "remove"], "operator": "or" }
+  ],
+  "response": {
+      "content": "I cannot perform deletion operations."
+  }
+}
+```
+</Tab>
+</Tabs>
+
+Intent Guard triggers automatically target `"intent"` (the user's current intent/input), ensuring guards are evaluated based on what the user is trying to accomplish.
+
+## Advanced Example with Natural Language Trigger
+
+For more flexible intent matching, use natural language triggers:
+
+```python
+await agent.policies.add_intent_guard(
+    name="Block Financial Operations",
+    description="Prevent unauthorized financial transactions",
+    intent_examples=[
+        "transfer money",
+        "make a payment",
+        "send funds",
+        "wire transfer"
+    ],
+    response="I cannot perform financial transactions without proper authorization."
+)
+```
+
+## Response Configuration
+
+Intent Guards support different response types:
+
+- **Natural Language**: Plain text response (default)
+- **JSON**: Structured JSON response
+- **Template**: Template-based response with variables
+
+For detailed trigger configuration, see [Triggers](./triggers).
+
+## Use Cases
+
+- **Security Guardrails**: Block dangerous operations (deletions, modifications)
+- **Compliance**: Enforce regulatory requirements
+- **Access Control**: Restrict actions based on user roles
+- **Data Protection**: Prevent unauthorized data access
+

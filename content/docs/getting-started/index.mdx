@@ -8,7 +8,7 @@ import { Tab, Tabs, TabsContent, TabsList, TabsTrigger } from 'fumadocs-ui/compo
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 import { Cards, Card } from 'fumadocs-ui/components/card';
-import { Rocket, Settings, BookOpen, Plug, Save, BarChart3 } from 'lucide-react';
+import { Rocket, Settings, BookOpen, Plug, Save, BarChart3, Shield, Code } from 'lucide-react';
 
 <img
   src="/images/banner.png"
@@ -55,6 +55,18 @@ Get started quickly with these essential guides:
     description="Test and validate your agent implementations"
     icon={<BarChart3 />}
   />
+  <Card
+    href="/docs/sdk/policies"
+    title="Policies"
+    description="Manage agent behavior with Intent Guards, Playbooks, and more"
+    icon={<Shield />}
+  />
+  <Card
+    href="/docs/sdk/cuga_agent"
+    title="Agent SDK"
+    description="Python SDK for creating and running CUGA agents"
+    icon={<Code />}
+  />
 </Cards>
 
 ## Mission
@@ -85,7 +97,7 @@ CUGA is still early, but already provides useful building blocks:
 - **Smart orchestration** with code-generated API glue logic  
 - **Composable agent architecture**: CUGA itself can be exposed as a tool to other agents, enabling nested reasoning and multi-agent collaboration.
 - **Configurable reasoning modes**: Choose between fast heuristics or deep planning depending on your task's complexity and latency needs.
-- **Policy-aware instructions** _(Experimental)_: CUGA components can be configured with policy-aware instructions to improve alignment of the agent behavior.
+- **Policy system**: Configure agent behavior with Intent Guards, Playbooks, Tool Enrichment, Tool Approval, and Output Formatters to enforce security, guide workflows, and ensure compliance.
 - **Save & Reuse** _(Experimental)_: CUGA captures and reuses successful execution paths, enabling consistent and faster behavior across repeated tasks.
 
 <Accordions type="single">

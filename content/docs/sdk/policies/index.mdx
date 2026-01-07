@@ -1,0 +1,95 @@
+---
+title: Overview
+description: Manage agent behavior with Intent Guards, Playbooks, and more.
+---
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+# Policy Management
+
+The `CugaAgent` includes a powerful policy system accessed via `agent.policies`. This allows you to enforce security guardrails, guide agent behavior with playbooks, and require human approval for sensitive actions.
+
+Policies are triggered based on user input, context, or tool usage. You can use **keyword triggers** (exact matching) or **natural language triggers** (semantic matching) to determine when policies should activate.
+
+## Policy Types
+
+### Intent Guard
+
+Blocks the agent from executing actions that match specific forbidden intents. Use keyword triggers or natural language triggers for flexible matching.
+
+See [Intent Guard documentation](./intent-guard) for details.
+
+### Playbook
+
+Provides guided workflows or standard operating procedures (SOPs) to the agent when specific topics are triggered. Supports automatic refinement based on conversation history.
+
+See [Playbook documentation](./playbook) for details.
+
+### Tool Enrichment
+
+Automatically injects additional context or instructions into tool descriptions when specific criteria are met.
+
+See [Tool Enrichment documentation](./tool-enrichment) for details.
+
+### Tool Approval
+
+Requires human confirmation before executing specified sensitive tools. Implements human-in-the-loop workflows.
+
+See [Tool Approval documentation](./tool-approval) for details.
+
+### Output Formatter
+
+Formats agent responses based on triggers and configuration. Transforms or restructures the final output before it's returned to the user.
+
+See [Output Formatter documentation](./output-formatter) for details.
+
+## Trigger Types
+
+Policies can be triggered using different methods. See the [Triggers](./triggers) documentation for detailed information about:
+
+- **Keyword Triggers**: Exact word/phrase matching
+- **Natural Language Triggers**: Semantic similarity matching using LLM
+
+## Management API
+
+### `list`
+
+List all configured policies.
+
+```python
+policies = await agent.policies.list()
+# Returns List[Dict]
+```
+
+### `get` / `delete`
+
+Manage policies by ID.
+
+```python
+# Get
+policy = await agent.policies.get("policy_id_123")
+
+# Delete
+success = await agent.policies.delete("policy_id_123")
+```
+
+### `load_from_json`
+
+Load policies in bulk from a JSON file.
+
+<TypeTable
+  type={{
+    file_path: {
+      description: 'Path to JSON file containing policies.',
+      type: 'str'
+    },
+    clear_existing: {
+      description: 'If True, clear all existing policies before loading.',
+      type: 'bool',
+      default: 'False'
+    }
+  }}
+/>
+
+```python
+result = await agent.policies.load_from_json("policies.json")
+```

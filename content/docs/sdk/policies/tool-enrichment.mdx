@@ -1,0 +1,61 @@
+---
+title: Tool Enrichment
+description: Inject additional context into tool descriptions.
+---
+
+# Tool Enrichment
+
+Tool Enrichment policies automatically inject additional context or instructions into tool descriptions when specific criteria are met. This allows you to add security warnings, compliance notes, or usage guidelines to tools dynamically.
+
+## Overview
+
+Tool Enrichment modifies tool descriptions at runtime, adding context that helps the agent make better decisions about tool usage. The enrichment content is appended (or prepended) to the tool's description.
+
+## Usage
+
+```python
+await agent.policies.add_tool_enrichment(
+    name="Security Context",
+    target_tools=["*"],  # Apply to all tools
+    content="Note: All operations are logged for security compliance.",
+    prepend=True
+)
+```
+
+## Parameters
+
+- **`target_tools`**: List of tool names to enrich. Use `["*"]` to apply to all tools.
+- **`target_apps`**: Optional list of app names to enrich tools for.
+- **`content`**: Markdown content to add to tool descriptions.
+- **`prepend`**: If `True`, content is added before the tool description. If `False`, it's appended.
+
+## Example: App-Specific Enrichment
+
+```python
+await agent.policies.add_tool_enrichment(
+    name="Database Security Notice",
+    target_tools=["sql_query", "update_record"],
+    target_apps=["database"],
+    content="""
+    **Security Notice**: 
+    - All database operations are audited
+    - Sensitive data access requires approval
+    - Changes are logged for compliance
+    """,
+    prepend=True
+)
+```
+
+## Use Cases
+
+- **Security Warnings**: Add security notices to sensitive tools
+- **Compliance Notes**: Include regulatory compliance information
+- **Usage Guidelines**: Provide best practices for tool usage
+- **Context Information**: Add runtime context that affects tool behavior
+
+## Trigger Configuration
+
+Tool Enrichment policies can use triggers to conditionally apply enrichment. For example, you might only add security warnings during business hours or for specific user roles.
+
+For detailed trigger configuration, see [Triggers](./triggers).
+

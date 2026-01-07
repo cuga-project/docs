@@ -11,15 +11,21 @@ import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 
 The `CugaAgent` class provides a simple, high-level interface for creating and running CUGA agents. It wraps the underlying LangGraph execution complexity, offering an easy way to manage tools, handle conversations, and integrate policies.
 
+## Model Configuration
+
+CUGA supports multiple LLM providers (OpenAI, IBM WatsonX, Azure OpenAI, Groq, OpenRouter, and more). Configure the model provider and settings using environment variables in a `.env` file, or override programmatically by passing a `model` parameter to `CugaAgent`.
+
+For detailed configuration instructions and all supported providers, see the [Model Configuration documentation](/docs/customization/llm-config).
+
 ## Initialization
 
 <Steps>
 <Step>
 ### Import
-Import the agent and necessary tools from `cuga.sdk` and `langchain_core`.
+Import the agent and necessary tools from `cuga` and `langchain_core`.
 
 ```python
-from cuga.sdk import CugaAgent
+from cuga import CugaAgent
 from langchain_core.tools import tool
 ```
 </Step>
@@ -81,6 +87,12 @@ agent = CugaAgent(
   }}
 />
 
+## Tool Provider
+
+The `tool_provider` parameter allows you to customize how tools are provided to the agent. By default, CUGA uses `CombinedToolProvider` internally. For advanced use cases, you can implement a custom tool provider or use one of the built-in implementations.
+
+For detailed information about tool providers, including built-in implementations and how to create custom providers, see the [Tool Provider documentation](./tool_provider).
+
 ## Core Methods
 
 ### `invoke`
@@ -96,6 +108,8 @@ print(result)
 </Tab>
 <Tab value="Multi-turn / Resume">
 ```python
+from langchain_core.messages import HumanMessage, AIMessage
+
 # Multi-turn with list of messages
 result = await agent.invoke([
     HumanMessage(content="My name is Alice"),
@@ -174,22 +188,6 @@ async for state in agent.stream("Analyze this dataset"):
   }}
 />
 
-### `add_tool` / `add_tools`
-
-Dynamically add tools to the agent instance.
-
-```python
-agent.add_tool(new_tool)
-# or
-agent.add_tools([tool1, tool2])
-```
-
-<Accordions>
-<Accordion title="Important Note on Graph Recreation">
-Replacing or adding tools will trigger a recreation of the underlying graph on the next invocation. This is only supported when using the default `DirectLangChainToolsProvider`.
-</Accordion>
-</Accordions>
-
 ## Properties
 
 ### `graph`
@@ -206,17 +204,3 @@ await compiled_graph.ainvoke(...)
 
 Access the `PoliciesManager`. See [Policies](../policies).
 
-## Helper Functions
-
-### `run_agent`
-
-A convenience function to quickly spin up a new agent and run a single turn.
-
-```python
-from cuga.sdk import run_agent
-
-result = await run_agent(
-    "Calculate 5 * 10",
-    tools=[calculator_tool]
-)
-```

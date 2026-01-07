@@ -4,6 +4,7 @@
   "defaultOpen": false,
   "pages": [
     "cuga_agent",
+    "tool_provider",
     "policies"
   ]
 }

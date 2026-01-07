@@ -1,0 +1,83 @@
+---
+title: Tool Approval
+description: Require human confirmation before executing sensitive tools.
+---
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+
+# Tool Approval (Human-in-the-Loop)
+
+Tool Approval policies require human confirmation before executing specified sensitive tools. This implements human-in-the-loop workflows, ensuring critical operations are reviewed before execution.
+
+## Overview
+
+When a Tool Approval policy triggers, the agent execution pauses and waits for human approval. This is checked **after code generation**, not during initial policy matching, allowing the system to analyze the actual tools that will be used.
+
+## Usage
+
+```python
+await agent.policies.add_tool_approval(
+    name="Database Write Approval",
+    required_tools=["sql_query", "update_record"],
+    approval_message="You are about to modify the database. Proceed?"
+)
+```
+
+## Parameters
+
+- **`required_tools`**: List of tool names that require approval. Use `["*"]` for all tools.
+- **`required_apps`**: Optional list of app names whose tools require approval.
+- **`approval_message`**: Custom message to show when requesting approval.
+- **`show_code_preview`**: Whether to show code preview in approval request (default: `True`).
+- **`auto_approve_after`**: Auto-approve after N seconds (default: `None`, no auto-approve).
+
+## Resuming Execution
+
+When a tool approval policy triggers, the agent execution will pause. You must resume it using `agent.invoke()` with an `action_response`.
+
+<Accordions>
+<Accordion title="How to Resume Execution">
+```python
+from datetime import datetime
+from cuga.backend.cuga_graph.nodes.human_in_the_loop.followup_model import (
+    ActionResponse, ActionType
+)
+
+approval = ActionResponse(
+    action_id="tool_approval",
+    response_type=ActionType.CONFIRMATION,
+    confirmed=True,
+    timestamp=datetime.now().isoformat(),
+    user_id=thread_id,
+    session_id=thread_id
+)
+
+# Resume execution
+result = await agent.invoke(None, thread_id=thread_id, action_response=approval)
+```
+</Accordion>
+</Accordions>
+
+## Example: App-Level Approval
+
+```python
+await agent.policies.add_tool_approval(
+    name="Financial Operations Approval",
+    required_apps=["payment_processor", "banking"],
+    approval_message="This operation involves financial transactions. Please review and approve.",
+    show_code_preview=True,
+    auto_approve_after=None  # Require explicit approval
+)
+```
+
+## Use Cases
+
+- **Critical Operations**: Require approval for irreversible actions
+- **Financial Transactions**: Review money transfers and payments
+- **Data Modifications**: Approve database writes and updates
+- **External API Calls**: Review calls to third-party services
+- **Compliance**: Ensure regulatory requirements are met
+
+## Priority
+
+When multiple Tool Approval policies match, the one with the highest priority is used. This allows you to create a hierarchy of approval requirements.
+
