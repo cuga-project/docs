@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUGA Policy System Documentation</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        section {
+            margin-bottom: 50px;
+        }
+
+        h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        h3 {
+            color: #764ba2;
+            font-size: 1.5em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        h4 {
+            color: #555;
+            font-size: 1.2em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .diagram-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #e9ecef;
+        }
+
+        .mermaid {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .policy-type {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .policy-type h4 {
+            color: #667eea;
+            margin-top: 0;
+        }
+
+        .trigger-type {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .trigger-type h4 {
+            color: #f56565;
+            margin-top: 0;
+        }
+
+        .flow-step {
+            background: #e6f3ff;
+            border-left: 4px solid #4299e1;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .flow-step h4 {
+            color: #4299e1;
+            margin-top: 0;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #e83e8c;
+        }
+
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .badge-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .badge-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .badge-warning {
+            background: #ed8936;
+            color: white;
+        }
+
+        .badge-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .badge-info {
+            background: #4299e1;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 5px solid #f39c12;
+        }
+
+        .highlight-box h4 {
+            color: #d35400;
+            margin-top: 0;
+        }
+
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .toc {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .toc h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+
+        .toc ul {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .toc li {
+            margin: 10px 0;
+        }
+
+        .toc a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔐 CUGA Policy System</h1>
+            <p>Comprehensive Guide to Policy Matching, Enactment, and Integration</p>
+        </header>
+
+        <div class="content">
+            <div class="toc">
+                <h3>Table of Contents</h3>
+                <ul>
+                    <li><a href="#overview">Overview</a></li>
+                    <li><a href="#policy-types">Policy Types</a></li>
+                    <li><a href="#triggers">Trigger Types</a></li>
+                    <li><a href="#matching">Policy Matching</a></li>
+                    <li><a href="#enactment">Policy Enactment</a></li>
+                    <li><a href="#integration">Integration Points</a></li>
+                    <li><a href="#flow">Execution Flow</a></li>
+                </ul>
+            </div>
+
+            <section id="overview">
+                <h2>Overview</h2>
+                <p>
+                    The CUGA Policy System is a sophisticated framework for controlling agent behavior through
+                    declarative policies. Policies can guide, block, modify, or format agent actions based on
+                    various triggers and conditions. The system integrates seamlessly into the CugaLite graph
+                    execution flow, providing fine-grained control over agent behavior.
+                </p>
+
+                <div class="highlight-box">
+                    <h4>Key Features</h4>
+                    <ul>
+                        <li><strong>Multiple Policy Types:</strong> Playbooks, Intent Guards, Tool Guides, Tool Approval, and Output Formatters</li>
+                        <li><strong>Flexible Triggers:</strong> Keyword, Natural Language, App, State, Tool, and Always triggers</li>
+                        <li><strong>Semantic Matching:</strong> Uses embeddings and LLM for intelligent policy matching</li>
+                        <li><strong>Priority System:</strong> Handles conflicts when multiple policies match</li>
+                        <li><strong>Vector Storage:</strong> Uses Milvus for efficient policy retrieval</li>
+                        <li><strong>Context-Aware:</strong> Uses <code>PolicyContext</code> to extract relevant information from agent state</li>
+                    </ul>
+                </div>
+
+                <h3>PolicyContext: The Bridge Between State and Policies</h3>
+                <p>
+                    <code>PolicyContext</code> is a structured data model that serves as the interface between
+                    the agent's execution state and the policy matching system. It extracts and normalizes
+                    relevant information from the agent state, making it available for policy triggers to evaluate.
+                </p>
+                <p>
+                    When a policy check is initiated, the system first creates a <code>PolicyContext</code> from
+                    the current agent state using <code>PolicyConfigurable.create_context_from_state()</code>.
+                    This context object is then passed to the policy matching functions, which use it to evaluate
+                    triggers and determine if policies should activate.
+                </p>
+                <p>
+                    The <code>PolicyContext</code> provides helper methods like <code>get_target_text()</code>
+                    and <code>get_query_text()</code> that intelligently extract the right text for different
+                    trigger types, prioritizing the most relevant information (e.g., last chat message over
+                    initial user input for better context).
+                </p>
+            </section>
+
+            <section id="policy-types">
+                <h2>Policy Types</h2>
+                
+                <div class="policy-type">
+                    <h4><span class="badge badge-primary">Playbook</span> Step-by-Step Task Guidance</h4>
+                    <p>
+                        Playbooks provide structured, step-by-step instructions for completing complex tasks.
+                        When a playbook matches, its guidance is injected into the agent's prompt, helping the
+                        agent follow a predefined process.
+                    </p>
+                    <ul>
+                        <li><strong>Purpose:</strong> Guide the agent through multi-step processes</li>
+                        <li><strong>Action:</strong> Injects markdown guidance into the system prompt</li>
+                        <li><strong>Refinement:</strong> Can be dynamically refined based on user progress</li>
+                        <li><strong>Example:</strong> "How to process insurance claims" playbook</li>
+                    </ul>
+                </div>
+
+                <div class="policy-type">
+                    <h4><span class="badge badge-danger">Intent Guard</span> Blocking and Warnings</h4>
+                    <p>
+                        Intent Guards intercept user intents before execution and can either block them entirely
+                        or provide warnings. They have the highest priority in the matching system.
+                    </p>
+                    <ul>
+                        <li><strong>Purpose:</strong> Prevent unsafe or unauthorized actions</li>
+                        <li><strong>Action:</strong> Blocks execution and returns a custom response</li>
+                        <li><strong>Override:</strong> Can allow user override if configured</li>
+                        <li><strong>Example:</strong> Blocking deletion of critical data</li>
+                    </ul>
+                </div>
+
+                <div class="policy-type">
+                    <h4><span class="badge badge-info">Tool Guide</span> Tool Description Enhancement</h4>
+                    <p>
+                        Tool Guides enhance tool descriptions with additional context, examples, or warnings.
+                        Multiple tool guides can be applied simultaneously to different tools.
+                    </p>
+                    <ul>
+                        <li><strong>Purpose:</strong> Provide better context for tool usage</li>
+                        <li><strong>Action:</strong> Appends or prepends content to tool descriptions</li>
+                        <li><strong>Targeting:</strong> Can target specific tools or apps</li>
+                        <li><strong>Example:</strong> Adding usage examples to API tools</li>
+                    </ul>
+                </div>
+
+                <div class="policy-type">
+                    <h4><span class="badge badge-warning">Tool Approval</span> Human-in-the-Loop Control</h4>
+                    <p>
+                        Tool Approval policies require human approval before executing code that uses specific
+                        tools. This provides a safety mechanism for sensitive operations.
+                    </p>
+                    <ul>
+                        <li><strong>Purpose:</strong> Require approval for sensitive tool usage</li>
+                        <li><strong>Action:</strong> Creates an interrupt to wait for user approval</li>
+                        <li><strong>Timing:</strong> Checked after code generation, before execution</li>
+                        <li><strong>Example:</strong> Requiring approval for payment processing tools</li>
+                    </ul>
+                </div>
+
+                <div class="policy-type">
+                    <h4><span class="badge badge-success">Output Formatter</span> Response Formatting</h4>
+                    <p>
+                        Output Formatters transform the final AI response into specific formats like JSON,
+                        structured markdown, or custom templates. They operate on the agent's final output.
+                    </p>
+                    <ul>
+                        <li><strong>Purpose:</strong> Format agent responses consistently</li>
+                        <li><strong>Action:</strong> Reformats the final answer using LLM or direct replacement</li>
+                        <li><strong>Types:</strong> Markdown instructions, JSON schema, or direct string</li>
+                        <li><strong>Example:</strong> Formatting responses as structured JSON for API integration</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="triggers">
+                <h2>Trigger Types</h2>
+                <p>
+                    Triggers determine when a policy should be activated. Multiple triggers can be combined,
+                    and all must match for a policy to activate (unless using OR logic for keywords).
+                </p>
+
+                <div class="trigger-type">
+                    <h4><span class="badge badge-danger">Keyword Trigger</span> Exact Text Matching</h4>
+                    <p>
+                        Matches when specific keywords are found in the target text. Supports case-sensitive
+                        and case-insensitive matching, with AND/OR logic for multiple keywords.
+                    </p>
+                    <ul>
+                        <li><strong>Targets:</strong> intent, chat_messages, sub_task, agent_response</li>
+                        <li><strong>Operators:</strong> AND (all keywords) or OR (any keyword)</li>
+                        <li><strong>Use Case:</strong> Fast, exact matching for specific terms</li>
+                    </ul>
+                </div>
+
+                <div class="trigger-type">
+                    <h4><span class="badge badge-primary">Natural Language Trigger</span> Semantic Matching</h4>
+                    <p>
+                        Uses embedding-based similarity to match user intent semantically. More flexible than
+                        keyword matching and can understand variations in phrasing.
+                    </p>
+                    <ul>
+                        <li><strong>Targets:</strong> intent, chat_messages, sub_task, agent_response</li>
+                        <li><strong>Threshold:</strong> Similarity score (0.0 to 1.0, default 0.7)</li>
+                        <li><strong>Use Case:</strong> Understanding user intent beyond exact keywords</li>
+                        <li><strong>Multiple Values:</strong> Supports multiple NL descriptions (OR logic)</li>
+                    </ul>
+                </div>
+
+                <div class="trigger-type">
+                    <h4><span class="badge badge-info">App Trigger</span> Application Context</h4>
+                    <p>
+                        Matches when a specific application is active in the current context. Useful for
+                        app-specific policies.
+                    </p>
+                    <ul>
+                        <li><strong>Target:</strong> Active apps in the execution context</li>
+                        <li><strong>Use Case:</strong> App-specific policies and restrictions</li>
+                    </ul>
+                </div>
+
+                <div class="trigger-type">
+                    <h4><span class="badge badge-warning">State Trigger</span> Agent State Conditions</h4>
+                    <p>
+                        Matches based on values in the agent's state. Supports equals, contains, and regex
+                        operators for flexible state checking.
+                    </p>
+                    <ul>
+                        <li><strong>Operators:</strong> equals, contains, regex</li>
+                        <li><strong>Use Case:</strong> Conditional policies based on execution state</li>
+                    </ul>
+                </div>
+
+                <div class="trigger-type">
+                    <h4><span class="badge badge-success">Tool Trigger</span> Tool Availability</h4>
+                    <p>
+                        Matches when specific tools are available or being used. Can trigger before or after
+                        tool execution.
+                    </p>
+                    <ul>
+                        <li><strong>Stage:</strong> before or after tool execution</li>
+                        <li><strong>Use Case:</strong> Tool-specific policies and monitoring</li>
+                    </ul>
+                </div>
+
+                <div class="trigger-type">
+                    <h4><span class="badge badge-primary">Always Trigger</span> Unconditional</h4>
+                    <p>
+                        Always matches, regardless of context. Useful for policies that should always be active.
+                    </p>
+                </div>
+            </section>
+
+            <section id="matching">
+                <h2>Policy Matching Process</h2>
+                <p>
+                    The policy matching system uses a sophisticated multi-stage process to find the best
+                    matching policy for the current context. The process begins by extracting context information
+                    from the agent state into a <code>PolicyContext</code> object.
+                </p>
+
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        flowchart TD
+                            A[Agent State] --> B[Create PolicyContext]
+                            B --> C[Extract Context Fields]
+                            C --> D[user_input, chat_messages,<br/>sub_task, agent_response,<br/>available_tools, active_apps,<br/>state_data, metadata]
+                            
+                            D --> E{Policy Types?}
+                            E -->|Intent| F[Check Intent Guards]
+                            E -->|Intent| G[Check Playbooks]
+                            E -->|Output| H[Check Output Formatters]
+                            E -->|Tools| I[Check Tool Guides]
+                            E -->|Code| J[Check Tool Approval]
+                            
+                            F --> K[Evaluate Keyword Triggers<br/>against PolicyContext]
+                            F --> L[Evaluate NL Triggers<br/>against PolicyContext]
+                            G --> K
+                            G --> L
+                            H --> K
+                            H --> L
+                            
+                            K --> M[Keyword Match Results]
+                            L --> N[Vector Search]
+                            N --> O[LLM Conflict Resolution]
+                            O --> P[NL Match Results]
+                            
+                            M --> Q[Combine Candidates]
+                            P --> Q
+                            
+                            Q --> R{Intent Guard<br/>in Candidates?}
+                            R -->|Yes| S[Intent Guard Wins]
+                            R -->|No| T[Highest Priority/Confidence]
+                            
+                            S --> U[Return Policy Match]
+                            T --> U
+                            
+                            style A fill:#667eea,stroke:#333,stroke-width:2px,color:#fff
+                            style B fill:#9f7aea,stroke:#333,stroke-width:2px,color:#fff
+                            style D fill:#ffeaa7,stroke:#333,stroke-width:2px,color:#000
+                            style U fill:#48bb78,stroke:#333,stroke-width:2px,color:#fff
+                            style S fill:#f56565,stroke:#333,stroke-width:2px,color:#fff
+                            style K fill:#4299e1,stroke:#333,stroke-width:2px,color:#fff
+                            style L fill:#9f7aea,stroke:#333,stroke-width:2px,color:#fff
+                    </div>
+                </div>
+
+                <h3>PolicyContext Structure</h3>
+                <p>
+                    <code>PolicyContext</code> is a structured representation of the current execution context,
+                    containing all information needed for policy matching:
+                </p>
+                <ul>
+                    <li><strong>user_input:</strong> Current user input/intent</li>
+                    <li><strong>chat_messages:</strong> Recent chat message history</li>
+                    <li><strong>sub_task:</strong> Current sub-task being executed</li>
+                    <li><strong>agent_response:</strong> Last agent response (for Output Formatters)</li>
+                    <li><strong>available_tools:</strong> List of available tools in current context</li>
+                    <li><strong>active_apps:</strong> List of active applications</li>
+                    <li><strong>state_data:</strong> Additional state data for State triggers</li>
+                    <li><strong>thread_id:</strong> Thread/session identifier</li>
+                    <li><strong>metadata:</strong> Additional metadata</li>
+                </ul>
+                <p>
+                    The <code>PolicyContext</code> is created from the agent state using
+                    <code>PolicyConfigurable.create_context_from_state()</code>, which extracts relevant
+                    fields and formats them for policy matching.
+                </p>
+
+                <h3>Matching Algorithm</h3>
+                <ol>
+                    <li><strong>Context Creation:</strong> Extract context from agent state into <code>PolicyContext</code> object</li>
+                    <li><strong>Target Selection:</strong> Determine which field to evaluate (intent, agent_response, etc.) using <code>PolicyContext.get_target_text()</code></li>
+                    <li><strong>Parallel Evaluation:</strong> Both keyword and natural language triggers are evaluated independently in parallel against the <code>PolicyContext</code></li>
+                    <li><strong>Keyword Evaluation:</strong> Check all policies with keyword triggers using <code>PolicyContext.get_target_text()</code> (fast exact matching)</li>
+                    <li><strong>Natural Language Evaluation:</strong> Use <code>PolicyContext.get_query_text()</code> for vector search to find candidate policies, then LLM conflict resolution if multiple match</li>
+                    <li><strong>Candidate Combination:</strong> Combine results from both keyword and NL evaluations into a single candidate list</li>
+                    <li><strong>Priority Resolution:</strong> Intent Guards always win over other policy types</li>
+                    <li><strong>Confidence Selection:</strong> Among remaining candidates, select highest confidence/priority</li>
+                    <li><strong>Trigger Validation:</strong> All non-NL triggers must also match against <code>PolicyContext</code> for a policy to be considered</li>
+                </ol>
+
+                <div class="highlight-box">
+                    <h4>Priority Rules</h4>
+                    <ul>
+                        <li><strong>Intent Guards</strong> have the highest priority and always win over Playbooks</li>
+                        <li>Within the same type, higher <code>priority</code> values win</li>
+                        <li>If priorities are equal, higher confidence scores win</li>
+                        <li>Tool Guides are independent and can have multiple matches simultaneously</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Why Evaluate Both Keyword and NL?</h4>
+                    <p>
+                        Both keyword and natural language triggers are evaluated <strong>independently and in parallel</strong>.
+                        This allows:
+                    </p>
+                    <ul>
+                        <li>A policy with keyword triggers to match even if it also has NL triggers</li>
+                        <li>A policy with only NL triggers to match based on semantic similarity</li>
+                        <li>The system to select the best match from all candidates, regardless of trigger type</li>
+                        <li>Better coverage - keyword matching is fast and exact, while NL matching handles variations</li>
+                    </ul>
+                    <p>
+                        The results from both evaluations are combined, and the best match is selected based on
+                        policy type priority (Intent Guards > others) and confidence scores.
+                    </p>
+                </div>
+            </section>
+
+            <section id="enactment">
+                <h2>Policy Enactment</h2>
+                <p>
+                    Once a policy is matched, it must be enacted. Different policy types have different
+                    enactment mechanisms that integrate into the graph execution flow.
+                </p>
+
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        flowchart LR
+                            A[Policy Match] --> B{Action Type?}
+                            
+                            B -->|BLOCK_INTENT| C[Return Command<br/>goto END]
+                            B -->|GUIDE_PROMPT| D[Store Playbook<br/>in Metadata]
+                            B -->|TOOL_INJECT_DESCRIPTION| E[Store Guide<br/>in Metadata]
+                            B -->|TOOL_REQUIRE_APPROVAL| F[Store Approval<br/>in Metadata]
+                            B -->|FORMAT_OUTPUT| G[Format Response<br/>via LLM]
+                            
+                            C --> H[Block Execution]
+                            D --> I[Inject into Prompt]
+                            E --> J[Enhance Tool Descriptions]
+                            F --> K[Create HITL Interrupt]
+                            G --> L[Replace Final Answer]
+                            
+                            style A fill:#667eea,stroke:#333,stroke-width:2px,color:#fff
+                            style H fill:#f56565,stroke:#333,stroke-width:2px,color:#fff
+                            style I fill:#48bb78,stroke:#333,stroke-width:2px,color:#fff
+                            style J fill:#4299e1,stroke:#333,stroke-width:2px,color:#fff
+                            style K fill:#ed8936,stroke:#333,stroke-width:2px,color:#fff
+                            style L fill:#9f7aea,stroke:#333,stroke-width:2px,color:#fff
+                    </div>
+                </div>
+
+                <h3>Enactment Actions</h3>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Action Type</th>
+                            <th>Policy Type</th>
+                            <th>Effect</th>
+                            <th>Timing</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>BLOCK_INTENT</code></td>
+                            <td>Intent Guard</td>
+                            <td>Immediately ends execution with custom response</td>
+                            <td>Before tool preparation</td>
+                        </tr>
+                        <tr>
+                            <td><code>GUIDE_PROMPT</code></td>
+                            <td>Playbook</td>
+                            <td>Injects guidance into system prompt</td>
+                            <td>During prompt preparation</td>
+                        </tr>
+                        <tr>
+                            <td><code>TOOL_INJECT_DESCRIPTION</code></td>
+                            <td>Tool Guide</td>
+                            <td>Enhances tool descriptions with additional content</td>
+                            <td>During tool preparation</td>
+                        </tr>
+                        <tr>
+                            <td><code>TOOL_REQUIRE_APPROVAL</code></td>
+                            <td>Tool Approval</td>
+                            <td>Creates interrupt for human approval</td>
+                            <td>After code generation</td>
+                        </tr>
+                        <tr>
+                            <td><code>FORMAT_OUTPUT</code></td>
+                            <td>Output Formatter</td>
+                            <td>Reformats final response</td>
+                            <td>After final answer generation</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="integration">
+                <h2>Integration Points</h2>
+                <p>
+                    Policies are integrated into the CugaLite graph at specific execution points, allowing
+                    them to influence agent behavior at the right moments.
+                </p>
+
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        flowchart TD
+                            A[START] --> B[prepare_tools_and_apps]
+                            
+                            B --> C{Policy Check}
+                            C -->|Intent Guard| D[BLOCK: goto END]
+                            C -->|Playbook| E[Store in Metadata]
+                            C -->|Tool Guide| F[Store in Metadata]
+                            C -->|No Match| G[Continue]
+                            
+                            E --> H[call_model]
+                            F --> H
+                            G --> H
+                            
+                            H --> I{Returning from<br/>Approval?}
+                            I -->|Yes| J[Skip Code Gen]
+                            I -->|No| K[Generate Code]
+                            
+                            K --> L{Tool Approval<br/>Required?}
+                            L -->|Yes| M[Create HITL Interrupt]
+                            L -->|No| N[sandbox]
+                            
+                            J --> N
+                            M --> O[Wait for User]
+                            O -->|Approved| N
+                            O -->|Denied| P[END with Error]
+                            
+                            N --> Q[Execute Code]
+                            Q --> R[Update Variables]
+                            R --> H
+                            
+                            H -->|Final Answer| S[Output Formatter?]
+                            S -->|Yes| T[Format Response]
+                            S -->|No| U[END]
+                            T --> U
+                            
+                            style A fill:#667eea,stroke:#333,stroke-width:2px,color:#fff
+                            style D fill:#f56565,stroke:#333,stroke-width:2px,color:#fff
+                            style M fill:#ed8936,stroke:#333,stroke-width:2px,color:#fff
+                            style T fill:#9f7aea,stroke:#333,stroke-width:2px,color:#fff
+                            style U fill:#48bb78,stroke:#333,stroke-width:2px,color:#fff
+                    </div>
+                </div>
+
+                <h3>Integration Points</h3>
+
+                <div class="flow-step">
+                    <h4>1. prepare_tools_and_apps Node</h4>
+                    <p>
+                        <strong>Policies Checked:</strong> Intent Guard, Playbook, Tool Guide<br>
+                        <strong>Purpose:</strong> Early interception and guidance injection<br>
+                        <strong>Actions:</strong>
+                    </p>
+                    <ul>
+                        <li>Create <code>PolicyContext</code> from current state</li>
+                        <li>Check for Intent Guards using <code>PolicyContext</code> (can block immediately)</li>
+                        <li>Check for Playbooks using <code>PolicyContext</code> (store guidance in metadata)</li>
+                        <li>Check for Tool Guides using <code>PolicyContext</code> (store guide content in metadata)</li>
+                        <li>Apply tool guides to tool descriptions</li>
+                    </ul>
+                </div>
+
+                <div class="flow-step">
+                    <h4>2. call_model Node</h4>
+                    <p>
+                        <strong>Policies Checked:</strong> Tool Approval (after code generation)<br>
+                        <strong>Purpose:</strong> Require approval for sensitive tool usage<br>
+                        <strong>Actions:</strong>
+                    </p>
+                    <ul>
+                        <li>After code generation, create <code>PolicyContext</code> with generated code</li>
+                        <li>Check if code uses restricted tools via <code>check_tool_approval_for_code()</code></li>
+                        <li>If approval required, create HITL interrupt</li>
+                        <li>Store approval metadata for later processing</li>
+                    </ul>
+                </div>
+
+                <div class="flow-step">
+                    <h4>3. CugaLiteCallback Node</h4>
+                    <p>
+                        <strong>Policies Checked:</strong> Output Formatter<br>
+                        <strong>Purpose:</strong> Format final responses consistently<br>
+                        <strong>Actions:</strong>
+                    </p>
+                    <ul>
+                        <li>After final answer is generated, create <code>PolicyContext</code> with <code>agent_response</code> field</li>
+                        <li>Check for Output Formatters using <code>PolicyContext</code> (target: "agent_response")</li>
+                        <li>If matched, reformat response using LLM or direct replacement</li>
+                        <li>Replace final_answer with formatted version</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="flow">
+                <h2>Complete Execution Flow</h2>
+                <p>
+                    This diagram shows the complete flow of policy checking and enactment throughout
+                    a CugaLite execution cycle.
+                </p>
+
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        sequenceDiagram
+                            participant User
+                            participant CugaLiteNode
+                            participant PrepareNode
+                            participant PolicySystem
+                            participant CallModel
+                            participant Sandbox
+                            participant CallbackNode
+                            
+                            User->>CugaLiteNode: Submit Task
+                            CugaLiteNode->>PrepareNode: Route to Subgraph
+                            
+                            PrepareNode->>PolicySystem: Create PolicyContext from State
+                            PrepareNode->>PolicySystem: check_and_enact(intent, PolicyContext)
+                            PolicySystem->>PolicySystem: Match Policies using PolicyContext
+                            
+                            alt Intent Guard Matched
+                                PolicySystem-->>PrepareNode: BLOCK Command
+                                PrepareNode-->>User: Blocked Response
+                            else Playbook Matched
+                                PolicySystem-->>PrepareNode: Metadata (Playbook)
+                                PrepareNode->>PrepareNode: Store in state.cuga_lite_metadata
+                            else Tool Guide Matched
+                                PolicySystem-->>PrepareNode: Metadata (Guide)
+                                PrepareNode->>PrepareNode: Apply to Tools
+                            end
+                            
+                            PrepareNode->>CallModel: Continue
+                            CallModel->>CallModel: Generate Code
+                            
+                            CallModel->>PolicySystem: Create PolicyContext with Code
+                            CallModel->>PolicySystem: check_tool_approval_for_code(code, PolicyContext)
+                            
+                            alt Tool Approval Required
+                                PolicySystem-->>CallModel: Approval Required
+                                CallModel-->>User: HITL Interrupt
+                                User->>CallModel: Approval Response
+                            end
+                            
+                            CallModel->>Sandbox: Execute Code
+                            Sandbox->>Sandbox: Run Code with Tools
+                            Sandbox->>CallModel: Return Results
+                            
+                            alt More Steps Needed
+                                CallModel->>CallModel: Generate Next Code
+                            else Final Answer
+                                CallModel->>CallbackNode: Process Results
+                                CallbackNode->>PolicySystem: Create PolicyContext with agent_response
+                                CallbackNode->>PolicySystem: check_and_enact(output, PolicyContext)
+                                
+                                alt Output Formatter Matched
+                                    PolicySystem->>PolicySystem: Format Response
+                                    PolicySystem-->>CallbackNode: Formatted Response
+                                end
+                                
+                                CallbackNode-->>User: Final Answer
+                            end
+                    </div>
+                </div>
+
+                <h3>Key Flow Characteristics</h3>
+                <ul>
+                    <li><strong>Early Blocking:</strong> Intent Guards can block execution before any tools are prepared</li>
+                    <li><strong>Guidance Injection:</strong> Playbooks inject guidance into prompts, affecting code generation</li>
+                        <li><strong>Tool Enhancement:</strong> Tool Guides modify tool descriptions before they're shown to the LLM</li>
+                    <li><strong>Approval Gates:</strong> Tool Approval creates interrupts that pause execution for user confirmation</li>
+                    <li><strong>Post-Processing:</strong> Output Formatters transform responses after generation but before returning to user</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Storage and Retrieval</h2>
+                <p>
+                    Policies are stored in Milvus, a vector database that enables efficient semantic search.
+                    Each policy is embedded using either OpenAI embeddings or local models, allowing for
+                    fast similarity-based retrieval.
+                </p>
+
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        flowchart LR
+                            A[Policy Definition] --> B[Generate Embedding]
+                            B --> C[Store in Milvus]
+                            
+                            D[Query Context] --> E[Generate Query Embedding]
+                            E --> F[Vector Search]
+                            F --> C
+                            C --> G[Retrieve Candidates]
+                            G --> H[LLM Conflict Resolution]
+                            H --> I[Best Match]
+                            
+                            style A fill:#667eea,stroke:#333,stroke-width:2px,color:#fff
+                            style I fill:#48bb78,stroke:#333,stroke-width:2px,color:#fff
+                            style C fill:#9f7aea,stroke:#333,stroke-width:2px,color:#fff
+                    </div>
+                </div>
+
+                <h3>Storage Schema</h3>
+                <ul>
+                    <li><strong>id:</strong> Unique policy identifier</li>
+                    <li><strong>policy_type:</strong> Type of policy (playbook, intent_guard, etc.)</li>
+                    <li><strong>name:</strong> Human-readable name</li>
+                    <li><strong>description:</strong> Policy description (used for embeddings)</li>
+                    <li><strong>embedding:</strong> Vector embedding for semantic search</li>
+                    <li><strong>policy_json:</strong> Full policy definition as JSON</li>
+                    <li><strong>priority:</strong> Priority value for conflict resolution</li>
+                    <li><strong>enabled:</strong> Whether the policy is active</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Best Practices</h2>
+                
+                <div class="highlight-box">
+                    <h4>Policy Design</h4>
+                    <ul>
+                        <li>Use <strong>Intent Guards</strong> for safety-critical blocking</li>
+                        <li>Use <strong>Playbooks</strong> for complex multi-step processes</li>
+                        <li>Use <strong>Tool Guides</strong> to provide context without changing behavior</li>
+                        <li>Use <strong>Tool Approval</strong> for sensitive operations</li>
+                        <li>Use <strong>Output Formatters</strong> for consistent response formats</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Trigger Selection</h4>
+                    <ul>
+                        <li>Use <strong>Keyword triggers</strong> for exact, fast matching</li>
+                        <li>Use <strong>Natural Language triggers</strong> for semantic understanding</li>
+                        <li>Combine multiple triggers for more specific matching</li>
+                        <li>Set appropriate thresholds for NL triggers (0.7 is a good default)</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Priority Management</h4>
+                    <ul>
+                        <li>Intent Guards automatically have highest priority</li>
+                        <li>Set explicit priority values for policies of the same type</li>
+                        <li>Use higher priorities for more specific policies</li>
+                        <li>Test policy interactions to avoid conflicts</li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            sequence: {
+                diagramMarginX: 50,
+                diagramMarginY: 10,
+                actorMargin: 50,
+                width: 150,
+                height: 65,
+                boxMargin: 10,
+                boxTextMargin: 5,
+                noteMargin: 10,
+                messageMargin: 35
+            }
+        });
+    </script>
+</body>
+</html>
