@@ -6,7 +6,7 @@ import { TypeTable } from 'fumadocs-ui/components/type-table';
 
 # Tool Provider
 
-The `tool_provider` parameter allows you to customize how tools are provided to the agent. By default, if you pass `tools` directly, CUGA uses `DirectLangChainToolsProvider` internally. For advanced use cases, you can implement a custom tool provider or use one of the built-in implementations.
+The `tool_provider` parameter allows you to customize how tools are provided to the agent. By default, CUGA uses `CombinedToolProvider` internally. For advanced use cases, you can implement a custom tool provider or use one of the built-in implementations.
 
 ## Why Import First?
 
@@ -84,7 +84,7 @@ Applications are represented using the `AppDefinition` model:
 
 The `CombinedToolProvider` is the recommended provider for production use. It combines tools from both runtime tracker tools and the MCP registry, allowing you to execute tools against the registry while also supporting local runtime tools.
 
-> **Note**: The `CombinedToolProvider` is used internally when you start `cuga demo`. It requires the registry to be running and properly configured. To understand how the registry works and how to set it up, see the [registry documentation](https://github.com/cuga-project/cuga-agent/tree/main/src/cuga/backend/tools_env/registry).
+> **Note**: The `CombinedToolProvider` is used internally when you start `cuga start demo`. It requires the registry to be running and properly configured. To understand how the registry works and how to set it up, see the [registry documentation](https://github.com/cuga-project/cuga-agent/tree/main/src/cuga/backend/tools_env/registry).
 
 ### How It Works
 
@@ -228,4 +228,179 @@ provider = MyCustomToolProvider(custom_tools=[custom_tool])
 await provider.initialize()
 agent = CugaAgent(tool_provider=provider)
 ```
+
+## Tool Call Tracking with `@tracked_tool`
+
+When implementing custom tool providers, you can use the `@tracked_tool` decorator to enable automatic tool call tracking. This is especially useful for observability, debugging, and auditing.
+
+### Why Use `@tracked_tool`?
+
+When you use built-in providers like `CombinedToolProvider`, tool call tracking is handled automatically. However, for custom tool providers, you need to explicitly enable tracking using the `@tracked_tool` decorator.
+
+### Basic Usage
+
+```python
+from cuga import CugaAgent, tracked_tool
+from langchain_core.tools import tool
+
+# Simple usage - just add the decorator
+@tracked_tool
+def my_tool(param: str) -> str:
+    return f"Result: {param}"
+
+# With optional app_name for grouping
+@tracked_tool(app_name="my_service")
+def another_tool(x: int) -> int:
+    return x * 2
+
+# Works with async functions
+@tracked_tool(app_name="user_api")
+async def fetch_user(user_id: int) -> dict:
+    return {"id": user_id, "name": "John"}
+```
+
+### Combining with LangChain `@tool`
+
+You can combine `@tracked_tool` with LangChain's `@tool` decorator. Note that `@tool` should be the outer decorator:
+
+```python
+from cuga import tracked_tool
+from langchain_core.tools import tool
+
+@tool
+@tracked_tool(app_name="calculator")
+def multiply(a: int, b: int) -> int:
+    '''Multiply two numbers together'''
+    return a * b
+```
+
+### Custom Tool Provider with Tracking
+
+Here's a complete example of a custom tool provider with tracked tools:
+
+```python
+from typing import List
+from cuga import CugaAgent, tracked_tool
+from cuga.backend.cuga_graph.nodes.cuga_lite.tool_provider_interface import (
+    ToolProviderInterface,
+    AppDefinition
+)
+from langchain_core.tools import StructuredTool, tool
+
+class TrackedToolProvider(ToolProviderInterface):
+    def __init__(self):
+        self.apps = []
+        self.tools = []
+    
+    async def initialize(self):
+        self.apps = [
+            AppDefinition(
+                name="user_service",
+                description="User management service",
+                type="api"
+            )
+        ]
+        
+        # Create tracked tools
+        @tool
+        @tracked_tool(app_name="user_service")
+        async def get_user(user_id: int) -> dict:
+            '''Get a user by ID'''
+            return {"id": user_id, "name": "John Doe", "email": "john@example.com"}
+        
+        @tool
+        @tracked_tool(app_name="user_service")
+        async def list_users(limit: int = 10) -> list:
+            '''List users'''
+            return [{"id": i, "name": f"User {i}"} for i in range(limit)]
+        
+        self.tools = [get_user, list_users]
+    
+    async def get_apps(self) -> List[AppDefinition]:
+        return self.apps
+    
+    async def get_tools(self, app_name: str) -> List[StructuredTool]:
+        if app_name == "user_service":
+            return self.tools
+        return []
+    
+    async def get_all_tools(self) -> List[StructuredTool]:
+        return self.tools
+
+# Usage with tracking enabled
+async def main():
+    provider = TrackedToolProvider()
+    await provider.initialize()
+    
+    agent = CugaAgent(tool_provider=provider)
+    
+    # Enable tracking to see tool calls
+    result = await agent.invoke(
+        "Get user with ID 123",
+        track_tool_calls=True
+    )
+    
+    print(result.answer)
+    
+    # View tracked tool calls
+    for call in result.tool_calls:
+        print(f"Tool: {call['name']}")
+        print(f"App: {call['app_name']}")
+        print(f"Arguments: {call['arguments']}")
+        print(f"Result: {call['result']}")
+        print(f"Duration: {call['duration_ms']}ms")
+```
+
+### What Gets Tracked
+
+The `@tracked_tool` decorator automatically captures:
+
+<TypeTable
+  type={{
+    name: {
+      description: 'Function name (used as the tool identifier).',
+      type: 'str'
+    },
+    operation_id: {
+      description: 'Same as name - the function name serves as the operation identifier.',
+      type: 'str'
+    },
+    arguments: {
+      description: 'Arguments passed to the tool.',
+      type: 'Dict[str, Any]'
+    },
+    result: {
+      description: 'Return value from the tool.',
+      type: 'Any'
+    },
+    app_name: {
+      description: 'App/service name (if specified in decorator).',
+      type: 'Optional[str]'
+    },
+    duration_ms: {
+      description: 'Execution time in milliseconds.',
+      type: 'float'
+    },
+    timestamp: {
+      description: 'ISO timestamp when the call was made.',
+      type: 'str'
+    },
+    error: {
+      description: 'Error message if the call failed.',
+      type: 'Optional[str]'
+    }
+  }}
+/>
+
+### Decorator Parameters
+
+<TypeTable
+  type={{
+    app_name: {
+      description: 'Optional name of the app/service this tool belongs to. Useful for grouping related tools.',
+      type: 'Optional[str]',
+      default: 'None'
+    }
+  }}
+/>
 

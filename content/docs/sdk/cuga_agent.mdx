@@ -91,19 +91,41 @@ agent = CugaAgent(
 
 The `tool_provider` parameter allows you to customize how tools are provided to the agent. By default, CUGA uses `CombinedToolProvider` internally. For advanced use cases, you can implement a custom tool provider or use one of the built-in implementations.
 
-For detailed information about tool providers, including built-in implementations and how to create custom providers, see the [Tool Provider documentation](./tool_provider).
+For detailed information about tool providers, including built-in implementations and how to create custom providers, see the [Tool Provider documentation](/docs/sdk/tool_provider).
 
 ## Core Methods
 
 ### `invoke`
 
-Run the agent with a message.
+Run the agent with a message. Returns an `InvokeResult` containing the answer, tool calls, thread ID, and any errors.
 
-<Tabs items={['Single Turn', 'Multi-turn / Resume']}>
+<Tabs items={['Single Turn', 'With Tool Tracking', 'Multi-turn / Resume']}>
 <Tab value="Single Turn">
 ```python
 result = await agent.invoke("What is the weather in Tokyo?")
-print(result)
+print(result.answer)  # The agent's response
+print(result.thread_id)  # Thread ID used for this invocation
+```
+</Tab>
+<Tab value="With Tool Tracking">
+```python
+# Enable tool call tracking to see which tools were called
+result = await agent.invoke(
+    "What is 10 + 5?",
+    track_tool_calls=True
+)
+print(result.answer)      # "15" or similar
+print(result.tool_calls)  # List of tool calls with metadata
+
+# Each tool call record contains:
+# - name: Tool name
+# - operation_id: Function name or OpenAPI operationId
+# - arguments: Arguments passed to the tool
+# - result: Return value
+# - app_name: App/service name (if set)
+# - duration_ms: Execution time in milliseconds
+# - timestamp: ISO timestamp
+# - error: Error message (if any)
 ```
 </Tab>
 <Tab value="Multi-turn / Resume">
@@ -116,6 +138,7 @@ result = await agent.invoke([
     AIMessage(content="Hello Alice"),
     HumanMessage(content="What is my name?")
 ])
+print(result.answer)
 
 # Resume execution (e.g. after tool approval)
 result = await agent.invoke(
@@ -150,9 +173,45 @@ result = await agent.invoke(
       description: 'Optional ActionResponse for resuming after approval/interruption.',
       type: 'Optional[Any]',
       default: 'None'
+    },
+    track_tool_calls: {
+      description: 'If True, tracks all tool calls with metadata and returns them in result.tool_calls.',
+      type: 'bool',
+      default: 'False'
     }
   }}
 />
+
+### `InvokeResult`
+
+The `invoke` method returns an `InvokeResult` object with the following fields:
+
+<TypeTable
+  type={{
+    answer: {
+      description: 'The agent\'s final answer as a string.',
+      type: 'str',
+      default: '""'
+    },
+    tool_calls: {
+      description: 'List of tool calls made during execution (when track_tool_calls=True).',
+      type: 'List[Dict[str, Any]]',
+      default: '[]'
+    },
+    thread_id: {
+      description: 'Thread ID used for this invocation.',
+      type: 'str',
+      default: '""'
+    },
+    error: {
+      description: 'Error message if execution failed.',
+      type: 'Optional[str]',
+      default: 'None'
+    }
+  }}
+/>
+
+**Backward Compatibility**: `str(result)` returns the answer, so existing code using the result as a string will continue to work.
 
 ### `stream`
 
@@ -203,4 +262,63 @@ await compiled_graph.ainvoke(...)
 ### `policies`
 
 Access the `PoliciesManager`. See [Policies](../policies).
+
+## Tool Call Tracking
+
+CUGA provides built-in tool call tracking to help with debugging, observability, and auditing. When enabled, every tool invocation is recorded with detailed metadata.
+
+### Enabling Tracking
+
+Pass `track_tool_calls=True` to the `invoke` method:
+
+```python
+result = await agent.invoke(
+    "Get the top account by revenue",
+    track_tool_calls=True
+)
+
+# Access tracked tool calls
+for call in result.tool_calls:
+    print(f"Tool: {call['name']}")
+    print(f"Arguments: {call['arguments']}")
+    print(f"Result: {call['result']}")
+    print(f"Duration: {call['duration_ms']}ms")
+```
+
+### Custom Tool Tracking with `@tracked_tool`
+
+For custom tool providers or when you want to add tracking metadata to your tools, use the `@tracked_tool` decorator:
+
+```python
+from cuga import CugaAgent, tracked_tool
+from langchain_core.tools import tool
+
+# Simple usage - just add the decorator
+@tracked_tool
+def multiply(a: int, b: int) -> int:
+    return a * b
+
+# With optional app_name for grouping
+@tracked_tool(app_name="calculator")
+def add(a: int, b: int) -> int:
+    return a + b
+
+# Combine with LangChain @tool decorator
+@tool
+@tracked_tool(app_name="math")
+def divide(a: int, b: int) -> float:
+    '''Divide two numbers'''
+    return a / b
+```
+
+The `@tracked_tool` decorator automatically captures:
+- **name**: Function name (also used as `operation_id`)
+- **arguments**: Arguments passed to the function
+- **result**: Return value
+- **duration_ms**: Execution time in milliseconds
+- **timestamp**: When the call was made
+- **error**: Error message if the call failed
+- **app_name**: Optional grouping (if specified)
+
+For more details on custom tool providers with tracking, see the [Tool Provider documentation](/docs/sdk/tool_provider).
 
