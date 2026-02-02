@@ -50,6 +50,7 @@ Initialize the `CugaAgent` with your tools and optional model configuration.
 agent = CugaAgent(
     tools=[get_weather],
     # model=... (optional)
+    # special_instructions="Always respond in JSON." (optional)
 )
 ```
 </Step>
@@ -82,6 +83,11 @@ agent = CugaAgent(
      policy_system: {
       description: 'Optional policy configuration instance.',
       type: 'PolicyConfigurable',
+      default: 'None'
+    },
+    special_instructions: {
+      description: 'Optional instructions added globally to the system prompt (e.g. guidelines, constraints, or context for all turns).',
+      type: 'Optional[str]',
       default: 'None'
     }
   }}
