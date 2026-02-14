@@ -1,11 +1,1 @@
-{
-  "title": "SDK",
-  "icon": "Package",
-  "defaultOpen": false,
-  "pages": [
-    "cuga_agent",
-    "tool_provider",
-    "policies"
-  ]
-}
-
+{"title":"SDK","icon":"Package","defaultOpen":false,"pages":["cuga_agent","cuga_supervisor","tool_provider","policies"]}

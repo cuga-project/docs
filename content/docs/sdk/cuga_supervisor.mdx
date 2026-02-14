@@ -1,0 +1,156 @@
+---
+title: CugaSupervisor
+description: Orchestrate multiple agents with a single supervisor; delegate to sub-agents and mix local with A2A.
+---
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+# CugaSupervisor
+
+The `CugaSupervisor` class coordinates multiple agents: it receives a user task, delegates work to specialized sub-agents, and returns a final answer. You can mix local `CugaAgent` instances with remote agents via the **A2A** protocol.
+
+## Quick Start
+
+<Steps>
+<Step>
+### Define tools and create sub-agents
+
+Create one or more `CugaAgent` instances with their own tools and descriptions.
+
+```python
+from cuga import CugaAgent, CugaSupervisor
+from langchain_core.tools import tool
+import asyncio
+
+@tool
+def get_customers(limit: int = 10) -> str:
+    """Fetch top customers from CRM with name, email, and revenue. Returns a formatted string."""
+    customers = [
+        "Alice (alice@example.com, $250,000)",
+        "Bob (bob@example.com, $180,000)",
+        "Carol (carol@example.com, $120,000)",
+        "Dave (dave@example.com, $95,000)",
+        "Eve (eve@example.com, $88,000)",
+    ]
+    top = customers[: min(limit, len(customers))]
+    return "Top customers by revenue: " + "; ".join(f"{i+1}. {c}" for i, c in enumerate(top))
+
+@tool
+def send_email(to: str, body: str) -> str:
+    """Send an email. Returns confirmation."""
+    return f"Email sent successfully to {to}"
+
+crm_agent = CugaAgent(tools=[get_customers])
+crm_agent.description = "CRM and customer data"
+
+email_agent = CugaAgent(tools=[send_email])
+email_agent.description = "Sending emails and notifications"
+```
+</Step>
+
+<Step>
+### Create supervisor and invoke
+
+Pass the agents as a dict and call `invoke` with the user task.
+
+```python
+supervisor = CugaSupervisor(agents={
+    "crm": crm_agent,
+    "email": email_agent,
+})
+
+result = await supervisor.invoke(
+    "Get our top 5 customers by revenue, then send the top customer a thank-you email"
+)
+print(result.answer)
+```
+</Step>
+</Steps>
+
+## Initialization
+
+<TypeTable
+  type={{
+    agents: {
+      description: 'Dict mapping agent names to CugaAgent instances or external A2A configs.',
+      type: 'Dict[str, Union[CugaAgent, dict]]',
+      required: true
+    },
+    model: {
+      description: 'Optional LLM for the supervisor. Defaults to system-configured model.',
+      type: 'Optional[BaseChatModel]',
+      default: 'None'
+    },
+    description: {
+      description: 'Optional description of the supervisor.',
+      type: 'Optional[str]',
+      default: 'None'
+    },
+    callbacks: {
+      description: 'Optional callback handlers for monitoring.',
+      type: 'Optional[List[BaseCallbackHandler]]',
+      default: 'None'
+    }
+  }}
+/>
+
+## Core Methods
+
+### `invoke`
+
+Run the supervisor with a user message and get back a final answer.
+
+```python
+result = await supervisor.invoke("Get top 5 customers and email the top one a thank-you")
+print(result.answer)
+print(result.thread_id)
+```
+
+### `from_yaml`
+
+Load supervisor and agents from a YAML configuration file. The model is taken from system settings (not from YAML).
+
+```python
+supervisor = await CugaSupervisor.from_yaml("supervisor_config.yaml")
+result = await supervisor.invoke("Your task here")
+```
+
+## External Agents (A2A)
+
+To add a remote agent that speaks the A2A protocol, pass an external config in `agents`:
+
+```python
+remote_config = {
+    "name": "analytics",
+    "type": "external",
+    "description": "Remote analytics service",
+    "config": {
+        "a2a_protocol": {
+            "endpoint": "http://localhost:9999",
+            "transport": "http",
+        },
+    },
+}
+
+supervisor = CugaSupervisor(agents={
+    "crm": crm_agent,
+    "email": email_agent,
+    "analytics": remote_config,
+})
+```
+
+Set `pass_variables_a2a = true` under `[supervisor]` in `settings.toml` if you want to pass variables to A2A agents.
+
+## Configuration
+
+When using the CUGA server, enable the supervisor in `settings.toml`:
+
+```toml
+[supervisor]
+enabled = true
+config_path = "path/to/supervisor_config.yaml"  # optional; used when loading from YAML via server
+pass_variables_a2a = false  # set true to pass variables to A2A agents in metadata
+```
+
+For SDK-only usage, building the supervisor in code (as in Quick Start) does not require any `settings.toml` changes.
