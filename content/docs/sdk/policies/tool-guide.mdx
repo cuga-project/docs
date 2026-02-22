@@ -14,7 +14,7 @@ Tool Guide modifies tool descriptions at runtime, adding context that helps the 
 ## Usage
 
 ```python
-await agent.policies.add_tool_enrichment(
+await agent.policies.add_tool_guide(
     name="Security Context",
     target_tools=["*"],  # Apply to all tools
     content="Note: All operations are logged for security compliance.",
@@ -32,7 +32,7 @@ await agent.policies.add_tool_enrichment(
 ## Example: App-Specific Enrichment
 
 ```python
-await agent.policies.add_tool_enrichment(
+await agent.policies.add_tool_guide(
     name="Database Security Notice",
     target_tools=["sql_query", "update_record"],
     target_apps=["database"],
