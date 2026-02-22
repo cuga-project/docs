@@ -1,15 +1,15 @@
 ---
-title: Tool Enrichment
+title: Tool Guide
 description: Inject additional context into tool descriptions.
 ---
 
-# Tool Enrichment
+# Tool Guide
 
-Tool Enrichment policies automatically inject additional context or instructions into tool descriptions when specific criteria are met. This allows you to add security warnings, compliance notes, or usage guidelines to tools dynamically.
+Tool Guide policies automatically inject additional context or instructions into tool descriptions when specific criteria are met. This allows you to add security warnings, compliance notes, or usage guidelines to tools dynamically.
 
 ## Overview
 
-Tool Enrichment modifies tool descriptions at runtime, adding context that helps the agent make better decisions about tool usage. The enrichment content is appended (or prepended) to the tool's description.
+Tool Guide modifies tool descriptions at runtime, adding context that helps the agent make better decisions about tool usage. The enrichment content is appended (or prepended) to the tool's description.
 
 ## Usage
 
@@ -37,7 +37,7 @@ await agent.policies.add_tool_enrichment(
     target_tools=["sql_query", "update_record"],
     target_apps=["database"],
     content="""
-    **Security Notice**: 
+    **Security Notice**:
     - All database operations are audited
     - Sensitive data access requires approval
     - Changes are logged for compliance
@@ -55,7 +55,6 @@ await agent.policies.add_tool_enrichment(
 
 ## Trigger Configuration
 
-Tool Enrichment policies can use triggers to conditionally apply enrichment. For example, you might only add security warnings during business hours or for specific user roles.
+Tool Guide policies can use triggers to conditionally apply enrichment. For example, you might only add security warnings during business hours or for specific user roles.
 
 For detailed trigger configuration, see [Triggers](./triggers).
-
