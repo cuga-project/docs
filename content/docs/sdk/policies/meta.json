@@ -6,7 +6,7 @@
     "index",
     "intent-guard",
     "playbook",
-    "tool-enrichment",
+    "tool-guide",
     "tool-approval",
     "output-formatter",
     "triggers"
