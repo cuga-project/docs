@@ -61,7 +61,7 @@ agent = CugaAgent(
 <TypeTable
   type={{
     tools: {
-      description: 'Optional list of LangChain tools (BaseTool or @tool decorated functions).',
+      description: 'Optional list of LangChain tools (BaseTool or \u0040tool decorated functions).',
       type: 'List[BaseTool]',
       default: 'None'
     },
@@ -80,7 +80,7 @@ agent = CugaAgent(
       type: 'List[BaseCallbackHandler]',
       default: 'None'
     },
-     policy_system: {
+    policy_system: {
       description: 'Optional policy configuration instance.',
       type: 'PolicyConfigurable',
       default: 'None'
