@@ -7,6 +7,7 @@
     "openapi-auth",
     "mcp-server",
     "runtime-tools",
+    "agent-skills",
     "hybrid-demo",
     "human-in-the-loop",
     "save-reuse",
