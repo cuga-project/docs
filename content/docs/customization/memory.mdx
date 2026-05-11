@@ -3,6 +3,16 @@ title: Memory & Learning
 description: Enable CUGA's memory system to learn from past interactions and improve over time
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warning" title="Deprecated for CUGA classic">
+The `mem0`-based memory system documented on this page (`enable_memory`, `enable_fact`, `memory_provider`, `memory` server port) was **removed from CUGA classic** in cuga-agent PR #153 (2026-04-23, _\"feat: remove memory support for cuga classic\"_). The settings still appear in older `settings.toml` files but no longer have any effect.
+
+Trajectory-based learning is now provided by the **[Evolve integration](/docs/customization/settings-reference#evolve)** for CugaLite, and per-conversation context is managed by **[Context Summarization](/docs/customization/settings-reference#context-summarization)**. Document- and knowledge-aware behavior is provided by the new **[Knowledge Base](/docs/customization/knowledge)** (Docling-powered).
+
+This page is kept as-is for users still running older CUGA versions.
+</Callout>
+
 CUGA's memory system allows the agent to learn from past interactions, remember patterns, and improve performance on similar tasks over time. This creates a personalized, adaptive agent experience.
 
 ## Overview

@@ -1,0 +1,125 @@
+---
+title: Evolve Integration
+description: Bring task-specific guidelines into CugaLite from altk-evolve, and save trajectories back after every run.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+[altk-evolve](https://pypi.org/project/altk-evolve/) is an Anthropic-style "tip generation" service that learns guidelines from past trajectories and surfaces them at the start of similar future tasks. CUGA can use Evolve in **CugaLite mode** to:
+
+- Inject task-specific guidelines into the system prompt before execution.
+- Save the user/assistant trajectory after the run so future tasks benefit from what worked (or failed).
+
+The full settings list is in the [Settings reference — Evolve](/docs/customization/settings-reference#evolve).
+
+## How Evolve runs
+
+You have two options for how the Evolve MCP server starts:
+
+<Tabs items={['Registry-managed (recommended)', 'Standalone SSE server']}>
+<Tab value="Registry-managed (recommended)">
+Let the CUGA MCP registry launch Evolve for you. In the Manager UI, add an MCP tool with:
+
+- **Name**: `evolve`
+- **Connection type**: `Command (stdio)`
+- **Command**: `uvx`
+- **Args**: `--from altk-evolve --with setuptools<70 evolve-mcp`
+
+Add these env values in the same MCP tool UI:
+
+```bash
+EVOLVE_BACKEND=postgres
+EVOLVE_PG_HOST=localhost
+EVOLVE_PG_PORT=5432
+EVOLVE_PG_USER=postgres
+EVOLVE_PG_PASSWORD=postgres
+EVOLVE_PG_DBNAME=evolve
+EVOLVE_MODEL_NAME=Azure/gpt-4o
+OPENAI_API_KEY=env://OPENAI_API_KEY
+OPENAI_BASE_URL=env://OPENAI_BASE_URL
+```
+
+The `env://VAR` placeholders tell CUGA to read the actual values from its own environment at runtime.
+
+In `settings.toml`, leave `mode = "auto"` (or set `mode = "registry"`) and set `app_name = "evolve"`.
+</Tab>
+<Tab value="Standalone SSE server">
+Run Evolve yourself as an SSE server (useful for debugging):
+
+```bash
+# From a checkout of altk-evolve:
+uv sync --extra pgvector
+evolve-mcp --transport sse --port 8201
+```
+
+In `settings.toml`:
+
+```toml
+[evolve]
+enabled = true
+url = "http://127.0.0.1:8201/sse"
+mode = "direct"
+```
+
+`mode = "direct"` skips registry lookup entirely.
+</Tab>
+</Tabs>
+
+## Enable in `settings.toml`
+
+```toml
+[advanced_features]
+lite_mode = true     # Evolve only runs for CugaLite
+
+[evolve]
+enabled = true
+url = "http://127.0.0.1:8201/sse"
+mode = "auto"
+app_name = "evolve"
+lite_mode_only = true
+save_on_success = true
+save_on_failure = true
+async_save = true
+timeout = 30.0
+```
+
+## Try it
+
+```bash
+cuga start demo_crm --sample-memory-data
+```
+
+Then run a CugaLite task, e.g.:
+
+```
+Identify the common cities between my cuga_workspace/cities.txt and cuga_workspace/company.txt
+```
+
+## What happens during a run
+
+1. CUGA derives a task description from the current sub-task (or the first user message).
+2. CugaLite asks Evolve for relevant guidelines.
+3. Returned guidelines are appended to the system prompt under an `Evolve Guidelines` section.
+4. The task executes normally.
+5. The user/assistant trajectory is saved back to Evolve after completion.
+
+## Tuning
+
+| Setting | Effect |
+|---------|--------|
+| `async_save = true` | Save in the background; doesn't block the response. |
+| `save_on_success` | Only persist successful runs. |
+| `save_on_failure` | Only persist failed runs. |
+| `mode = "auto"` | Try registry first, fall back to direct SSE. |
+| `mode = "registry"` | Force registry-managed Evolve. |
+| `mode = "direct"` | Skip registry lookup; use `url`. |
+| `lite_mode_only = true` | Disable Evolve for non-lite paths. |
+
+<Callout type="info">
+If Evolve is unavailable, times out, or returns no guidance, CUGA continues normally — Evolve never blocks task execution.
+</Callout>
+
+<Callout type="warning">
+If you use Evolve's tip generation, make sure the Evolve MCP server's environment includes the required model settings (e.g. `EVOLVE_MODEL_NAME`, OpenAI/LiteLLM credentials). Otherwise `save_trajectory` may fail later with a model-access error even if the MCP connection itself works.
+</Callout>
