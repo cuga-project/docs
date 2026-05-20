@@ -75,7 +75,6 @@ Core feature configuration.
 ```toml
 [features]
 cuga_mode = "balanced"
-memory_provider = "mem0"
 ```
 
 ### Options
@@ -83,7 +82,8 @@ memory_provider = "mem0"
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `cuga_mode` | String | `"balanced"` | Execution reasoning mode. Options: `"fast"`, `"balanced"`, `"accurate"`, `"save_reuse_fast"`, `"custom"`. Fast is quicker but less accurate; Accurate is slower but more precise; Save & Reuse caches workflows. |
-| `memory_provider` | String | `"mem0"` | Memory system provider. Currently supports `"mem0"`. Used for learning from past errors and improving performance. |
+
+> **Note:** The legacy `memory_provider` key (mem0) was removed from CUGA classic in cuga-agent PR #153. See [Memory & Learning](/docs/customization/memory) for details and migration guidance.
 
 ---
 
@@ -96,6 +96,7 @@ Advanced configuration flags for specialized behavior.
 # Benchmark and Evaluation
 web_arena_eval = false
 benchmark = "default"
+appworld_final_answer_plain = true
 
 # Vision and Analysis
 use_vision = true
@@ -116,13 +117,18 @@ use_extension = false
 # Planning and Optimization
 code_planner_enabled = true
 api_planner_hitl = false
+reflection_enabled = false
 lite_mode = true
 lite_mode_tool_threshold = 70
+force_lite_mode_apps = ["knowledge"]
 shortlisting_tool_threshold = 35
-
-# Memory and Learning
-enable_memory = false
-enable_fact = false
+cuga_lite_enable_few_shots = true
+cuga_lite_max_steps = 70
+cuga_lite_bind_tools_mode = "none"
+cuga_lite_bind_tools_apps = []
+cuga_lite_bind_tools_include_find_tools = false
+cuga_lite_nl_auto_continue = false
+enable_todos = false
 
 # Workflows
 save_reuse_generate_html = false
@@ -137,9 +143,19 @@ e2b_sandbox_ttl_buffer = 60
 e2b_cleanup_on_create = true
 e2b_cleanup_frequency = 0
 
-# Limits
+# Variable Lifecycle
+sub_task_keep_last_n = 5
+code_executor_keep_last_n = -1
+
+# Limits & Timeouts
 message_window_limit = 100
 max_input_length = 5000
+tool_call_timeout = 30
+execution_output_max_length = 70000
+
+# Misc
+path_segment_index = 1
+force_autonomous_mode = false
 ```
 
 ### Benchmark & Evaluation Options
@@ -148,6 +164,7 @@ max_input_length = 5000
 |--------|------|---------|-------------|
 | `web_arena_eval` | Boolean | `false` | Enable WebArena benchmark evaluation mode. For testing on WebArena benchmark suite. |
 | `benchmark` | String | `"default"` | Benchmark mode. Options: `"default"`, `"appworld"`, `"webarena"`. Controls evaluation settings. |
+| `appworld_final_answer_plain` | Boolean | `true` | When `benchmark = "appworld"`, use plain `answer:` completion prompts (no JSON) for final formatting. |
 
 ### Vision & Analysis Options
 
@@ -183,16 +200,18 @@ max_input_length = 5000
 |--------|------|---------|-------------|
 | `code_planner_enabled` | Boolean | `true` | Enable code generation planning. Controls whether CUGA generates Python code for complex operations. |
 | `api_planner_hitl` | Boolean | `false` | Enable Human-in-the-Loop for API planner. Pauses at decision points requiring human approval. See [Human-in-the-Loop](/docs/guides/human-in-the-loop). |
+| `reflection_enabled` | Boolean | `false` | Run an extra reflection pass after planning/execution to detect and recover from errors. |
 | `lite_mode` | Boolean | `true` | Enable CugaLite mode for simple API tasks. Automatically routes simple tasks to faster execution path. |
 | `lite_mode_tool_threshold` | Integer | `70` | Tool count threshold for CugaLite routing. If app has fewer than this many tools, use CugaLite. |
-| `shortlisting_tool_threshold` | Integer | `35` | Threshold for enabling tool shortlisting. If total tools exceed this, enable intelligent tool filtering. |
-
-### Memory & Learning Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enable_memory` | Boolean | `false` | Enable memory system. Learn from past errors and improve over time. Requires `uv sync --group memory`. See [Memory](/docs/customization/memory). |
-| `enable_fact` | Boolean | `false` | Enable fact checking. Verify agent outputs against known facts. |
+| `force_lite_mode_apps` | Array&lt;String&gt; | `["knowledge"]` | App names that always run in CugaLite regardless of `lite_mode_tool_threshold` (e.g. `["knowledge", "crm"]`). |
+| `shortlisting_tool_threshold` | Integer | `35` | Threshold for enabling tool shortlisting. If total tools exceed this, enable intelligent tool filtering (`find_tools`). |
+| `cuga_lite_enable_few_shots` | Boolean | `true` | MCP few-shots: prompt block + few-shot chat prefix in CugaLite. Set `false` to disable. |
+| `cuga_lite_max_steps` | Integer | `70` | Maximum number of steps (call_model + sandbox cycles) in CugaLite before returning an error. |
+| `cuga_lite_bind_tools_mode` | String | `"none"` | How CugaLite binds tools to the model. Options: `"none"`, `"all"`, `"apps"`. (Per-model overrides live in `model_runtime_profile.py`.) |
+| `cuga_lite_bind_tools_apps` | Array&lt;String&gt; | `[]` | When `cuga_lite_bind_tools_mode = "apps"`, list of app names to bind (e.g. `["crm", "slack"]`). |
+| `cuga_lite_bind_tools_include_find_tools` | Boolean | `false` | When binding tools, also bind the `find_tools` StructuredTool alongside `all`/`apps`. |
+| `cuga_lite_nl_auto_continue` | Boolean | `false` | When the model returns NL with no code, classify interim vs final; if interim, simulate a user `continue` and re-call the model. |
+| `enable_todos` | Boolean | `false` | Enable the todos feature for managing complex multi-step tasks. |
 
 ### Workflow Options
 
@@ -215,12 +234,28 @@ See [E2B Cloud Sandbox](/docs/customization/e2b-sandbox) for detailed E2B config
 | `e2b_cleanup_on_create` | Boolean | `true` | Run cleanup when creating new sandboxes. Prevents sandbox accumulation. |
 | `e2b_cleanup_frequency` | Integer | `0` | Check all sandboxes every N get_or_create calls. 0 = only on create. Higher values reduce cleanup overhead. |
 
-### Limit Options
+### Variable Lifecycle Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `sub_task_keep_last_n` | Integer | `5` | Number of most recent generated variables to keep when executing sub-tasks. |
+| `code_executor_keep_last_n` | Integer | `-1` | Variables retained after code execution. `-1` keeps all; positive integers keep the last N. |
+
+### Limit & Timeout Options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `message_window_limit` | Integer | `100` | Maximum messages to keep in conversation history. Older messages discarded when exceeded. Reduces context size. |
 | `max_input_length` | Integer | `5000` | Maximum character length for user input. Prevents abuse and excessive processing. |
+| `tool_call_timeout` | Integer (seconds) | `30` | Timeout for tool/API calls (sandbox operations). Raises `TimeoutError` when exceeded. |
+| `execution_output_max_length` | Integer | `70000` | Maximum characters returned in execution output. Prevents token overflow on very large tool responses. |
+
+### Misc Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `path_segment_index` | Integer | `1` | Which path segment to use for OpenAPI operation naming (1 = first, 2 = second, etc.). |
+| `force_autonomous_mode` | Boolean | `false` | Force fully autonomous execution (no HITL prompts) regardless of other settings. |
 
 ---
 
@@ -232,17 +267,20 @@ Controls service ports and URLs for all CUGA services.
 [server_ports]
 registry = 8001
 demo = 7860
+demo_server_startup_max_retries = 420
 apis_url = 9000
 crm_api = 8007
 saved_flows = 8003
 environment_url = 8000
+filesystem_mcp = 8112
+docs_mcp = 8113
 digital_sales_api = 8000
 mcp_server = 8000
 petstore_api = 8081
 graph_visualization = 8080
 orchestrate_url = 4321
 trm_url = 8080
-memory = 8888
+oak_health_api = 8090
 ```
 
 ### Options
@@ -251,17 +289,22 @@ memory = 8888
 |--------|------|---------|-------------|
 | `registry` | Integer | `8001` | API registry service port. Where CUGA tools and APIs are exposed. |
 | `demo` | Integer | `7860` | CUGA demo interface port. Open browser to http://localhost:7860 |
+| `demo_server_startup_max_retries` | Integer | `420` | CLI `cuga start` polls the demo Uvicorn process every ~0.5s up to this many times before timing out (default ≈ 3 minutes). |
 | `apis_url` | Integer | `9000` | APIs service port. (Rarely used) |
-| `crm_api` | Integer | `8007` | CRM demo application port. Used in demo_crm mode. |
+| `crm_api` | Integer | `8007` | CRM demo application port. Used in `cuga start demo_crm`. |
 | `saved_flows` | Integer | `8003` | Saved workflows service port. For Save & Reuse feature. |
 | `environment_url` | Integer | `8000` | Environment service port. Base configuration service. |
+| `filesystem_mcp` | Integer | `8112` | Filesystem MCP server port. Used in the [Filesystem MCP demo](/docs/guides/filesystem-mcp-demo). |
+| `docs_mcp` | Integer | `8113` | Docs MCP server port. |
 | `digital_sales_api` | Integer | `8000` | Digital Sales API port. Used in digital sales demo. |
 | `mcp_server` | Integer | `8000` | MCP server port for tool integration. |
 | `petstore_api` | Integer | `8081` | Petstore demo API port. Example API for testing. |
 | `graph_visualization` | Integer | `8080` | Graph visualization service port. For execution flow visualization. |
 | `orchestrate_url` | Integer | `4321` | Orchestration service port. (Enterprise only) |
 | `trm_url` | Integer | `8080` | Task/Routing/Management URL port. (Advanced) |
-| `memory` | Integer | `8888` | Memory service port. Used when memory is enabled. |
+| `oak_health_api` | Integer | `8090` | `cuga-oak-health` OpenAPI port. Used by `cuga start demo_health`. |
+
+> **Note:** The `memory = 8888` port has been removed. Memory support for CUGA classic was deprecated in cuga-agent PR #153.
 
 ### Advanced Port Configuration
 
@@ -280,6 +323,324 @@ For E2B cloud sandbox, configure registry exposure:
 
 ---
 
+## Supervisor
+
+Configures the multi-agent supervisor when running CUGA as a server. SDK-only usage (building a `CugaSupervisor` in Python) does not require this section.
+
+```toml
+[supervisor]
+enabled = false
+config_path = "src/cuga/backend/tools_env/registry/config/supervisor_demo_crm.yaml"
+agent_approval = true
+pass_variables_a2a = false
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | Boolean | `false` | Enable `CugaSupervisor` in the server. See [`CugaSupervisor` SDK doc](/docs/sdk/cuga_supervisor). |
+| `config_path` | String | `""` | Path to the supervisor YAML config. If empty, uses the default supervisor setup. |
+| `agent_approval` | Boolean | `true` | Require user approval before delegating to any sub-agent (human-in-the-loop). |
+| `pass_variables_a2a` | Boolean | `false` | When `true`, the A2A delegate tool accepts variables and sends them in request metadata (A2A protocol extension). |
+
+The bundled multi-agent demo can be launched with:
+
+```bash
+cuga start demo_supervisor
+```
+
+---
+
+## Storage
+
+Selects the backend for policy vectors, knowledge vectors, and knowledge metadata.
+
+```toml
+[storage]
+mode = "local"
+local_db_path = ""
+postgres_url = ""
+
+[storage.embedding]
+provider = "local"
+model = "BAAI/bge-small-en-v1.5"
+dim = 384
+base_url = ""
+api_key = ""
+```
+
+### Storage modes
+
+| Data | `local` | `prod` |
+|------|---------|--------|
+| Policy vectors | sqlite-vec at `[policy].policy_db_path` or `storage.local_db_path` (defaults to `DBS_DIR/cuga.db`) | `storage.postgres_url` (pgvector) |
+| Knowledge vectors | `{knowledge.persist_dir}/knowledge_vectors.db` (vec0 tables per collection) | `storage.postgres_url` |
+| Knowledge metadata | `{knowledge.persist_dir}/metadata.db` | Postgres tables `cuga_knowledge_meta_*` (uploaded files stay under `persist_dir/files/`) |
+
+`DBS_DIR` defaults to the package `dbs/` directory or the value of the `CUGA_DBS_DIR` env var.
+
+### `[storage]` options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `mode` | String | `"local"` | `"local"` (sqlite/sqlite-vec) or `"prod"` (Postgres + pgvector). |
+| `local_db_path` | String | `""` | Override path for the local SQLite DB. Empty = `DBS_DIR/cuga.db`. |
+| `postgres_url` | String | `""` | Postgres connection URL. **Required** when `mode = "prod"`. |
+
+### `[storage.embedding]` options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `provider` | String | `"local"` | `"openai"`, `"local"`, or `"auto"` (tries OpenAI, falls back to local). |
+| `model` | String | `"BAAI/bge-small-en-v1.5"` | Embedding model name. |
+| `dim` | Integer | `384` | Embedding dimension. `1536` for OpenAI, `384` for `BAAI/bge-small-en-v1.5`. |
+| `base_url` | String | `""` | Optional custom endpoint for an OpenAI-compatible embedding service. |
+| `api_key` | String | `""` | Optional API key for the embedding endpoint. Falls back to `OPENAI_API_KEY`. |
+
+---
+
+## Policy
+
+Configures the [policy system](/docs/sdk/policies).
+
+```toml
+[policy]
+enabled = true
+collection_name = "cuga_policies"
+policy_db_path = ""
+playbook_refine = false
+filesystem_sync = true
+cuga_folder = ".cuga"
+auto_load_policies = true
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | Boolean | `true` | Enable the policy system (intent guards, playbooks, tool guides, tool approvals, output formatters). |
+| `collection_name` | String | `"cuga_policies"` | Vector store collection name for policies. |
+| `policy_db_path` | String | `""` | Optional explicit path for the policy DB. When empty, uses `storage.local_db_path`. |
+| `playbook_refine` | Boolean | `false` | Enable playbook refinement based on user progress (requires an LLM call). |
+| `filesystem_sync` | Boolean | `true` | Sync policies to/from the `.cuga` folder on disk. |
+| `cuga_folder` | String | `".cuga"` | Path to the `.cuga` folder used for policy files. |
+| `auto_load_policies` | Boolean | `true` | Automatically load policies from the `.cuga` folder on startup. |
+
+---
+
+## Service
+
+Identifies the running CUGA instance, useful for multi-tenant or Kubernetes deployments.
+
+```toml
+[service]
+instance_id = ""
+tenant_id = ""
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `instance_id` | String | `""` | Override with `DYNACONF_SERVICE__INSTANCE_ID` (e.g. K8s pod name, deployment id). |
+| `tenant_id` | String | `""` | Multi-tenant SaaS tenant id. Override with `DYNACONF_SERVICE__TENANT_ID`. |
+
+---
+
+## Secrets
+
+Selects how CUGA resolves secrets at runtime — local environment variables or HashiCorp Vault.
+
+```toml
+[secrets]
+mode = "local"
+force_env = true
+db_encryption_key_env = "CUGA_SECRET_KEY"
+vault_addr = ""
+vault_token_env = "VAULT_TOKEN"
+vault_auth_method = ""
+vault_k8s_role = ""
+vault_k8s_mount_path = "kubernetes"
+vault_k8s_jwt_path = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+vault_cacert = ""
+vault_skip_verify = false
+vault_mount = "secret"
+vault_kv_version = ""
+vault_secret_path = ""
+vault_write_enabled = false
+aws_region = ""
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `mode` | String | `"local"` | `"local"` (env vars / UI overrides) or `"vault"`. |
+| `force_env` | Boolean | `true` | If `true`, always resolve from `os.environ` (ignores UI overrides and Vault). |
+| `db_encryption_key_env` | String | `"CUGA_SECRET_KEY"` | Environment variable holding the encryption key for stored secrets. |
+| `vault_addr` | String | `""` | Vault server URL (e.g. `https://vault.example.com:8200`). |
+| `vault_token_env` | String | `"VAULT_TOKEN"` | Env var name that holds the Vault token (when `vault_auth_method = "token"`). |
+| `vault_auth_method` | String | `""` | `""`, `"token"`, or `"kubernetes"`. Override with `DYNACONF_SECRETS__VAULT_AUTH_METHOD`. |
+| `vault_k8s_role` | String | `""` | Vault role used by Kubernetes auth. |
+| `vault_k8s_mount_path` | String | `"kubernetes"` | Mount path of the Kubernetes auth backend. |
+| `vault_k8s_jwt_path` | String | `/var/run/.../token` | Path to the service-account JWT inside the pod. |
+| `vault_cacert` | String | `""` | Path to a PEM bundle used to verify Vault TLS (env: `VAULT_CACERT`). |
+| `vault_skip_verify` | Boolean | `false` | Dev only — disable TLS verification (env: `VAULT_SKIP_VERIFY`). |
+| `vault_mount` | String | `"secret"` | KV mount path within Vault. |
+| `vault_kv_version` | String | `""` | `"1"` or `"2"`. Empty defaults to KV v2; use `"1"` only for KV v1 mounts. |
+| `vault_secret_path` | String | `""` | Base path for secrets. Override with `DYNACONF_SECRETS__VAULT_SECRET_PATH`. |
+| `vault_write_enabled` | Boolean | `false` | Allow CUGA to write secrets back to Vault (most setups should leave this off). |
+| `aws_region` | String | `""` | Reserved for AWS Secrets Manager integration. |
+
+---
+
+## Auth
+
+Optional OIDC/BFF authentication for the CUGA server.
+
+```toml
+[auth]
+enabled = false
+authorization_enabled = false
+manage_roles = ["ServiceOwner", "ServiceAdmin"]
+chat_roles = ["ServiceOwner", "ServiceAdmin", "ServiceUser"]
+session_cookie_name = "cuga_session"
+session_max_age = 3600
+jwks_cache_ttl = 3600
+require_https = false
+ssl_keyfile = ""
+ssl_certfile = ""
+iam_proxy_url = ""
+iam_proxy_skip_verify = false
+iam_proxy_ca_bundle = ""
+role_token_source = "auto"
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | Boolean | `false` | Enable OIDC/BFF authentication on the demo server. |
+| `authorization_enabled` | Boolean | `false` | Enforce role-based authorization in addition to authentication. |
+| `manage_roles` | Array&lt;String&gt; | `["ServiceOwner", "ServiceAdmin"]` | Roles allowed to manage policies, tools, and configuration. |
+| `chat_roles` | Array&lt;String&gt; | `["ServiceOwner", "ServiceAdmin", "ServiceUser"]` | Roles allowed to chat with the agent. |
+| `session_cookie_name` | String | `"cuga_session"` | Name of the BFF session cookie. |
+| `session_max_age` | Integer (seconds) | `3600` | Session lifetime. |
+| `jwks_cache_ttl` | Integer (seconds) | `3600` | How long signed-key sets from the IdP are cached. |
+| `require_https` | Boolean | `false` | Reject non-HTTPS traffic (production). |
+| `ssl_keyfile` | String | `""` | Path to TLS private key (when terminating TLS in CUGA). |
+| `ssl_certfile` | String | `""` | Path to TLS certificate. |
+| `iam_proxy_url` | String | `""` | URL of an upstream IAM proxy in front of CUGA. |
+| `iam_proxy_skip_verify` | Boolean | `false` | Skip TLS verification against the IAM proxy (dev only). |
+| `iam_proxy_ca_bundle` | String | `""` | PEM bundle for IAM-proxy TLS (independent of `oidc_ca_bundle`). |
+| `role_token_source` | String | `"auto"` | Where roles come from: `"auto"`, `"id_token"`, `"access_token"`, `"iam_proxy"`. |
+
+OIDC client/issuer/secret values are configured via environment variables — see [Environment Variable Overrides](#environment-variable-overrides).
+
+---
+
+## UI
+
+Customize the demo UI branding.
+
+```toml
+[ui]
+hide_cuga_logo = false
+brand_name = "CUGA Agent"
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `hide_cuga_logo` | Boolean | `false` | Hide the CUGA logo in the header (e.g. when white-labelling). |
+| `brand_name` | String | `"CUGA Agent"` | App name shown in the header. |
+
+---
+
+## Context Summarization
+
+Automatically summarize older parts of the conversation when the context window starts to fill up.
+
+```toml
+[context_summarization]
+enabled = false
+keep_last_n_messages = 10
+trim_tokens_to_summarize = 500
+summarization_model = "gpt-4o-mini"
+trigger_fraction = 0.75
+# trigger_tokens = 2000
+# trigger_messages = 20
+# custom_summary_prompt = "Provide a concise summary of the conversation: {messages}"
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | Boolean | `false` | Enable intelligent context summarization. |
+| `keep_last_n_messages` | Integer | `10` | Number of recent messages preserved unsummarized. |
+| `trim_tokens_to_summarize` | Integer | `500` | Target token count for generated summaries. |
+| `summarization_model` | String | `"gpt-4o-mini"` | Model used to generate summaries (kept fast and cheap by default). |
+| `trigger_fraction` | Float | `0.75` | Trigger summarization at this fraction of the model's context window. |
+| `trigger_tokens` | Integer | _(unset)_ | Alternative trigger: total tokens above this count. |
+| `trigger_messages` | Integer | _(unset)_ | Alternative trigger: number of messages since the last summary. |
+| `custom_summary_prompt` | String | _(unset)_ | Optional custom prompt template (uses LangChain default if not set). |
+
+---
+
+## Connections
+
+Controls TLS for outbound LLM inference connections.
+
+```toml
+[connections]
+inference_ca_cert = ""
+inference_disable_ssl = false
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `inference_ca_cert` | String | `""` | Path to a CA certificate for the inference HTTP clients (OpenAI and LiteLLM). Env: `CUGA_INFERENCE_CA_CERT`. |
+| `inference_disable_ssl` | Boolean | `false` | Disable SSL verification for all inference connections (overrides `inference_ca_cert`). Env: `CUGA_DISABLE_SSL`. |
+
+---
+
+## Observability
+
+Optional OpenLit / OpenTelemetry observability for LLM calls.
+
+```toml
+[observability]
+openlit = false
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `openlit` | Boolean | `false` | Enable OpenLit LLM observability via OpenTelemetry (OTLP). Requires `pip install cuga[observability]`. Configure the OTLP endpoint via `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318`. |
+
+A local testing stack (OTel Collector + Tempo + Prometheus + Grafana) is provided under `deployment/docker-compose/openlit/` in the cuga-agent repo.
+
+---
+
+## Evolve
+
+Optional integration with [altk-evolve](https://pypi.org/project/altk-evolve/) for trajectory-based learning in CugaLite.
+
+```toml
+[evolve]
+enabled = true
+url = "http://127.0.0.1:8201/sse"
+mode = "auto"
+app_name = "evolve"
+lite_mode_only = true
+save_on_success = true
+save_on_failure = true
+async_save = true
+timeout = 30.0
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | Boolean | `true` | Master toggle for Evolve integration. |
+| `url` | String | `"http://127.0.0.1:8201/sse"` | SSE endpoint of a manually-run Evolve MCP server (used when `mode = "direct"` or as a fallback in `"auto"`). |
+| `mode` | String | `"auto"` | `"auto"` = registry first then direct SSE fallback; `"registry"` = registry only; `"direct"` = direct SSE only. |
+| `app_name` | String | `"evolve"` | MCP app/server name when Evolve is managed by the CUGA registry. |
+| `lite_mode_only` | Boolean | `true` | Only activate Evolve for CugaLite mode. |
+| `save_on_success` | Boolean | `true` | Save trajectory on successful task completion. |
+| `save_on_failure` | Boolean | `true` | Save trajectory on failed task completion. |
+| `async_save` | Boolean | `true` | Save trajectories in the background (non-blocking). |
+| `timeout` | Float (seconds) | `30.0` | Timeout for Evolve MCP calls. |
+
+---
+
 ## Configuration Examples
 
 ### Fast Development Setup
@@ -287,14 +648,12 @@ For E2B cloud sandbox, configure registry exposure:
 ```toml
 [features]
 cuga_mode = "fast"
-memory_provider = "mem0"
 
 [advanced_features]
 use_vision = true
 code_planner_enabled = true
 api_planner_hitl = false
 lite_mode = true
-enable_memory = false
 mode = 'api'
 
 [server_ports]
@@ -307,23 +666,38 @@ registry = 8001
 ```toml
 [features]
 cuga_mode = "accurate"
-memory_provider = "mem0"
 
 [advanced_features]
 use_vision = true
 code_planner_enabled = true
 api_planner_hitl = true          # Require approval for critical actions
 lite_mode = true
-enable_memory = true             # Learn from experience
 langfuse_tracing = true          # Full observability
 mode = 'api'
 message_window_limit = 200
 max_input_length = 10000
 
+[auth]
+enabled = true
+authorization_enabled = true
+require_https = true
+
+[secrets]
+mode = "vault"
+vault_addr = "https://vault.example.com:8200"
+vault_auth_method = "kubernetes"
+vault_k8s_role = "cuga"
+
+[storage]
+mode = "prod"
+postgres_url = "postgresql+psycopg://user:pass@db:5432/cuga"
+
+[observability]
+openlit = true                   # OTLP-based tracing
+
 [server_ports]
 demo = 7860
 registry = 8001
-memory = 8888
 ```
 
 ### E2B Cloud Execution Setup
@@ -331,7 +705,6 @@ memory = 8888
 ```toml
 [features]
 cuga_mode = "balanced"
-memory_provider = "mem0"
 
 [advanced_features]
 e2b_sandbox = true
@@ -351,10 +724,8 @@ function_call_host = "https://your-ngrok-url.ngrok.io"  # E2B tunnel URL
 ```toml
 [features]
 cuga_mode = "save_reuse_fast"
-memory_provider = "mem0"
 
 [advanced_features]
-enable_memory = true
 save_reuse_generate_html = false  # Disable for performance
 decomposition_strategy = "flexible"
 lite_mode = true
@@ -364,7 +735,6 @@ code_planner_enabled = true
 demo = 7860
 registry = 8001
 saved_flows = 8003
-memory = 8888
 ```
 
 ### Web/Hybrid Mode Setup
@@ -375,7 +745,6 @@ start_url = "https://example.com"
 
 [features]
 cuga_mode = "balanced"
-memory_provider = "mem0"
 
 [advanced_features]
 mode = 'hybrid'                    # or 'web' for web-only
@@ -434,6 +803,53 @@ All environment variables that can be used to configure CUGA:
 | `MAC_USER_DATA_PATH` | Chrome profile path on macOS | `~/Library/Application Support/Google/Chrome/AgentS` |
 | `WINDOWS_USER_DATA_PATH` | Chrome profile path on Windows | `C:/Users/<User>/AppData/Local/Google/Chrome/User Data/AgentS` |
 
+#### Secrets & Vault
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `CUGA_SECRET_KEY` | Encryption key for secrets stored by CUGA (matches `[secrets].db_encryption_key_env`). | |
+| `VAULT_TOKEN` | Vault token (when `vault_auth_method = "token"`). | |
+| `VAULT_CACERT` | Path to PEM bundle for Vault TLS. | |
+| `VAULT_SKIP_VERIFY` | Disable Vault TLS verification (dev only). | `true` |
+| `DYNACONF_SECRETS__VAULT_AUTH_METHOD` | Override `[secrets].vault_auth_method` at runtime. | `kubernetes` |
+| `DYNACONF_SECRETS__VAULT_SECRET_PATH` | Override `[secrets].vault_secret_path`. | |
+
+#### Authentication (OIDC / BFF)
+
+| Variable | Description |
+|----------|-------------|
+| `OIDC_ISSUER` | OIDC issuer URL. |
+| `OIDC_CLIENT_ID` | OIDC client id. |
+| `OIDC_CLIENT_SECRET` | OIDC client secret. |
+| `OIDC_REDIRECT_URI` | Callback URL registered with the IdP. |
+| `OIDC_CA_BUNDLE` | Optional CA bundle for OIDC TLS (independent of `iam_proxy_ca_bundle`). |
+
+#### Service Identity
+
+| Variable | Description |
+|----------|-------------|
+| `DYNACONF_SERVICE__INSTANCE_ID` | Override `[service].instance_id` (e.g. K8s pod name). |
+| `DYNACONF_SERVICE__TENANT_ID` | Override `[service].tenant_id` for multi-tenant deployments. |
+
+#### TLS for Inference
+
+| Variable | Description |
+|----------|-------------|
+| `CUGA_INFERENCE_CA_CERT` | CA cert for OpenAI/LiteLLM HTTP clients (overrides `[connections].inference_ca_cert`). |
+| `CUGA_DISABLE_SSL` | Disable TLS verification for all inference connections (overrides `inference_disable_ssl`). |
+
+#### Storage
+
+| Variable | Description |
+|----------|-------------|
+| `CUGA_DBS_DIR` | Override `DBS_DIR` (default location for the local SQLite policy DB). |
+
+#### Observability
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | OTLP collector endpoint when `[observability].openlit = true`. | `http://localhost:4318` |
+
 #### Server Ports (Dynaconf)
 
 Use `DYNACONF_SERVER_PORTS__<NAME>` to override port settings:
@@ -446,7 +862,8 @@ Use `DYNACONF_SERVER_PORTS__<NAME>` to override port settings:
 | `DYNACONF_SERVER_PORTS__EMAIL_MCP` | Email MCP server port | `8000` |
 | `DYNACONF_SERVER_PORTS__EMAIL_SINK` | Email SMTP sink port | `1025` |
 | `DYNACONF_SERVER_PORTS__FILESYSTEM_MCP` | File System MCP port | `8112` |
-| `DYNACONF_SERVER_PORTS__MEMORY` | Memory service port | `8888` |
+| `DYNACONF_SERVER_PORTS__DOCS_MCP` | Docs MCP port | `8113` |
+| `DYNACONF_SERVER_PORTS__OAK_HEALTH_API` | Health-demo OpenAPI port | `8090` |
 
 #### Example .env File
 
@@ -508,7 +925,7 @@ kill -9 <PID>
 
 **Optimization Strategy**:
 1. Enable `lite_mode = true` for simple tasks
-2. Reduce `message_window_limit` to 50 if using memory
+2. Reduce `message_window_limit` to 50 to keep prompts small
 3. Disable `langfuse_tracing` unless needed
 4. Use `fast` mode if accuracy isn't critical
 5. Enable `save_reuse_fast` mode for repetitive tasks

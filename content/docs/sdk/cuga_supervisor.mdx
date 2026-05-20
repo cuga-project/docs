@@ -10,6 +10,16 @@ import { TypeTable } from 'fumadocs-ui/components/type-table';
 
 The `CugaSupervisor` class coordinates multiple agents: it receives a user task, delegates work to specialized sub-agents, and returns a final answer. You can mix local `CugaAgent` instances with remote agents via the **A2A** protocol.
 
+## Try the Demo
+
+The bundled CRM + email multi-agent demo can be launched with:
+
+```bash
+cuga start demo_supervisor
+```
+
+This brings up the same demo surface as `demo_crm` but with the supervisor wired to a CRM sub-agent and an email sub-agent. Use it to see delegation and variable-passing end to end before building your own configuration.
+
 ## Quick Start
 
 <Steps>

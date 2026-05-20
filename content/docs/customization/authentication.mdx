@@ -1,0 +1,86 @@
+---
+title: Authentication & Authorization
+description: Optional OIDC/BFF authentication and role-based authorization for the CUGA server.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+CUGA's demo server is unauthenticated by default. For shared or multi-user deployments, you can enable OpenID Connect (OIDC) authentication using a Backend-for-Frontend (BFF) session cookie, optionally combined with role-based authorization.
+
+The full option list lives in the [Settings reference — Auth section](/docs/customization/settings-reference#auth).
+
+## Quick enable
+
+```toml
+[auth]
+enabled = true
+authorization_enabled = true
+manage_roles = ["ServiceOwner", "ServiceAdmin"]
+chat_roles = ["ServiceOwner", "ServiceAdmin", "ServiceUser"]
+session_cookie_name = "cuga_session"
+session_max_age = 3600
+require_https = true
+```
+
+Then provide the OIDC client details via environment variables (none of them belong in `settings.toml`):
+
+```bash
+export OIDC_ISSUER="https://issuer.example.com"
+export OIDC_CLIENT_ID="cuga"
+export OIDC_CLIENT_SECRET="..."
+export OIDC_REDIRECT_URI="https://cuga.example.com/auth/callback"
+```
+
+## Authentication vs authorization
+
+| Setting | Effect |
+|---------|--------|
+| `enabled = true` | Users must log in via the IdP. Anonymous traffic is rejected. |
+| `authorization_enabled = true` | Roles in `manage_roles` / `chat_roles` are enforced for protected endpoints. |
+| `enabled = true`, `authorization_enabled = false` | Authenticated users can use the agent regardless of role. |
+
+### Where roles come from
+
+`role_token_source` controls which token CUGA inspects for the user's roles claim:
+
+| Value | Used when |
+|-------|-----------|
+| `"auto"` (default) | CUGA inspects the access token first, then falls back to the id_token, then the IAM proxy header. |
+| `"id_token"` | Force roles to come from the OIDC id_token. |
+| `"access_token"` | Force roles to come from the OIDC access token. |
+| `"iam_proxy"` | Trust an upstream IAM proxy header (for deployments fronted by IBM Cloud / OpenShift IAM). |
+
+## Behind an IAM proxy
+
+```toml
+[auth]
+enabled = true
+authorization_enabled = true
+iam_proxy_url = "https://iam-proxy.internal"
+iam_proxy_skip_verify = false
+iam_proxy_ca_bundle = "/etc/cuga/iam-proxy-ca.pem"
+role_token_source = "iam_proxy"
+```
+
+`iam_proxy_ca_bundle` and `OIDC_CA_BUNDLE` are independent — set both if your proxy and IdP use different internal CAs.
+
+## TLS termination
+
+When CUGA terminates TLS itself (i.e. there's no reverse proxy):
+
+```toml
+[auth]
+require_https = true
+ssl_keyfile = "/etc/cuga/tls/key.pem"
+ssl_certfile = "/etc/cuga/tls/cert.pem"
+```
+
+In Kubernetes / Ingress / OpenShift Route deployments leave these empty and let the platform handle TLS.
+
+## Optional: profile-token authorization workflow
+
+Combined with the [authorization workflow](https://github.com/cuga-project/cuga-agent) (cuga-agent PRs #60 and #92), authenticated users can opt-in to attach their own profile token to outbound tool calls. This lets the agent act _as_ the user when calling APIs that require user-level credentials, while still gating which tools are reachable via `manage_roles` / `chat_roles`.
+
+<Callout type="warning">
+Always set `require_https = true` (or terminate TLS upstream) when authentication is on — the BFF session cookie must never travel over plaintext.
+</Callout>

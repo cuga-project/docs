@@ -61,7 +61,7 @@ agent = CugaAgent(
 <TypeTable
   type={{
     tools: {
-      description: 'Optional list of LangChain tools (BaseTool or @tool decorated functions).',
+      description: 'Optional list of LangChain tools (BaseTool or \u0040tool decorated functions).',
       type: 'List[BaseTool]',
       default: 'None'
     },
@@ -80,7 +80,7 @@ agent = CugaAgent(
       type: 'List[BaseCallbackHandler]',
       default: 'None'
     },
-     policy_system: {
+    policy_system: {
       description: 'Optional policy configuration instance.',
       type: 'PolicyConfigurable',
       default: 'None'
@@ -89,6 +89,11 @@ agent = CugaAgent(
       description: 'Optional instructions added globally to the system prompt (e.g. guidelines, constraints, or context for all turns).',
       type: 'Optional[str]',
       default: 'None'
+    },
+    enable_knowledge: {
+      description: 'Enable the built-in knowledge base (Docling-powered ingestion + retrieval). When True, knowledge tools and an awareness block are auto-injected into the agent.',
+      type: 'bool',
+      default: 'True'
     }
   }}
 />
@@ -268,6 +273,34 @@ await compiled_graph.ainvoke(...)
 ### `policies`
 
 Access the `PoliciesManager`. See [Policies](../policies).
+
+### `knowledge`
+
+Access the `KnowledgeManager` when the agent is constructed with `enable_knowledge=True` (the default).
+
+```python
+await agent.knowledge.ingest("/path/to/quarterly_report.pdf")
+results = await agent.knowledge.search("Q4 revenue figures")
+docs = await agent.knowledge.list_documents()
+```
+
+Both `ingest` and `search` accept a `scope` argument (`"agent"` for permanent, shared documents — the default — or `"session"` for thread-scoped documents that require a `thread_id`). See the [Knowledge Base guide](/docs/customization/knowledge) for the full surface, supported document types, and storage details.
+
+## Resource Cleanup
+
+### `aclose`
+
+Release async resources held by the agent (DB connections, background tasks, etc.). Call this at the end of long-running scripts or before process exit:
+
+```python
+agent = CugaAgent(enable_knowledge=True)
+try:
+    result = await agent.invoke("...")
+finally:
+    await agent.aclose()
+```
+
+Short-lived scripts can rely on garbage collection, but `aclose` is recommended any time `enable_knowledge=True` is used.
 
 ## Tool Call Tracking
 

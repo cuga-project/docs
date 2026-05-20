@@ -1,0 +1,62 @@
+---
+title: Context Summarization
+description: Automatically summarize older messages when the context window fills up — for both CugaAgent and CugaSupervisor.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+For long conversations, CUGA can roll older turns into a running summary so the LLM keeps the most useful context without blowing the window.
+
+The full option list lives in the [Settings reference — Context Summarization](/docs/customization/settings-reference#context-summarization).
+
+## Enable
+
+```toml
+[context_summarization]
+enabled = true
+keep_last_n_messages = 10
+trim_tokens_to_summarize = 500
+summarization_model = "gpt-4o-mini"
+trigger_fraction = 0.75
+```
+
+With this configuration:
+
+- Summarization fires when the prompt would exceed **75 %** of the model's context window.
+- The **last 10 messages** are always preserved verbatim.
+- Older messages are condensed into ~**500 tokens** by `gpt-4o-mini`.
+
+## Trigger options
+
+You can use any combination of the three trigger conditions; whichever fires first wins.
+
+| Trigger | Use when |
+|---------|----------|
+| `trigger_fraction = 0.75` | You want the trigger to track the model's actual context window — recommended for production. |
+| `trigger_tokens = 2000` | You want a fixed token cap regardless of model. |
+| `trigger_messages = 20` | You want to summarize after a fixed number of turns (useful for testing). |
+
+If you set more than one, the **first** condition that becomes true triggers summarization.
+
+## Custom prompt
+
+By default LangChain's built-in summarization prompt is used. To override:
+
+```toml
+[context_summarization]
+custom_summary_prompt = "Provide a concise summary of the following conversation, preserving all numeric values and named entities: {messages}"
+```
+
+The `{messages}` placeholder is the only required variable.
+
+## Choice of summarization model
+
+`summarization_model` is independent of the agent's main model. Most users keep it on a small/cheap model (`gpt-4o-mini`, `claude-haiku`, etc.) — the goal is fast, lossy compression, not high reasoning.
+
+## Works with CugaSupervisor
+
+Context summarization applies to both `CugaAgent` and `CugaSupervisor` runs. Each delegated sub-agent invocation gets the summarized history just like a standalone agent.
+
+<Callout type="info">
+Summarization is lossy by design. If your task depends on remembering every literal detail (e.g. exact figures from a document), prefer the [Knowledge Base](/docs/customization/knowledge) — it keeps the original document available for retrieval.
+</Callout>
