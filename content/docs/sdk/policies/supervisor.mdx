@@ -94,15 +94,11 @@ asyncio.run(main())
 | Intent Guard | Yes | Blocks before sub-agent delegation |
 | Playbook | Yes | Injects guidance into the supervisor prompt; can orchestrate sub-agents |
 | Tool Guide | Yes | Enriches tool context when triggers match |
-| Tool Approval | Partial | Approval prompt is shown when generated code requires it |
-| Output Formatter | Storage only | CRUD via SDK; runtime formatting applies to `CugaAgent` / CugaLite today |
+| Tool Approval | Yes | Pauses for approval; resume with `action_response` on a follow-up invoke |
+| Output Formatter | Yes | Applies on invoke when keywords match (same as `CugaAgent`) |
 
 <Callout type="info">
 Use `auto_load_policies=False` and `reset_policy_storage=True` in tests or isolated examples so policies from your project's `.cuga` folder are not mixed in. In production, leave defaults so policies can load from `.cuga` on first invoke.
-</Callout>
-
-<Callout type="warning">
-**Tool Approval** on the standalone supervisor graph shows the approval message and sets `hitl_action`, but the full pause-and-resume flow differs from the wrapped `CugaAgent` graph. Prefer `CugaAgent` policies for production HITL tool gates until supervisor resume is fully wired.
 </Callout>
 
 ## API
