@@ -1,0 +1,129 @@
+---
+title: Supervisor Policies
+description: Apply Intent Guards, Playbooks, and other policies when orchestrating multiple agents with CugaSupervisor.
+---
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+# Supervisor Policies
+
+`CugaSupervisor` exposes the same policy API as `CugaAgent` via `supervisor.policies`. Policies are evaluated on the **supervisor's** user input before delegation, so you can block unsafe requests or inject multi-agent playbooks at the orchestration layer.
+
+See the [Policies overview](./index) for policy types and trigger details. This page covers supervisor-specific usage.
+
+## Quick Start
+
+<Steps>
+<Step>
+### Create sub-agents and supervisor
+
+```python
+from cuga import CugaAgent, CugaSupervisor
+from langchain_core.tools import tool
+import asyncio
+
+@tool
+def get_user_id(name: str) -> str:
+    """Get the internal user ID for a given name."""
+    return "user_alice_99" if name.lower() == "alice" else "unknown_user"
+
+@tool
+def get_user_account_value(user_id: str) -> int:
+    """Get the account value for a specific user ID."""
+    return 1500 if user_id == "user_alice_99" else 0
+
+user_finder = CugaAgent(tools=[get_user_id])
+user_finder.description = "Finds user IDs"
+
+account_manager = CugaAgent(tools=[get_user_account_value])
+account_manager.description = "Finds account values"
+
+supervisor = CugaSupervisor(
+    agents={"user_finder": user_finder, "account_manager": account_manager},
+    auto_load_policies=False,
+    reset_policy_storage=True,
+)
+```
+</Step>
+
+<Step>
+### Add policies
+
+```python
+# Block dangerous requests before any sub-agent runs
+await supervisor.policies.add_intent_guard(
+    name="Block Deletes",
+    keywords=["delete", "remove"],
+    response="Deletion operations are not permitted.",
+)
+
+# Guide multi-agent onboarding when the user mentions onboarding
+await supervisor.policies.add_playbook(
+    name="Customer Onboarding",
+    keywords=["onboard"],
+    content="""# Customer Onboarding
+1. Delegate to user_finder to get Alice's user ID
+2. Delegate to account_manager to get her account value using that user ID
+""",
+)
+```
+</Step>
+
+<Step>
+### Invoke
+
+```python
+async def main():
+    blocked = await supervisor.invoke("delete all customer records")
+    print(blocked.answer)  # Intent guard response
+
+    onboard = await supervisor.invoke(
+        "Onboard Alice: find her user ID, then get her account value."
+    )
+    print(onboard.answer)
+
+asyncio.run(main())
+```
+</Step>
+</Steps>
+
+## Policy Support
+
+| Policy | Supervisor runtime | Notes |
+|--------|-------------------|--------|
+| Intent Guard | Yes | Blocks before sub-agent delegation |
+| Playbook | Yes | Injects guidance into the supervisor prompt; can orchestrate sub-agents |
+| Tool Guide | Yes | Enriches tool context when triggers match |
+| Tool Approval | Partial | Approval prompt is shown when generated code requires it |
+| Output Formatter | Storage only | CRUD via SDK; runtime formatting applies to `CugaAgent` / CugaLite today |
+
+<Callout type="info">
+Use `auto_load_policies=False` and `reset_policy_storage=True` in tests or isolated examples so policies from your project's `.cuga` folder are not mixed in. In production, leave defaults so policies can load from `.cuga` on first invoke.
+</Callout>
+
+<Callout type="warning">
+**Tool Approval** on the standalone supervisor graph shows the approval message and sets `hitl_action`, but the full pause-and-resume flow differs from the wrapped `CugaAgent` graph. Prefer `CugaAgent` policies for production HITL tool gates until supervisor resume is fully wired.
+</Callout>
+
+## API
+
+The management API is identical to `CugaAgent`:
+
+```python
+await supervisor.policies.add_intent_guard(...)
+await supervisor.policies.add_playbook(...)
+await supervisor.policies.add_tool_guide(...)
+await supervisor.policies.add_tool_approval(...)
+await supervisor.policies.add_output_formatter(...)
+
+policies = await supervisor.policies.list()
+policy = await supervisor.policies.get("policy_id")
+await supervisor.policies.delete("policy_id")
+```
+
+Policies are passed into the supervisor graph automatically on `invoke()` once the policy system is initialized (via `add_*` calls or `auto_load_policies` from `.cuga`).
+
+## Related
+
+- [CugaSupervisor](/docs/sdk/cuga_supervisor) — multi-agent orchestration
+- [Intent Guard](./intent-guard) · [Playbook](./playbook) · [Tool Guide](./tool-guide) · [Tool Approval](./tool-approval)
