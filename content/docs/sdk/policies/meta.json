@@ -4,6 +4,7 @@
   "defaultOpen": false,
   "pages": [
     "index",
+    "supervisor",
     "intent-guard",
     "playbook",
     "tool-guide",

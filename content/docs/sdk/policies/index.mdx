@@ -2,11 +2,16 @@
 title: Overview
 description: Manage agent behavior with Intent Guards, Playbooks, and more.
 ---
+import { Callout } from 'fumadocs-ui/components/callout';
 import { TypeTable } from 'fumadocs-ui/components/type-table';
 
 # Policy Management
 
-The `CugaAgent` includes a powerful policy system accessed via `agent.policies`. This allows you to enforce security guardrails, guide agent behavior with playbooks, and require human approval for sensitive actions.
+The `CugaAgent` and `CugaSupervisor` share a policy system accessed via `agent.policies` or `supervisor.policies`. Use it to enforce security guardrails, guide agent behavior with playbooks, and require human approval for sensitive actions.
+
+<Callout type="info">
+Orchestrating multiple agents? See [Supervisor Policies](./supervisor) for a quick start with `CugaSupervisor`.
+</Callout>
 
 Policies are triggered based on user input, context, or tool usage. You can use **keyword triggers** (exact matching) or **natural language triggers** (semantic matching) to determine when policies should activate.
 
