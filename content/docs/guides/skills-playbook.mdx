@@ -76,37 +76,84 @@ See [Installation](/docs/getting-started/installation) for prerequisites (Python
 
 <Step title="Configure your model">
 
-Copy the environment template and set your provider:
+CUGA supports multiple LLM backends. Pick **one** provider block in `.env` and set `AGENT_SETTING_CONFIG` to the matching settings file under `src/cuga/configurations/models/`:
+
+| Provider | Settings file | Typical use |
+| -------- | ------------- | ----------- |
+| **Groq** | `settings.groq.toml` | Fast open models (default in `.env.example`) |
+| **OpenAI** | `settings.openai.toml` | OpenAI API |
+| **OpenAI-compatible** | `settings.openai.toml` | LiteLLM, local proxies, vLLM, Ollama OpenAI shim — set `OPENAI_BASE_URL` |
+| **WatsonX** | `settings.watsonx.toml` | IBM watsonx.ai enterprise models |
+| **Azure / OpenRouter / Google** | `settings.azure.toml`, etc. | See [Model Configuration](/docs/customization/llm-config) |
 
 ```bash
 cp .env.example .env
+# Uncomment exactly one provider section in .env and add your credentials
 ```
 
-<Tabs defaultValue="openai">
+<Tabs defaultValue="groq">
   <TabsList>
+    <TabsTrigger value="groq">Groq</TabsTrigger>
     <TabsTrigger value="openai">OpenAI</TabsTrigger>
-    <TabsTrigger value="groq">Groq (default template)</TabsTrigger>
+    <TabsTrigger value="compatible">OpenAI-compatible</TabsTrigger>
+    <TabsTrigger value="watsonx">WatsonX</TabsTrigger>
   </TabsList>
+
+  <TabsContent value="groq">
+
+Default in `.env.example`. Uncomment the Groq block and add your key:
+
+```bash
+# AGENT_SETTING_CONFIG="settings.groq.toml"
+# MODEL_NAME="openai/gpt-oss-120b"
+# ... GROQ_* from .env.example
+```
+
+Install Groq extras if needed: `uv sync --group groq`
+
+  </TabsContent>
 
   <TabsContent value="openai">
 
 ```bash
-# Create .env from the template, then set your OpenAI key and model:
-cp .env.example .env
-# Edit .env — set OPENAI_API_KEY and uncomment the OpenAI block
+# AGENT_SETTING_CONFIG="settings.openai.toml"
+# MODEL_NAME="gpt-4o"
+# ... OPENAI_* from .env.example
 ```
 
   </TabsContent>
 
-  <TabsContent value="groq">
+  <TabsContent value="compatible">
+
+Use **`settings.openai.toml`** with a custom base URL — any server that speaks the OpenAI chat/completions API:
 
 ```bash
-# .env.example already targets Groq — add your key after copying:
-cp .env.example .env
+# AGENT_SETTING_CONFIG="settings.openai.toml"
+# OPENAI_BASE_URL="https://your-litellm-or-proxy/v1"
+# MODEL_NAME="gpt-4o"           # or the model id your gateway expects
+# ... OPENAI_* from .env.example
+```
+
+Works with LiteLLM, Azure OpenAI (via base URL), local vLLM/Ollama OpenAI endpoints, and similar gateways.
+
+  </TabsContent>
+
+  <TabsContent value="watsonx">
+
+Use **`settings.watsonx.toml`**. Copy the commented WatsonX block from `.env.example` into `.env` and fill in project id, region URL, and credentials:
+
+```bash
+# AGENT_SETTING_CONFIG="settings.watsonx.toml"
+# MODEL_NAME="meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
+# ... plus WATSONX_* vars from .env.example
 ```
 
   </TabsContent>
 </Tabs>
+
+<Callout type="info">
+Override the model at runtime with `MODEL_NAME` in `.env`. Full provider list and advanced options: [Model Configuration](/docs/customization/llm-config).
+</Callout>
 
 </Step>
 
