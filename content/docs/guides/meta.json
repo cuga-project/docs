@@ -3,6 +3,7 @@
   "icon": "BookOpen",
   "defaultOpen": false,
   "pages": [
+    "skills-playbook",
     "openapi-integration",
     "openapi-auth",
     "mcp-server",

@@ -1,0 +1,73 @@
+---
+title: Storage Backends
+description: Choose between local SQLite and production Postgres for policy and knowledge data.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+CUGA persists three things: **policies** (vectors + metadata), **knowledge documents** (vectors + metadata + uploaded files), and **knowledge tasks/settings**. The `[storage].mode` setting selects a single backend stack used for all three.
+
+## Modes
+
+```toml
+[storage]
+mode = "local"        # "local" | "prod"
+local_db_path = ""    # default DBS_DIR/cuga.db when empty
+postgres_url = ""     # required when mode = "prod"
+```
+
+| Data | `local` | `prod` |
+|------|---------|--------|
+| Policy vectors | sqlite-vec at `[policy].policy_db_path` or `storage.local_db_path` (default `DBS_DIR/cuga.db`); table named after `[policy].collection_name`. | `storage.postgres_url` (pgvector). |
+| Knowledge vectors | `{knowledge.persist_dir}/knowledge_vectors.db` (vec0 tables per collection). | `storage.postgres_url` (same DB). |
+| Knowledge metadata (tasks, documents, collection_config, settings) | `{knowledge.persist_dir}/metadata.db`. Default `persist_dir` is `<cwd>/.cuga/knowledge/`. | Postgres tables `cuga_knowledge_meta_*` on `storage.postgres_url`. Uploaded **files** still live under `persist_dir/files/`. |
+
+`DBS_DIR` defaults to the package's `dbs/` directory, or to the value of `CUGA_DBS_DIR` if set. `persist_dir` can be overridden in `knowledge_settings.toml`.
+
+## Local mode (default)
+
+Best for development, single-user demos, and small deployments.
+
+```toml
+[storage]
+mode = "local"
+```
+
+No external services required. SQLite + sqlite-vec keeps everything in a single file, so you can ship a working agent with `git`-cloneable state.
+
+## Production mode
+
+Best for shared deployments, multi-replica services, or anywhere you need transactional guarantees and proper backups.
+
+```toml
+[storage]
+mode = "prod"
+postgres_url = "postgresql+psycopg://cuga:secret@db.internal:5432/cuga"
+```
+
+Postgres must have the **pgvector** extension enabled:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS vector;
+```
+
+CUGA creates the policy and knowledge tables on first startup. Uploaded knowledge files (the originals, not the parsed chunks) continue to live under `persist_dir/files/` — mount that directory on persistent storage in container deployments.
+
+## Embeddings
+
+Embeddings live in `[storage.embedding]` and are independent of the backend mode:
+
+```toml
+[storage.embedding]
+provider = "local"                       # "openai" | "local" | "auto"
+model = "BAAI/bge-small-en-v1.5"
+dim = 384                                # 1536 for OpenAI, 384 for the BAAI model
+base_url = ""                            # optional OpenAI-compatible endpoint
+api_key = ""                             # falls back to OPENAI_API_KEY
+```
+
+`provider = "auto"` tries OpenAI and falls back to the local model if no API key is configured — handy when the same `settings.toml` ships across dev and prod.
+
+<Callout type="info">
+Switching from `local` to `prod` does **not** migrate existing data. If you've been running with policies or knowledge documents in SQLite, export and re-import them in the new backend.
+</Callout>

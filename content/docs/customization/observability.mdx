@@ -1,0 +1,53 @@
+---
+title: Observability (OpenLit)
+description: OpenTelemetry-based LLM tracing, metrics, and logs via OpenLit.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+CUGA can emit OpenTelemetry traces, metrics, and logs for every LLM call using [OpenLit](https://github.com/openlit/openlit) — a drop-in OTel instrumentation for popular LLM SDKs.
+
+## Install
+
+OpenLit ships as an optional extra:
+
+```bash
+pip install "cuga[observability]"
+# or with uv:
+uv sync --group observability
+```
+
+## Configure
+
+```toml
+[observability]
+openlit = true
+```
+
+Point OpenLit at your OTLP collector via environment:
+
+```bash
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4318"
+```
+
+Common service-identifying env vars (`OTEL_SERVICE_NAME`, `OTEL_RESOURCE_ATTRIBUTES`) work as usual — CUGA does not override them.
+
+## Local testing stack
+
+The cuga-agent repo ships a docker-compose stack under `deployment/docker-compose/openlit/` containing an OTel Collector, Tempo (traces), Prometheus (metrics), and Grafana (UI). Start it, point CUGA at the collector, run a task, and you'll see per-call traces with prompt, model, token counts, latency, and cost.
+
+## What gets captured
+
+For each LLM invocation OpenLit records:
+
+- **Trace span** — start/end, duration, parent-child relationships across planner / shortlister / coder / reflection nodes.
+- **Attributes** — model name, provider, temperature, prompt/response content (off by default — configure per OpenLit's docs), token usage (input/output/total), and any raised exception.
+- **Metrics** — request counts, token counts, and latency histograms exported via OTLP.
+
+## Combining with Langfuse
+
+`langfuse_tracing = true` under `[advanced_features]` is independent of OpenLit and can be enabled in parallel — useful when you want both an OTel-native pipeline and a Langfuse dashboard.
+
+<Callout type="info">
+OpenLit's instrumentation is opt-in per LLM SDK. CUGA enables instrumentation for the providers it ships with (OpenAI, LiteLLM, WatsonX). If you wire in a custom provider, follow [OpenLit's instrumentation docs](https://docs.openlit.io/) to enable it explicitly.
+</Callout>

@@ -2,6 +2,7 @@
 title: CugaSupervisor
 description: Orchestrate multiple agents with a single supervisor; delegate to sub-agents and mix local with A2A.
 ---
+import { Callout } from 'fumadocs-ui/components/callout';
 import { Steps, Step } from 'fumadocs-ui/components/steps';
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import { TypeTable } from 'fumadocs-ui/components/type-table';
@@ -9,6 +10,16 @@ import { TypeTable } from 'fumadocs-ui/components/type-table';
 # CugaSupervisor
 
 The `CugaSupervisor` class coordinates multiple agents: it receives a user task, delegates work to specialized sub-agents, and returns a final answer. You can mix local `CugaAgent` instances with remote agents via the **A2A** protocol.
+
+## Try the Demo
+
+The bundled CRM + email multi-agent demo can be launched with:
+
+```bash
+cuga start demo_supervisor
+```
+
+This brings up the same demo surface as `demo_crm` but with the supervisor wired to a CRM sub-agent and an email sub-agent. Use it to see delegation and variable-passing end to end before building your own configuration.
 
 ## Quick Start
 
@@ -154,3 +165,27 @@ pass_variables_a2a = false  # set true to pass variables to A2A agents in metada
 ```
 
 For SDK-only usage, building the supervisor in code (as in Quick Start) does not require any `settings.toml` changes.
+
+## Policies
+
+`CugaSupervisor` uses the same policy API as `CugaAgent` via `supervisor.policies`. Intent guards block unsafe requests before delegation; playbooks inject multi-agent workflows into the supervisor prompt.
+
+```python
+await supervisor.policies.add_intent_guard(
+    name="Block Deletes",
+    keywords=["delete", "remove"],
+    response="Deletion is not permitted.",
+)
+
+await supervisor.policies.add_playbook(
+    name="Onboarding",
+    keywords=["onboard"],
+    content="# Onboarding\n1. Delegate to crm to fetch the customer\n2. Delegate to email to send welcome mail",
+)
+
+result = await supervisor.invoke("Onboard the new customer Acme Corp")
+```
+
+<Callout type="info">
+Full details, support matrix, and a step-by-step example: [Supervisor Policies](/docs/sdk/policies/supervisor).
+</Callout>
