@@ -3,12 +3,11 @@
   "icon": "BookOpen",
   "defaultOpen": false,
   "pages": [
-    "skills-playbook",
+    "agent-skills",
     "openapi-integration",
     "openapi-auth",
     "mcp-server",
     "runtime-tools",
-    "agent-skills",
     "hybrid-demo",
     "human-in-the-loop",
     "save-reuse",
