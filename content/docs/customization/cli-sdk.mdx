@@ -1,44 +1,73 @@
 ---
 title: Control Commands
-description: Master CUGA control commands for service management and monitoring
+description: Start CUGA demos, the manage UI, and related services from the command line.
 ---
+import { Callout } from 'fumadocs-ui/components/callout';
 
-Master CUGA's command-line interface for service management, monitoring, and control.
+# Control Commands
 
-## 🚀 Command Overview
-
-CUGA provides a comprehensive CLI for managing all aspects of the system:
+The `cuga` CLI starts a preset stack (demo UI, registry, sample apps) on your machine.
 
 ```bash
-# Basic command structure
-cuga <command> <subcommand> [options]
+cuga start <preset>
 ```
 
-## 📋 Available Commands
+The UI is at **http://localhost:7860** unless you change `[server_ports].demo`.
 
-### Service Management
+## Start presets
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `start` | Start CUGA services | `cuga start demo` |
-| `stop` | Stop CUGA services | `cuga stop all` |
-| `status` | Check service status | `cuga status` |
-| `restart` | Restart services | `cuga restart demo` |
-| `viz` | Show experiment manager visualization | `cuga viz` |
+| Preset | What it starts |
+| --- | --- |
+| `demo` | Default chat demo |
+| `manager` | Manage UI — draft tools, MCP, models, and policies, then **publish** |
+| `demo_knowledge` | Demo with the knowledge engine on (upload and query documents) |
+| `demo_skills` | Demo with agent skills and a sandbox |
+| `demo_crm` | CRM + email sample apps |
+| `demo_supervisor` | CRM demo with `CugaSupervisor` multi-agent coordination |
+| `demo_health` | Healthcare OpenAPI sample (`cuga-oak-health`) |
+| `demo_docs` | IBM Docs MCP sample |
+| `travel_agent` | Multi-agent travel sample |
+| `registry` | API registry only |
+| `appworld` | AppWorld evaluation environment |
 
+```bash
+cuga start demo
+cuga start manager
+cuga start demo_knowledge
+cuga start demo_skills
+```
 
+<Callout type="info">
+Prefer `cuga start manager` when you want to configure an agent in the UI and publish a version. See [Manage, publish, and self-host](/docs/customization/manage-publish).
+</Callout>
 
-## 📚 Next Steps
+## Useful flags
 
-After mastering control commands:
+These are the flags you will actually use. Run `cuga start --help` for the full list.
 
-1. **[API Integration](../../guides/openapi-integration)**: Add your own APIs
-2. **[Save & Reuse](../../guides/save-reuse)**: Explore workflow persistence
-3. **[Evaluation](../../development/evaluation)**: Run benchmarks
-4. **[Development](../../development/testing)**: Test and debug
+| Flag | Typical use |
+| --- | --- |
+| `--host 0.0.0.0` | Allow connections from other machines |
+| `--sandbox` | Remote sandbox via llm-sandbox (install with `uv sync --group sandbox`) |
+| `--no-email` | Skip email services on `demo_crm` / `demo_supervisor` |
+| `--filesystem` / `--crm` / `--email` / `--docs` | Turn sample apps on for a preset that does not include them |
+| Knowledge `--embeddings-*` / `--knowledge-profile` | Override embeddings and RAG profile for `demo_knowledge` |
 
----
+## Other CLI groups
 
-<div align="center">
-Commands mastered? Move to [API Integration](../../guides/openapi-integration)!
-</div>
+```bash
+cuga --help
+cuga knowledge --help   # ingest, search, and collection helpers
+cuga policy --help      # policy helpers
+```
+
+## Stop
+
+Press **Ctrl+C** in the terminal that ran `cuga start`. That shuts down the processes the CLI spawned.
+
+## Next steps
+
+- [Manage, publish, and self-host](/docs/customization/manage-publish)
+- [Knowledge Base](/docs/customization/knowledge)
+- [Agent skills](/docs/guides/agent-skills)
+- [Policies](/docs/sdk/policies)

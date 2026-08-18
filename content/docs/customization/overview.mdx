@@ -47,11 +47,15 @@ Each configuration folder, contains TOML and MD files that allow to toggle featu
 ```
 src/cuga/configurations/
 ├── models/
-│   ├── settings.litellm.toml      # Default ETE configuration
+│   ├── settings.litellm.toml      # LiteLLM gateway
 │   ├── settings.openai.toml       # OpenAI configuration
+│   ├── settings.openai.reasoning-high.toml
 │   ├── settings.watsonx.toml      # WatsonX configuration
-│   └── settings.azure.toml        # Azure configuration
-│   └── settings.groq.toml        # Groq configuration
+│   ├── settings.azure.toml        # Azure OpenAI configuration
+│   ├── settings.groq.toml         # Groq configuration
+│   ├── settings.minimax.toml      # MiniMax
+│   ├── settings.google.toml       # Gemini
+│   └── settings.ollama.toml       # local Ollama
 ├── modes/
 │   ├── fast.toml              # Fast mode settings
 │   ├── balanced.toml          # Balanced mode settings
@@ -73,3 +77,6 @@ The following pages include additional information on specific customzation topi
 -   Configure [CUGA's task execution modes](../task-modes)
 -   Specify [Special Instructions](../special-instructions) for different sub agents
 -   [Onboard tools](../tools) or integrate with existing tool runtime environments
+-   [Start presets and CLI](../cli-sdk)
+-   [Manage, publish, and self-host](../manage-publish)
+-   [Knowledge Base](../knowledge)

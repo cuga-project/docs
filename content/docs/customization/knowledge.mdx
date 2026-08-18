@@ -110,6 +110,41 @@ Embeddings are configured under `[storage.embedding]` and default to a local `BA
 
 The knowledge persistence directory defaults to `<cwd>/.cuga/knowledge/` and can be overridden in `knowledge_settings.toml`.
 
+## Citations and sources
+
+Numbered citations in answers are **on by default** (`citations_enabled` in `knowledge_settings.toml`, also a toggle under Knowledge → Settings in the UI).
+
+When the agent cites retrieved chunks, `invoke()` fills `result.sources`:
+
+```python
+result = await agent.invoke("What does the handbook say about PTO?")
+print(result.answer)   # may include [1], [2]
+for s in result.sources:
+    print(s["n"], s["filename"], s.get("page"), s.get("snippet"))
+```
+
+In the demo UI you can open a cited PDF **at the cited page**.
+
+## Quality profiles and OCR
+
+Pick a RAG profile instead of hand-tuning every knob:
+
+| Profile | When to use |
+| --- | --- |
+| `speed` | Fast ingest and search |
+| `standard` | Default balance |
+| `balanced` | A bit more quality |
+| `max_quality` | Best extraction (slower; enables heavier Docling/OCR) |
+| `custom` | You set the knobs yourself |
+
+```bash
+cuga start demo_knowledge --knowledge-profile max_quality
+```
+
+`max_quality` is what you want for scanned PDFs (OCR). The default `fast` Docling path is aimed at digital PDFs.
+
+You can also override embeddings from the CLI (`--embeddings-provider`, `--embeddings-model`, `--embeddings-base-url`, …). Built-in embedding families: local `fastembed` (default), Hugging Face, OpenAI-compatible, Ollama, and OpenRouter.
+
 ## Routing Knowledge Through CugaLite
 
 The `[advanced_features].force_lite_mode_apps` list defaults to `["knowledge"]`, so knowledge queries always run through CugaLite's faster execution path regardless of `lite_mode_tool_threshold`. To change this, edit `settings.toml`:

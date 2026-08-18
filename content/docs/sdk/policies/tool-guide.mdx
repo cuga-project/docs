@@ -53,6 +53,8 @@ await agent.policies.add_tool_guide(
 - **Usage Guidelines**: Provide best practices for tool usage
 - **Context Information**: Add runtime context that affects tool behavior
 
+To **block** a call instead of only describing the rule, attach [ToolGuard](./tool-guard) to the same Tool Guide.
+
 ## Trigger Configuration
 
 Tool Guide policies can use triggers to conditionally apply enrichment. For example, you might only add security warnings during business hours or for specific user roles.

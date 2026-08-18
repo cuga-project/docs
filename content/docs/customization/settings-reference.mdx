@@ -212,6 +212,22 @@ force_autonomous_mode = false
 | `cuga_lite_bind_tools_include_find_tools` | Boolean | `false` | When binding tools, also bind the `find_tools` StructuredTool alongside `all`/`apps`. |
 | `cuga_lite_nl_auto_continue` | Boolean | `false` | When the model returns NL with no code, classify interim vs final; if interim, simulate a user `continue` and re-call the model. |
 | `enable_todos` | Boolean | `false` | Enable the todos feature for managing complex multi-step tasks. |
+| `run_receipt` | Boolean | `false` | Attach a per-run token/timing [receipt](/docs/sdk/cuga_agent#run-receipt) to `InvokeResult`. No overhead when off. |
+| `enable_filesystem_tools` | Boolean | `false` | Enable workspace filesystem tools (`read_file`, `write_file`, …). |
+| `enable_shell_tool` | Boolean | `false` | Enable shell-style tools (`run_command`, …). Required for most agent skills. |
+| `opensandbox_sandbox` | Boolean | `true` | Use OpenSandbox (Docker) for code execution. Requires Docker + `uv sync --extra opensandbox`. |
+| `sandbox_mode` | String | `"native"` | Shell sandbox: `"native"` (macOS sandbox-exec; falls back to local elsewhere), `"opensandbox"`, `"e2b"`, or `"local"`. |
+| `sandbox_execution_timeout` | Integer (seconds) | `30` | Per-block wall clock for sandbox code execution. |
+| `max_tool_calls_per_run` | Integer | `256` | Max tool calls per user turn. `0` disables. |
+| `max_tool_calls_per_block` | Integer | `100` | Max tool calls in one generated code block (recoverable). `0` disables. |
+| `max_tool_calls_per_thread` | Integer | `2000` | Max tool calls per conversation (never reset). `0` disables. |
+| `cuga_lite_bind_tools_tool_names` | Array&lt;String&gt; | `[]` | When bind mode is `tools` or `apps_and_tools`, tool names to bind. |
+| `cuga_lite_bind_tools_max_count` | Integer | `128` | Cap on tools sent to `bind_tools`. `0` disables. Over-cap uses a shortlister. |
+| `cuga_lite_bind_tools_pad_to_cap` | Boolean | `false` | Pad shortlister output to fill the cap. |
+| `cuga_lite_warn_suspect_args` | Boolean | `true` | Warn (never coerce) when a tool argument looks malformed for its schema. |
+| `cuga_lite_blocked_claim_retry` | Boolean | `true` | Retry once if the model claims tools are unavailable but none have run. |
+| `strip_harmony_control_tokens` | String / Boolean | `"auto"` | Strip gpt-oss harmony tokens from the final answer. `"auto"` only for harmony models. |
+| `variables_summary_max_length` | Integer | `12000` | Cap on the “Available Variables” prompt addendum. |
 
 ### Workflow Options
 
@@ -350,6 +366,27 @@ cuga start demo_supervisor
 
 ---
 
+## Agent spawn
+
+Opt-in nested sub-agents. Off by default — no prompt or tool overhead until you enable it.
+
+```toml
+[agent_spawn]
+enabled = false
+max_spawn_depth = 2
+forward_sync_subagent_events = true
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | Boolean | `false` | Allow `spawn_agent` / `get_agent_result`. |
+| `max_spawn_depth` | Integer | `2` | How deep nested spawns may go. |
+| `forward_sync_subagent_events` | Boolean | `true` | Forward sub-agent events to the parent stream. |
+
+See [CugaAgent — sub-agent spawn](/docs/sdk/cuga_agent#sub-agent-spawn-opt-in).
+
+---
+
 ## Storage
 
 Selects the backend for policy vectors, knowledge vectors, and knowledge metadata.
@@ -385,6 +422,7 @@ api_key = ""
 | `mode` | String | `"local"` | `"local"` (sqlite/sqlite-vec) or `"prod"` (Postgres + pgvector). |
 | `local_db_path` | String | `""` | Override path for the local SQLite DB. Empty = `DBS_DIR/cuga.db`. |
 | `postgres_url` | String | `""` | Postgres connection URL. **Required** when `mode = "prod"`. |
+| `preserve_configs_on_startup` | String | `"prod"` | Skip demo/manager config seed when agent configs already exist. `"prod"`, `"local"`, or `"any"`. |
 
 ### `[storage.embedding]` options
 
@@ -415,13 +453,71 @@ auto_load_policies = true
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `enabled` | Boolean | `true` | Enable the policy system (intent guards, playbooks, tool guides, tool approvals, output formatters). |
+| `enabled` | Boolean | `true` | Enable the policy system (intent guards, playbooks, tool guides, ToolGuard, tool approvals, output formatters). |
 | `collection_name` | String | `"cuga_policies"` | Vector store collection name for policies. |
 | `policy_db_path` | String | `""` | Optional explicit path for the policy DB. When empty, uses `storage.local_db_path`. |
 | `playbook_refine` | Boolean | `false` | Enable playbook refinement based on user progress (requires an LLM call). |
 | `filesystem_sync` | Boolean | `true` | Sync policies to/from the `.cuga` folder on disk. |
 | `cuga_folder` | String | `".cuga"` | Path to the `.cuga` folder used for policy files. |
 | `auto_load_policies` | Boolean | `true` | Automatically load policies from the `.cuga` folder on startup. |
+
+---
+
+## Skills
+
+Agent skills (`SKILL.md`). See [Agent skills](/docs/guides/agent-skills).
+
+```toml
+[skills]
+enabled = false
+root = "cuga"
+opensandbox_image = "opensandbox/code-interpreter:v1.0.2"
+opensandbox_entrypoint = "/opt/opensandbox/code-interpreter.sh"
+opensandbox_python_version = "3.11"
+opensandbox_domain = "localhost:8080"
+opensandbox_timeout_seconds = 600
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | Boolean | `false` | Discover skills, expose `load_skill`, and enable `/api/skills`. |
+| `root` | String | `"cuga"` | Single skills directory: `cuga` (`.cuga/skills`), `agents`, `global_agents`, or `global_cuga`. |
+| `opensandbox_image` | String | `"opensandbox/code-interpreter:v1.0.2"` | Docker image when `sandbox_mode = "opensandbox"`. |
+| `opensandbox_entrypoint` | String | `"/opt/opensandbox/code-interpreter.sh"` | Entrypoint inside that image. |
+| `opensandbox_python_version` | String | `"3.11"` | Python version injected into the image. |
+| `opensandbox_domain` | String | `"localhost:8080"` | OpenSandbox server. Override with `OPEN_SANDBOX_DOMAIN`. |
+| `opensandbox_timeout_seconds` | Integer | `600` | Sandbox lifetime in seconds. |
+
+---
+
+## A2A
+
+Expose CUGA over the Agent-to-Agent protocol. Off by default — the A2A package is not imported until you enable it.
+
+```toml
+[a2a]
+enabled = false
+agent_name = "cuga"
+agent_description = "CUGA agent exposed over A2A."
+agent_version = "0.0.0"
+agent_url = "http://localhost:8000"
+auth_required = false
+skill_ids = ["delegate_task"]
+supervisor_config_path = ""
+auto_approve = false
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | Boolean | `false` | Mount the A2A router. |
+| `agent_name` | String | `"cuga"` | Name on the AgentCard. |
+| `agent_description` | String | `"CUGA agent exposed over A2A."` | AgentCard description. |
+| `agent_version` | String | `"0.0.0"` | AgentCard version. |
+| `agent_url` | String | `"http://localhost:8000"` | Public URL clients should call. |
+| `auth_required` | Boolean | `false` | Advertise a bearer security scheme on the AgentCard. |
+| `skill_ids` | Array&lt;String&gt; | `["delegate_task"]` | Skills listed on the AgentCard. |
+| `supervisor_config_path` | String | `""` | YAML for the supervisor that handles inbound A2A. Empty = placeholder runner. |
+| `auto_approve` | Boolean | `false` | Simple runner only: auto-confirm HITL interrupts. |
 
 ---
 
@@ -584,12 +680,14 @@ Controls TLS for outbound LLM inference connections.
 [connections]
 inference_ca_cert = ""
 inference_disable_ssl = false
+llm_http_timeout = 61
 ```
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `inference_ca_cert` | String | `""` | Path to a CA certificate for the inference HTTP clients (OpenAI and LiteLLM). Env: `CUGA_INFERENCE_CA_CERT`. |
 | `inference_disable_ssl` | Boolean | `false` | Disable SSL verification for all inference connections (overrides `inference_ca_cert`). Env: `CUGA_DISABLE_SSL`. |
+| `llm_http_timeout` | Integer (seconds) | `61` | HTTP timeout for OpenAI / Azure / OpenRouter clients. Env: `CUGA_LLM_HTTP_TIMEOUT`. |
 
 ---
 
@@ -600,11 +698,15 @@ Optional OpenLit / OpenTelemetry observability for LLM calls.
 ```toml
 [observability]
 openlit = false
+pricing_json = ""
+litellm_local_model_cost_map = true
 ```
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `openlit` | Boolean | `false` | Enable OpenLit LLM observability via OpenTelemetry (OTLP). Requires `pip install cuga[observability]`. Configure the OTLP endpoint via `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318`. |
+| `pricing_json` | String | `""` | Local OpenLit `pricing.json` for airgapped environments. Empty = bundled asset. |
+| `litellm_local_model_cost_map` | Boolean | `true` | Prefer LiteLLM's bundled model cost map (avoids a GitHub fetch). |
 
 A local testing stack (OTel Collector + Tempo + Prometheus + Grafana) is provided under `deployment/docker-compose/openlit/` in the cuga-agent repo.
 

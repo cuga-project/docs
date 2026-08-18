@@ -1,0 +1,146 @@
+---
+title: ToolGuard
+description: Block unsafe tool calls at runtime with generated guard code.
+---
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+
+# ToolGuard
+
+Tool Guide tells the model *how* to use a tool. **ToolGuard** goes one step further: it runs a small policy check **before** the tool is called, and can block the call if it violates your rules.
+
+Use it when description-only guidance is not enough — for example “regular members cannot book more than 3 passengers.”
+
+<Callout type="info">
+ToolGuard is attached to a [Tool Guide](./tool-guide) policy. Without guard code, the Tool Guide only enriches the tool description. With guard code, CUGA enforces the rule at runtime.
+</Callout>
+
+## How it feels in practice
+
+1. You add a Tool Guide that names the tools and describes the rule in plain language.
+2. CUGA generates examples and Python guard code from that description.
+3. On the next `invoke()`, if the model tries a violating call, the original tool **does not run**. The agent gets a structured “blocked by policy” result and can recover.
+
+If no guard applies to that tool, the call runs normally. ToolGuard stays out of the way until you give it a rule.
+
+## Quick start (SDK)
+
+```python
+from cuga import CugaAgent
+from langchain_core.tools import tool
+
+
+@tool
+def book_flight(user_id: str, flight_id: str, passengers: int) -> str:
+    """Book a flight for a user."""
+    return f"Booked {flight_id} for {user_id} ({passengers} passengers)"
+
+
+@tool
+def get_membership(user_id: str) -> str:
+    """Get user membership level."""
+    return "regular"
+
+
+agent = CugaAgent(tools=[book_flight, get_membership])
+
+policy_id = await agent.policies.add_tool_guide(
+    name="Flight booking membership policy",
+    content="""
+Regular members cannot book flights for more than 3 passengers.
+Gold and silver members have no passenger restrictions.
+""",
+    target_tools=["book_flight"],
+    description="Membership-based restrictions for flight bookings",
+)
+
+violating, compliance = await agent.policies.generate_tool_guard_examples(
+    policy_id=policy_id,
+    target_tool="book_flight",
+)
+
+guard_code = await agent.policies.generate_tool_guard_code(
+    policy_id=policy_id,
+    target_tool="book_flight",
+    app_name="runtime_tools",  # LangChain tools passed to CugaAgent
+)
+
+await agent.policies.update_tool_guard(
+    policy_id=policy_id,
+    tool_guards={
+        "book_flight": {
+            "violating_examples": violating,
+            "compliance_examples": compliance,
+            "policy_code": guard_code,
+        }
+    },
+)
+
+result = await agent.invoke(
+    "Book flight AB12 for uid_56845 with 4 passengers"
+)
+```
+
+You do **not** need to rebuild the agent. The next invocation uses the new guard.
+
+<Callout type="warning">
+LangChain tools you pass to `CugaAgent(tools=[...])` run under the app name `runtime_tools`. If your Tool Guide sets `target_apps`, include `"runtime_tools"` or the guard will not apply.
+</Callout>
+
+## Generate guards from a policy file
+
+If you already export policies as JSON (from Manage, or `load_from_json`), generate guards in one call:
+
+```python
+result = await agent.policies.generate_tool_guards_from_json("policies-export.json")
+```
+
+Pass `clear_existing=True` only when you want to replace stored policies before generating.
+
+Policies are skipped when they are not Tool Guides, are disabled, or target `*` instead of a concrete tool name.
+
+## In the Manage UI
+
+Start the manage stack, then generate and review guards without writing SDK code:
+
+```bash
+cuga start manager
+```
+
+From a Tool Guide policy you can:
+
+- Generate guard examples and code
+- Preview the generated Python
+- Enable or disable enforcement per policy (`guards_enabled`) without deleting the guard
+
+See [Manage, publish, and self-host](/docs/customization/manage-publish).
+
+## Pause enforcement without deleting the policy
+
+Each Tool Guide has a `guards_enabled` flag (default `true`). Turn it **off** in the Manage UI, or when you create/update the policy, to keep the richer tool description while skipping runtime blocking. The guard code stays stored so you can turn it back on later.
+
+## What a blocked call looks like
+
+The original tool is not executed. The agent sees a payload like:
+
+```python
+{
+    "error": "Tool call blocked by policy: ...",
+    "blocked_by_policy": True,
+    "policy_violation": True,
+    "tool": "book_flight",
+    "app": "runtime_tools",
+}
+```
+
+SDK `invoke()` also records the decision on `result.policy_decisions` so you can audit what fired.
+
+## Trust model
+
+Guard `policy_code` is admin-authored Python. It runs in the CUGA backend process, not inside the agent code sandbox. Only people who can manage policies should create or edit it. Review generated code before you enable it in production.
+
+## Related
+
+- [Tool Guide](./tool-guide) — description enrichment without runtime blocking
+- [Tool Approval](./tool-approval) — pause for a human instead of auto-blocking
+- [Policy overview](./) — all policy types

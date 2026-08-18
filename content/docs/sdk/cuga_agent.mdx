@@ -91,9 +91,39 @@ agent = CugaAgent(
       default: 'None'
     },
     enable_knowledge: {
-      description: 'Enable the built-in knowledge base (Docling-powered ingestion + retrieval). When True, knowledge tools and an awareness block are auto-injected into the agent.',
+      description: 'Enable the built-in knowledge base (Docling-powered ingestion + retrieval). When True, knowledge tools and an awareness block are auto-injected into the agent. None reads the setting from config.',
+      type: 'Optional[bool]',
+      default: 'None'
+    },
+    cuga_folder: {
+      description: 'Folder for policy markdown, ToolGuard domain files, and related agent files. Default ".cuga".',
+      type: 'Optional[str]',
+      default: 'None'
+    },
+    auto_load_policies: {
+      description: 'Load policies from cuga_folder on first invoke/stream. Call await agent.initialize() to load immediately.',
+      type: 'Optional[bool]',
+      default: 'None'
+    },
+    filesystem_sync: {
+      description: 'When True, policies you add or update are written back to the .cuga folder.',
+      type: 'Optional[bool]',
+      default: 'None'
+    },
+    reset_policy_storage: {
+      description: 'If True, clear stored policies before the first load.',
       type: 'bool',
-      default: 'True'
+      default: 'False'
+    },
+    enable_skills: {
+      description: 'Enable SKILL.md discovery and the load_skill tool. None reads [skills].enabled from settings.',
+      type: 'Optional[bool]',
+      default: 'None'
+    },
+    skills_folder: {
+      description: 'Override the skills root for this agent. None uses [skills].root.',
+      type: 'Optional[str]',
+      default: 'None'
     }
   }}
 />
@@ -218,11 +248,64 @@ The `invoke` method returns an `InvokeResult` object with the following fields:
       description: 'Error message if execution failed.',
       type: 'Optional[str]',
       default: 'None'
+    },
+    sources: {
+      description: 'Citation sources when knowledge citations are on: filename, page, snippet, score, and related fields.',
+      type: 'List[Dict[str, Any]]',
+      default: '[]'
+    },
+    variables: {
+      description: 'Variables produced during the run (also used when a supervisor bridges values between agents).',
+      type: 'Dict[str, Any]',
+      default: '{}'
+    },
+    policy_decisions: {
+      description: 'Ordered policy decisions for this invocation (approvals, blocks, ToolGuard, formatters).',
+      type: 'List[PolicyDecision]',
+      default: '[]'
+    },
+    receipt: {
+      description: 'Per-run token and timing receipt when [advanced_features].run_receipt is true. None otherwise.',
+      type: 'Optional[RunReceipt]',
+      default: 'None'
     }
   }}
 />
 
 **Backward Compatibility**: `str(result)` returns the answer, so existing code using the result as a string will continue to work.
+
+### Run Receipt
+
+Turn on a per-run token and timing summary without an external tracing stack:
+
+```toml
+[advanced_features]
+run_receipt = true   # default false — no overhead when off
+```
+
+```python
+result = await agent.invoke("how many accounts are there?")
+print(result.receipt)
+# model, input/output tokens, LLM vs tool time, slowest tool
+result.receipt.input_tokens
+result.receipt.tool_timings
+```
+
+CUGA reports **tokens and time**, not dollars — multiply by your own rates. If a provider sends `cache_read_tokens` or `reasoning_tokens`, they are included.
+
+Unless you also pass `track_tool_calls=True`, the receipt records **timings only** (tool name, app, duration) — not arguments or results.
+
+### Sub-agent spawn (opt-in)
+
+Off by default. When enabled, the agent can spawn a helper sub-agent for a nested task and collect the result (`spawn_agent` / `get_agent_result`).
+
+```toml
+[agent_spawn]
+enabled = true
+max_spawn_depth = 2
+```
+
+Leave this off unless you need nested agents — there is no prompt or tool overhead when it is disabled.
 
 ### `stream`
 

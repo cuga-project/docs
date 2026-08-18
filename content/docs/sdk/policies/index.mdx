@@ -1,13 +1,13 @@
 ---
 title: Overview
-description: Manage agent behavior with Intent Guards, Playbooks, and more.
+description: Manage agent behavior with Intent Guards, Playbooks, ToolGuard, and more.
 ---
 import { Callout } from 'fumadocs-ui/components/callout';
 import { TypeTable } from 'fumadocs-ui/components/type-table';
 
 # Policy Management
 
-The `CugaAgent` and `CugaSupervisor` share a policy system accessed via `agent.policies` or `supervisor.policies`. Use it to enforce security guardrails, guide agent behavior with playbooks, and require human approval for sensitive actions.
+The `CugaAgent` and `CugaSupervisor` share a policy system accessed via `agent.policies` or `supervisor.policies`. Use it to enforce security guardrails, guide agent behavior with playbooks, require human approval for sensitive actions, and **block unsafe tool calls at runtime** with ToolGuard.
 
 <Callout type="info">
 Orchestrating multiple agents? See [Supervisor Policies](./supervisor) for a quick start with `CugaSupervisor`.
@@ -34,6 +34,12 @@ See [Playbook documentation](./playbook) for details.
 Automatically injects additional context or instructions into tool descriptions when specific criteria are met.
 
 See [Tool Guide documentation](./tool-guide) for details.
+
+### ToolGuard
+
+Attaches generated guard code to a Tool Guide so CUGA can **allow or block** a tool call before it runs. Use this when a description is not enough — for example passenger limits or role-based restrictions.
+
+See [ToolGuard documentation](./tool-guard) for details.
 
 ### Tool Approval
 

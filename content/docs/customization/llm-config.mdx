@@ -12,6 +12,9 @@ CUGA supports multiple LLM providers with flexible configuration options. You ca
 - **Azure OpenAI** - Microsoft's Azure OpenAI service
 - **Groq** - Groq's LLM platform
 - **OpenRouter** - LLM API gateway provider
+- **MiniMax** - MiniMax-M3 (global or China endpoint)
+- **Google Gemini** - Google GenAI
+- **Ollama** - Local OpenAI-compatible models (for example gpt-oss)
 - **RITS** - IBM Research Internal Token Service (IBM internal)
 
 ### Option 1: OpenAI 🌐
@@ -157,6 +160,66 @@ MODEL_NAME="rits/openai/gpt-4o"
 
 **Note:** RITS is only available for IBM Research users with access to the internal service.
 
+### Option 7: MiniMax
+
+MiniMax-M3 over an OpenAI-compatible API. Default endpoint is global English (`https://api.minimax.io/v1`).
+
+**Setup Instructions:**
+
+1. Add to your `.env` file:
+   ```bash
+   AGENT_SETTING_CONFIG="settings.minimax.toml"
+   MINIMAX_API_KEY="XXXXXX"
+   # Optional: MINIMAX_BASE_URL="https://api.minimax.io/v1"
+   ```
+
+2. For the China endpoint, either set `MINIMAX_REGION=cn` or `MINIMAX_BASE_URL=https://api.minimaxi.com/v1`.
+
+**Default Values:**
+- Model: `MiniMax-M3`
+- URL: `https://api.minimax.io/v1` (or China when `MINIMAX_REGION` is `cn` / `china`)
+
+**Environment Variable Override:**
+```bash
+MODEL_NAME="MiniMax-M3"
+```
+
+### Option 8: Google Gemini
+
+**Setup Instructions:**
+
+1. Add to your `.env` file:
+   ```bash
+   AGENT_SETTING_CONFIG="settings.google.toml"
+   GOOGLE_API_KEY="XXXXXX"
+   ```
+
+**Environment Variable Override:**
+```bash
+MODEL_NAME="gemini-2.0-flash"
+```
+
+### Option 9: Ollama (local)
+
+Ollama is configured as an OpenAI-compatible endpoint. A dummy API key is required by the client and ignored by Ollama.
+
+**Setup Instructions:**
+
+1. Run [Ollama](https://ollama.com) locally and pull a model (for example `gpt-oss:20b`).
+2. Add to your `.env` file:
+   ```bash
+   AGENT_SETTING_CONFIG="settings.ollama.toml"
+   OPENAI_API_KEY="ollama"
+   # Optional: OPENAI_BASE_URL="http://localhost:11434/v1"
+   ```
+
+The bundled profile uses a 300s timeout (local generation can exceed the default 61s) and turns vision off for text-only models such as gpt-oss.
+
+**Environment Variable Override:**
+```bash
+MODEL_NAME="gpt-oss:20b"
+```
+
 ### LiteLLM Support
 
 CUGA supports LiteLLM through the OpenAI configuration by overriding the base URL:
@@ -180,13 +243,29 @@ MODEL_NAME="gpt-4-turbo"
 CUGA uses TOML configuration files located in `src/cuga/configurations/models/`:
 
 - `settings.openai.toml` - OpenAI configuration (also supports LiteLLM via base URL override)
+- `settings.openai.reasoning-high.toml` - same as OpenAI, with `reasoning_effort = "high"`
+- `settings.openai.reasoning-high-32k.toml` - high reasoning effort with larger token budgets
 - `settings.watsonx.toml` - WatsonX configuration
 - `settings.azure.toml` - Azure OpenAI configuration
 - `settings.groq.toml` - Groq configuration
 - `settings.openrouter.toml` - OpenRouter configuration
+- `settings.minimax.toml` - MiniMax configuration
+- `settings.google.toml` - Google Gemini configuration
+- `settings.ollama.toml` - local Ollama (OpenAI-compatible)
 - `settings.rits.toml` - RITS configuration (IBM internal)
+- `settings.litellm.toml` - LiteLLM gateway
 
 Each file contains agent-specific model settings that can be overridden by environment variables.
+
+### Reasoning-effort profiles
+
+For models served over an OpenAI-compatible endpoint that honor `reasoning_effort`:
+
+```bash
+AGENT_SETTING_CONFIG="settings.openai.reasoning-high.toml"
+```
+
+Use `settings.openai.reasoning-high-32k.toml` if high effort crowds out visible output (empty completions) — that profile enlarges `max_tokens` so reasoning and the answer can both fit. Reasoning tokens count against the same budget.
 
 ### Settings File Content Structure
 
@@ -280,6 +359,15 @@ export AGENT_SETTING_CONFIG="settings.groq.toml"
 
 # Switch to OpenRouter
 export AGENT_SETTING_CONFIG="settings.openrouter.toml"
+
+# Switch to MiniMax
+export AGENT_SETTING_CONFIG="settings.minimax.toml"
+
+# Switch to Gemini
+export AGENT_SETTING_CONFIG="settings.google.toml"
+
+# Switch to local Ollama
+export AGENT_SETTING_CONFIG="settings.ollama.toml"
 
 # Switch to RITS (IBM internal)
 export AGENT_SETTING_CONFIG="settings.rits.toml"

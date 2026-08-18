@@ -8,7 +8,7 @@ import { Tab, Tabs, TabsContent, TabsList, TabsTrigger } from 'fumadocs-ui/compo
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 import { Cards, Card } from 'fumadocs-ui/components/card';
-import { Rocket, Settings, BookOpen, Plug, Save, BarChart3, Shield, Code } from 'lucide-react';
+import { Rocket, Settings, BookOpen, Plug, Save, BarChart3, Shield, Code, Database, Sparkles, Server } from 'lucide-react';
 
 <img
   src="/images/banner.png"
@@ -44,6 +44,24 @@ Get started quickly with these essential guides:
     icon={<Plug />}
   />
   <Card
+    href="/docs/customization/knowledge"
+    title="Knowledge"
+    description="Ingest documents, cite sources, and query them in chat"
+    icon={<Database />}
+  />
+  <Card
+    href="/docs/guides/agent-skills"
+    title="Agent Skills"
+    description="Reusable SKILL.md playbooks the agent loads on demand"
+    icon={<Sparkles />}
+  />
+  <Card
+    href="/docs/customization/manage-publish"
+    title="Manage & Self-host"
+    description="Draft in the UI, publish a version, deploy with Helm"
+    icon={<Server />}
+  />
+  <Card
     href="/docs/guides/save-reuse"
     title="Save & Reuse"
     description="Capture and reuse successful execution paths"
@@ -58,7 +76,7 @@ Get started quickly with these essential guides:
   <Card
     href="/docs/sdk/policies"
     title="Policies"
-    description="Manage agent behavior with Intent Guards, Playbooks, and more"
+    description="Intent Guards, Playbooks, ToolGuard, and human-in-the-loop"
     icon={<Shield />}
   />
   <Card
@@ -94,10 +112,14 @@ For us reliability and trust mean:
 CUGA is still early, but already provides useful building blocks:
 - **Complex task execution**: State of the art results across Web and APIs.
 - **Flexible tool integrations**: CUGA works across REST APIs via OpenAPI specs, MCP servers, and custom connectors.
-- **Smart orchestration** with code-generated API glue logic  
+- **Smart orchestration** with code-generated API glue logic
 - **Composable agent architecture**: CUGA itself can be exposed as a tool to other agents, enabling nested reasoning and multi-agent collaboration.
 - **Configurable reasoning modes**: Choose between fast heuristics or deep planning depending on your task's complexity and latency needs.
-- **Policy system**: Configure agent behavior with Intent Guards, Playbooks, Tool Guide, Tool Approval, and Output Formatters to enforce security, guide workflows, and ensure compliance.
+- **Policy system**: Intent Guards, Playbooks, Tool Guide, Tool Approval, Output Formatters, and **ToolGuard** (runtime allow/block on tool calls).
+- **Knowledge engine**: Ingest PDFs, Office files, HTML, and Markdown with Docling. Answers can cite sources. Documents can be agent-scoped (shared) or session-scoped (one conversation).
+- **Agent skills**: Package domain workflows as `SKILL.md` files. Type `/` in chat to invoke one, or let the agent call `load_skill`.
+- **Manage & publish**: `cuga start manager` — draft tools, MCP, LLM, and policies in the UI, then publish a versioned config.
+- **Self-host**: Helm chart and deploy scripts for kind, minikube, or a cloud cluster.
 - **Save & Reuse** _(Experimental)_: CUGA captures and reuses successful execution paths, enabling consistent and faster behavior across repeated tasks.
 
 <Accordions type="single">
@@ -114,12 +136,12 @@ CUGA is still early, but already provides useful building blocks:
 
 <Accordions type="single">
   <Accordion title="🛠️ Technology Stack">
-    - **Python 3.12**: Core runtime environment
+    - **Python 3.12+**: Core runtime (`requires-python` is `>=3.10,<3.15`)
     - **UV**: Modern Python package management
     - **FastAPI**: High-performance web framework
     - **Playwright**: Browser automation (with a Chromium-based extension for web/hybrid modes)
-    - **OpenAI/LiteLLM**: LLM integration for intelligent decision making
-    - **Docker**: Containerized deployment and evaluation
+    - **OpenAI-compatible LLMs**: OpenAI, WatsonX, Groq, Azure, OpenRouter, MiniMax, Gemini, Ollama, and more
+    - **Kubernetes / Helm**: Optional self-host path
   </Accordion>
 </Accordions>
 
@@ -268,6 +290,16 @@ Start CUGA in demo mode to explore its capabilities:
 cuga start demo
 ```
 
+That opens the default chat demo. Other useful presets:
+
+```bash
+cuga start manager          # configure tools, models, and policies, then publish
+cuga start demo_knowledge   # upload documents and ask questions
+cuga start demo_skills      # agent skills + sandbox
+```
+
+See [Control Commands](/docs/customization/cli-sdk) for the full list.
+
 Try this example query to test the system:
 
 ```text
@@ -310,10 +342,11 @@ All contributions are welcome through [GitHub Issues](https://github.com/cuga-pr
 
 ## Roadmap
 
-CUGA is still early. Amongst other, we're exploring the following directions:  
+CUGA is still early. We are investing in:
 
-- **Policy support**: procedural SOPs, domain knowledge, input/output guards, context- and tool-based constraints  
-- **Performance improvements**: dynamic reasoning strategies that adapt to task complexity  
+- **Richer policy and ToolGuard workflows** — easier authoring, review, and reuse of generated guards across environments
+- **Adaptive reasoning** — strategies that shift with task complexity, cost, and latency
+- **Production operations** — manage/publish, Helm, and observability for long-lived deployments  
   
 
 ### Before Submitting a PR

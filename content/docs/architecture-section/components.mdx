@@ -1,10 +1,26 @@
 ---
 title: System Components
-description: Overview of CUGA's system components and their interactions
+description: The pieces that make up a running CUGA stack — agent, tools, policies, knowledge, and sandboxes.
 ---
+import { Callout } from 'fumadocs-ui/components/callout';
 
 # System Components
 
-🚧 Documentation coming soon...
+CUGA is a small set of pieces that you compose, rather than a single black box.
 
-For now, refer to the [Architecture Overview](../overview) for a high-level understanding of CUGA's architecture.
+| Piece | What it does | Where to read more |
+| --- | --- | --- |
+| **CugaAgent** | The SDK entry point. You pass tools (and optional policies, knowledge, skills) and call `invoke()` / `stream()`. | [Agent SDK](/docs/sdk/cuga_agent) |
+| **CugaLite** | Fast path for API-style tasks. Generates and runs Python that calls your tools. | [Execution modes](/docs/customization/modes) |
+| **Graph agent** | Planner–executor path for harder or hybrid (API + browser) work. | [Architecture overview](/docs/architecture-section/overview) |
+| **CugaSupervisor** | Coordinates several CUGA agents (or remote A2A agents) on one task. | [CugaSupervisor](/docs/sdk/cuga_supervisor) |
+| **API registry** | Serves OpenAPI and MCP tools to the agent. | [OpenAPI](/docs/guides/openapi-integration) · [MCP](/docs/guides/mcp-server) |
+| **Policies** | Intent Guard, Playbook, Tool Guide, Tool Approval, Output Formatter, and [ToolGuard](/docs/sdk/policies/tool-guard). | [Policies](/docs/sdk/policies) |
+| **Knowledge** | Docling ingest + retrieval, with citations and agent/session scopes. | [Knowledge Base](/docs/customization/knowledge) |
+| **Skills** | On-demand `SKILL.md` playbooks (`load_skill`). | [Agent skills](/docs/guides/agent-skills) |
+| **Sandbox** | Where generated code and skill scripts run: `native`, `opensandbox`, `e2b`, or `local`. | [Agent skills](/docs/guides/agent-skills#sandbox-backends) · [E2B](/docs/customization/e2b-sandbox) |
+| **Manage UI** | Draft tools, models, and policies, then publish a version. | [Manage, publish, and self-host](/docs/customization/manage-publish) |
+
+<Callout type="info">
+For the node-by-node graph (planner, shortlister, browser action, HITL), see the [Architecture overview](/docs/architecture-section/overview).
+</Callout>
