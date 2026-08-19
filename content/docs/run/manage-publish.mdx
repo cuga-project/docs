@@ -1,0 +1,61 @@
+---
+title: Manage and Publish
+description: Draft agent config in the UI, publish a version, and roll forward safely.
+---
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+# Manage and publish
+
+<Callout type="info">
+**Architecture:** The Manage UI is a **Clients layer** interface to the backend's `/api/manage` routes — draft tools, policies, and models, then publish to the **Persistence layer**. See [How CUGA works — Deployment](/docs/start/how-it-works#deployment-server-mode).
+</Callout>
+
+CUGA is not only a demo. You can edit an agent in the browser, try it safely as a **draft**, then **publish** a version that production chat uses.
+
+```bash
+cuga start manager
+```
+
+Open **http://localhost:7860**. You get a manage UI where you can:
+
+- Add or edit tools, MCP servers, and OpenAPI apps
+- Pick the LLM and advanced model parameters
+- Attach [policies](/docs/build/policies) (including [ToolGuard](/docs/build/policies/tool-guard))
+- Chat against the **draft** without changing what production users see
+- **Publish** when the draft looks right — CUGA stores a versioned config so you can audit what shipped and roll forward
+
+<Callout type="info">
+Draft chat is for you. Published chat is for everyone else. Publish only when you are happy with the draft.
+</Callout>
+
+Typical loop:
+
+<Steps>
+<Step>
+### Start manager
+
+```bash
+cuga start manager
+```
+</Step>
+<Step>
+### Edit the draft
+
+Change tools, MCP, model, or policies. Try a few tasks in draft chat.
+</Step>
+<Step>
+### Publish
+
+Publish creates a new version. Production chat switches to that version.
+</Step>
+</Steps>
+
+When `storage.mode = "prod"`, CUGA can keep existing published configs on startup instead of reseeding demo data. See [`preserve_configs_on_startup`](/docs/configure/settings-reference#storage).
+
+## Related
+
+- [CLI presets](/docs/run/cli-presets) — all `cuga start` commands
+- [Demos](/docs/run/demos) — try sample apps before configuring your own
+- [Self-host on Kubernetes](/docs/run/self-host) — deploy the published stack to a cluster
+- [Tool Approval policy](/docs/build/policies/tool-approval) — human-in-the-loop before sensitive tool calls

@@ -1,10 +1,4 @@
 {
-  "title": "Integrations",
-  "icon": "Plug",
-  "defaultOpen": false,
-  "pages": [
-    "cuga-as-mcp",
-    "langflow",
-    "huggingface-spaces"
-  ]
+  "title": "Integrations (moved)",
+  "pages": ["cuga-as-mcp", "langflow", "huggingface-spaces"]
 }

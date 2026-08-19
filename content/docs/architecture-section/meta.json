@@ -1,10 +1,4 @@
 {
-  "title": "Architecture",
-  "icon": "Building",
-  "defaultOpen": false,
-  "pages": [
-    "overview",
-    "components"
-  ]
+  "title": "Architecture (moved)",
+  "pages": ["overview", "components"]
 }
-

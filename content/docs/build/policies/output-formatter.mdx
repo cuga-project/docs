@@ -1,0 +1,192 @@
+---
+title: Output Formatter
+description: Format agent responses based on triggers and configuration.
+---
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+# Output Formatter
+
+Output Formatter policies format the final AI message output based on triggers. They are checked **after** the final AI message is generated, allowing you to transform or restructure the agent's response before it's returned to the user.
+
+## Overview
+
+Output Formatters allow you to:
+- **Transform responses**: Reformat agent output using LLM-based instructions
+- **Apply templates**: Use structured formats (JSON, markdown) for consistent output
+- **Direct replacement**: Replace responses with predefined content when specific conditions are met
+- **Conditional formatting**: Apply formatting only when triggers match the agent's response
+
+## Usage
+
+```python
+await agent.policies.add_output_formatter(
+    name="Format as Summary",
+    format_config="Format the response as a structured summary with:\n- A clear title\n- Key points as bullets",
+    format_type="markdown",
+    keywords=["summary", "result", "output"]
+)
+```
+
+## Format Types
+
+Output Formatters support three format types:
+
+### Markdown Format
+
+Uses LLM to reformat the response according to markdown instructions.
+
+```python
+await agent.policies.add_output_formatter(
+    name="Structured Report",
+    format_config="""
+    Format the response as a structured report with:
+    - Executive Summary (2-3 sentences)
+    - Key Findings (bullet points)
+    - Recommendations (numbered list)
+    - Next Steps (action items)
+    """,
+    format_type="markdown",
+    keywords=["report", "analysis", "findings"]
+)
+```
+
+### JSON Schema Format
+
+Uses LLM to reformat the response according to a JSON schema.
+
+```python
+await agent.policies.add_output_formatter(
+    name="Structured Data Output",
+    format_config='''{
+        "type": "object",
+        "properties": {
+            "status": {"type": "string"},
+            "data": {"type": "array"},
+            "summary": {"type": "string"}
+        },
+        "required": ["status", "data", "summary"]
+    }''',
+    format_type="json_schema",
+    keywords=["data", "json", "structured"]
+)
+```
+
+### Direct Format
+
+Replaces the response directly with the format_config string (no LLM call).
+
+```python
+await agent.policies.add_output_formatter(
+    name="Error Response Template",
+    format_config="I apologize, but I encountered an error processing your request. Please try again or contact support.",
+    format_type="direct",
+    keywords=["error", "failed", "exception"]
+)
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    name: {
+      description: 'Policy name.',
+      type: 'str',
+      required: true
+    },
+    format_config: {
+      description: 'Formatting configuration. For markdown: instructions. For json_schema: JSON schema string. For direct: replacement string.',
+      type: 'str',
+      required: true
+    },
+    format_type: {
+      description: 'Type of formatting: "markdown", "json_schema", or "direct".',
+      type: 'str',
+      default: '"markdown"'
+    },
+    description: {
+      description: 'Policy description.',
+      type: 'str',
+      default: '""'
+    },
+    keywords: {
+      description: 'List of keywords to trigger on (checked against agent response).',
+      type: 'Optional[List[str]]',
+      default: 'None'
+    },
+    natural_language_trigger: {
+      description: 'Natural language descriptions for semantic matching (checked against agent response).',
+      type: 'Optional[List[str]]',
+      default: 'None'
+    },
+    threshold: {
+      description: 'Similarity threshold for NL matching (0.0-1.0).',
+      type: 'float',
+      default: '0.7'
+    },
+    priority: {
+      description: 'Priority when multiple formatters match (higher = applied first).',
+      type: 'int',
+      default: '50'
+    },
+    enabled: {
+      description: 'Whether policy is enabled.',
+      type: 'bool',
+      default: 'True'
+    },
+    policy_id: {
+      description: 'Optional custom ID (auto-generated if not provided).',
+      type: 'Optional[str]',
+      default: 'None'
+    }
+  }}
+/>
+
+## Advanced Example with Natural Language Trigger
+
+```python
+await agent.policies.add_output_formatter(
+    name="Technical Documentation Format",
+    format_config="""
+    Format the response as technical documentation:
+    1. Title (H1)
+    2. Overview section
+    3. Technical details in code blocks
+    4. Examples section
+    5. References
+    """,
+    format_type="markdown",
+    natural_language_trigger=[
+        "technical documentation",
+        "API documentation",
+        "code documentation",
+        "developer guide"
+    ],
+    threshold=0.75
+)
+```
+
+## How It Works
+
+1. **Agent generates response**: The agent completes its task and generates a final answer
+2. **Trigger matching**: Output Formatter policies check if their triggers match the agent's response content
+3. **Formatting applied**: If a match is found:
+   - **Markdown/JSON Schema**: LLM is called to reformat the response according to the instructions
+   - **Direct**: Response is replaced with the format_config string directly
+4. **Priority handling**: If multiple formatters match, the one with highest priority is applied
+
+## Trigger Targets
+
+Output Formatter triggers automatically target `"agent_response"` (the last AI message content). This ensures formatters are applied based on what the agent actually said, not the user's input.
+
+## Use Cases
+
+- **Consistent formatting**: Ensure all responses follow a specific structure
+- **API responses**: Format outputs as JSON for API integrations
+- **Documentation**: Transform responses into technical documentation format
+- **Error handling**: Replace error messages with user-friendly templates
+- **Report generation**: Structure analysis results as formatted reports
+- **Data extraction**: Convert unstructured responses into structured JSON
+
+For detailed trigger configuration, see [Triggers](./triggers).
+

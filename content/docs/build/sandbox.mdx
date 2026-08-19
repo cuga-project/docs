@@ -1,0 +1,66 @@
+---
+title: Sandbox
+description: Where generated code and agent skills run — native, local, E2B, and OpenSandbox.
+---
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Sandbox
+
+<Callout type="info">
+**Architecture:** The sandbox is part of the **Capability layer** — isolated execution for generated Python and skill scripts (`native`, `e2b`, `opensandbox`). Pairs with [Agent Skills](/docs/build/skills).
+</Callout>
+
+When CUGA generates Python or runs skill scripts, code executes in a **sandbox backend**. Pick one in `settings.toml` or via CLI flags.
+
+| Backend | When to use |
+| --- | --- |
+| `native` | Default for skills demo — fast, in-process |
+| `local` | Local subprocess isolation |
+| `opensandbox` | Remote sandbox via llm-sandbox (`cuga start demo --sandbox`) |
+| `e2b` | Cloud sandboxes — best isolation, no local deps |
+
+Configure in `settings.toml`:
+
+```toml
+[advanced_features]
+enable_shell_tool = true           # required for most agent skills
+opensandbox_sandbox = true         # Docker OpenSandbox; needs `uv sync --extra opensandbox`
+sandbox_mode = "native"            # native | local | e2b | opensandbox
+```
+
+Turn skills on separately (`[skills] enabled = true`). `sandbox_mode` is an **advanced_features** key — putting it under `[skills]` has no effect.
+
+Try skills with a sandbox:
+
+```bash
+cuga start demo_skills
+# or
+cuga start demo --sandbox
+```
+
+---
+
+## E2B cloud sandbox
+
+[E2B](https://e2b.dev) runs code in isolated cloud VMs. Good for production isolation when you do not want generated code on your machine.
+
+**Setup:**
+
+1. Get an API key from [e2b.dev/dashboard](https://e2b.dev/dashboard)
+2. Install deps: `uv sync --group e2b`
+3. Add to `.env`: `E2B_API_KEY=...`
+4. Set `sandbox_mode = "e2b"` in settings
+
+For registry access from E2B sandboxes you may need to expose your local registry (e.g. ngrok). See the agent repo’s E2B docs for the full wiring.
+
+<Callout type="info">
+Agent skills copy `SKILL.md` scripts into `/workspace/skills/` inside the sandbox. See [Skills](/docs/build/skills) for the full flow.
+</Callout>
+
+---
+
+## Related
+
+- [Skills](/docs/build/skills) — `SKILL.md` playbooks and `load_skill`
+- [Settings reference — skills & sandbox](/docs/configure/settings-reference)
+- [CLI presets](/docs/run/cli-presets) — `--sandbox` flag

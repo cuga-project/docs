@@ -1,0 +1,133 @@
+---
+title: Memory
+description: Learn from past runs — inject guidelines on similar tasks and save trajectories after each run.
+---
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+# Memory
+
+Memory lets CUGA **learn from past runs**. Before a similar task, it injects guidelines into the prompt. After the run, it saves the trajectory so the next time is faster and less error-prone.
+
+The engine behind it is [altk-evolve](https://pypi.org/project/altk-evolve/). You enable **Memory** in settings; you do not wire Evolve as a separate product.
+
+<Callout type="info">
+**Architecture:** Memory is a **Capability layer** feature. Trajectories persist in Postgres/pgvector (Persistence). See [How CUGA works](/docs/start/how-it-works#3-capability-layer).
+</Callout>
+
+---
+
+## What happens during a run
+
+<MemoryFlow />
+
+If Memory is unavailable, times out, or returns nothing, CUGA continues — it never blocks the task.
+
+---
+
+## Enable
+
+Memory is used in **CugaLite**. Turn it on in `settings.toml`:
+
+```toml
+[advanced_features]
+lite_mode = true
+
+[evolve]
+enabled = true
+mode = "auto"
+app_name = "evolve"
+lite_mode_only = true
+save_on_success = true
+save_on_failure = true
+async_save = true
+timeout = 30.0
+```
+
+The `[evolve]` keys are the Memory backend. Full list: [Settings reference](/docs/configure/settings-reference#memory).
+
+---
+
+## How the Memory service runs
+
+<Tabs items={['Registry-managed (recommended)', 'Standalone SSE server']}>
+<Tab value="Registry-managed (recommended)">
+Let the CUGA MCP registry launch it. In the Manage UI, add an MCP tool with:
+
+- **Name**: `evolve`
+- **Connection type**: `Command (stdio)`
+- **Command**: `uvx`
+- **Args**: `--from altk-evolve --with setuptools<70 evolve-mcp`
+
+Add these env values on the same tool:
+
+```bash
+EVOLVE_BACKEND=postgres
+EVOLVE_PG_HOST=localhost
+EVOLVE_PG_PORT=5432
+EVOLVE_PG_USER=postgres
+EVOLVE_PG_PASSWORD=postgres
+EVOLVE_PG_DBNAME=evolve
+EVOLVE_MODEL_NAME=Azure/gpt-4o
+OPENAI_API_KEY=env://OPENAI_API_KEY
+OPENAI_BASE_URL=env://OPENAI_BASE_URL
+```
+
+`env://VAR` reads from CUGA's own environment at runtime. Leave `mode = "auto"` (or `"registry"`) and `app_name = "evolve"`.
+</Tab>
+<Tab value="Standalone SSE server">
+Run the service yourself (useful for debugging):
+
+```bash
+# From a checkout of altk-evolve:
+uv sync --extra pgvector
+evolve-mcp --transport sse --port 8201
+```
+
+```toml
+[evolve]
+enabled = true
+url = "http://127.0.0.1:8201/sse"
+mode = "direct"
+```
+
+`mode = "direct"` skips registry lookup.
+</Tab>
+</Tabs>
+
+The Memory MCP server needs model credentials (`EVOLVE_MODEL_NAME`, OpenAI/LiteLLM keys). Without them, saving trajectories can fail even if the connection works.
+
+---
+
+## Try it
+
+```bash
+cuga start demo_crm --sample-memory-data
+```
+
+Then run a CugaLite task, for example:
+
+```
+Identify the common cities between my cuga_workspace/cities.txt and cuga_workspace/company.txt
+```
+
+---
+
+## Tuning
+
+| Setting | Effect |
+| --- | --- |
+| `async_save = true` | Save in the background; does not block the answer |
+| `save_on_success` / `save_on_failure` | What to persist |
+| `mode = "auto"` | Registry first, then direct SSE |
+| `mode = "registry"` | Registry only |
+| `mode = "direct"` | Use `url` only |
+| `lite_mode_only = true` | Memory only on the CugaLite path |
+
+---
+
+## Related
+
+- [Knowledge](/docs/build/knowledge) — documents the agent can cite (not the same as Memory)
+- [Context summarization](/docs/build/context-summarization) — compress this thread, not learn across runs
+- [Settings reference](/docs/configure/settings-reference#memory)

@@ -1,0 +1,61 @@
+---
+title: Self-host on Kubernetes
+description: Deploy CUGA on kind, minikube, or a cloud cluster with Helm.
+---
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+# Self-host on Kubernetes
+
+<Callout type="info">
+**Architecture:** A deployed CUGA stack runs the **Clients** (Web UI), **Orchestrator** (backend + LangGraph), **Capability** (tools, knowledge, sandbox), **Persistence** (vector DB + config DB), and **External** (LLM APIs, secrets) layers together. See [How CUGA works — Deployment](/docs/start/how-it-works#deployment-server-mode).
+</Callout>
+
+The [cuga-agent](https://github.com/cuga-project/cuga-agent) repo ships a Helm chart and helper scripts for running CUGA outside your laptop.
+
+## What gets deployed
+
+| Component | Role |
+| --- | --- |
+| **CUGA backend** | FastAPI — chat streaming, knowledge, manage, config, auth |
+| **Web UI** | React chat and Manage UI |
+| **Tool registry** | OpenAPI + MCP discovery (may run in-process or separately) |
+| **Persistence** | Postgres/pgvector or SQLite + Milvus (via Helm values) |
+| **Ingress / secrets** | TLS, API keys as Kubernetes secrets |
+
+<Steps>
+<Step>
+### Prerequisites
+
+Helm 3 and a cluster (kind, minikube, Docker Desktop Kubernetes, or GKE / EKS / AKS).
+</Step>
+<Step>
+### Local cluster (kind / minikube)
+
+From the `cuga-agent` repository root:
+
+```bash
+cp deployment/.env.example deployment/.env
+# Set GROQ_API_KEY or OPENAI_API_KEY
+
+./deployment/deploy-local.sh
+kubectl port-forward svc/cuga 7860:7860
+```
+
+Open **http://localhost:7860**.
+</Step>
+<Step>
+### Cloud cluster
+
+Build and push the image to your registry, then install the chart under `deployment/helm/` with API keys as Kubernetes secrets. Full walkthrough: [`deployment/README.md`](https://github.com/cuga-project/cuga-agent/blob/main/deployment/README.md).
+</Step>
+</Steps>
+
+<Callout type="info">
+Cluster-specific values (ingress, TLS, image pull secrets) vary by environment — use the Helm README as the source of truth.
+</Callout>
+
+## Related
+
+- [Manage and publish](/docs/run/manage-publish) — draft config in the UI, then deploy the published version
+- [Configure — storage](/docs/configure/storage) — `storage.mode = "prod"` keeps published configs on restart

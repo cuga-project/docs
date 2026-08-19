@@ -1,13 +1,9 @@
 {
   "pages": [
-    "getting-started",
-    "customization",
-    "guides",
-    "integrations",
-    "architecture-section",
-    "sdk",
-    "development"
+    "start",
+    "build",
+    "run",
+    "configure",
+    "contribute"
   ]
 }
-
-

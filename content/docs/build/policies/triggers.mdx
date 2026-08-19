@@ -1,0 +1,171 @@
+---
+title: Triggers
+description: Configure how policies are activated using keyword or natural language triggers.
+---
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+# Policy Triggers
+
+Policies are activated based on triggers that match user input, context, or tool usage. CUGA supports two main trigger types: **keyword triggers** (exact matching) and **natural language triggers** (semantic matching).
+
+## Keyword Triggers
+
+Keyword triggers match exact words or phrases in user input. They're simple and fast, but require precise wording.
+
+### Usage
+
+**Python API**: Use the `keywords` parameter (automatically creates keyword triggers)
+
+```python
+await agent.policies.add_intent_guard(
+    name="Block Deletions",
+    keywords=["delete", "remove", "drop"],
+    response="I cannot perform deletion operations."
+)
+```
+
+**JSON Config**: Use `triggers` with `"type": "keyword"`
+
+```json
+{
+  "triggers": [
+      { 
+          "type": "keyword", 
+          "value": ["delete", "remove"], 
+          "operator": "or",
+          "target": "intent",
+          "case_sensitive": false
+      }
+  ]
+}
+```
+
+### Configuration
+
+- **`value`**: List of keywords to match
+- **`operator`**: `"and"` (all keywords required) or `"or"` (any keyword matches)
+- **`target`**: Field to search (`"intent"`, `"user_input"`, `"chat_messages"`, etc.)
+- **`case_sensitive`**: Whether matching is case-sensitive (default: `false`)
+
+## Natural Language Triggers
+
+Natural language triggers use semantic similarity matching instead of exact keyword matching. This allows policies to match user intents even when the wording differs.
+
+### How It Works
+
+Natural language triggers use LLM-based semantic matching to understand the intent behind user input. The system:
+
+1. **Semantic Matching**: Compares user input with trigger values using semantic similarity (0.0-1.0 score)
+2. **Threshold-Based**: Only matches if similarity score meets the configured threshold
+3. **Multi-Value Support**: Supports multiple trigger values with OR logic (matches if any value matches)
+4. **Conflict Resolution**: When multiple policies have NL triggers, uses LLM to resolve conflicts and select the best match
+5. **Fallback**: Falls back to keyword matching if LLM is unavailable
+
+### Usage
+
+```python
+await agent.policies.add_intent_guard(
+    name="Block Financial Operations",
+    description="Prevent unauthorized financial transactions",
+    intent_examples=[
+        "transfer money",
+        "make a payment",
+        "send funds",
+        "wire transfer"
+    ],
+    response="I cannot perform financial transactions without proper authorization."
+)
+```
+
+### Configuration
+
+<TypeTable
+  type={{
+    type: {
+      description: 'Trigger type, must be "natural_language".',
+      type: 'str',
+      required: true
+    },
+    value: {
+      description: 'List of natural language phrases to match against. Matches if ANY value matches (OR logic).',
+      type: 'Union[str, List[str]]',
+      required: true
+    },
+    target: {
+      description: 'Field to match against. Options: "intent", "user_input", "chat_messages", "sub_task", "agent_response", or state data field name.',
+      type: 'str',
+      default: '"intent"'
+    },
+    threshold: {
+      description: 'Minimum similarity score (0.0-1.0) required for a match. Higher values = stricter matching.',
+      type: 'float',
+      default: '0.7'
+    }
+  }}
+/>
+
+### Target Fields
+
+- `"intent"` or `"user_input"`: Current user input/intent
+- `"chat_messages"`: Recent chat message history
+- `"sub_task"`: Current sub-task being executed
+- `"agent_response"`: Last agent response
+- State data fields: Any custom state field name
+
+> **Note**: Target fields are currently internally managed by the system. In future releases, we will provide advanced target configuration options and state triggers based on variables, allowing you to create more sophisticated trigger conditions.
+
+### Conflict Resolution
+
+When multiple policies have natural language triggers that could match, the system automatically uses LLM-based conflict resolution to:
+
+- Analyze all candidate policies
+- Determine which policy best matches the user's intent
+- Select the most specific/relevant policy
+- Prioritize Intent Guards (blockers) over Playbooks (guidance)
+
+This ensures the most appropriate policy is applied even when multiple policies could potentially match.
+
+## Choosing the Right Trigger Type
+
+**Use Keyword Triggers when:**
+- You need exact phrase matching
+- Performance is critical
+- The wording is predictable
+- You want simple, fast matching
+
+**Use Natural Language Triggers when:**
+- User input varies in wording
+- You want to match intent, not exact words
+- You need flexible, semantic matching
+- You can accept slight performance overhead
+
+## Examples
+
+### Keyword Trigger Example
+
+```python
+# Matches exact phrases
+await agent.policies.add_intent_guard(
+    name="Block Account Deletion",
+    keywords=["delete account", "remove account", "close account"],
+    response="Account deletion requires additional verification."
+)
+```
+
+### Natural Language Trigger Example
+
+```python
+# Matches semantic intent
+await agent.policies.add_playbook(
+    name="Password Reset Guide",
+    natural_language_trigger=[
+        "forgot password",
+        "can't log in",
+        "need to reset credentials",
+        "locked out of account"
+    ],
+    threshold=0.75,
+    content="# Password Reset Protocol..."
+)
+```
+

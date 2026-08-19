@@ -1,11 +1,4 @@
 {
-  "title": "Development",
-  "icon": "Wrench",
-  "defaultOpen": false,
-  "pages": [
-    "testing",
-    "evaluation",
-    "CONTRIBUTING"
-  ]
+  "title": "Development (moved)",
+  "pages": ["testing", "evaluation", "CONTRIBUTING"]
 }
-

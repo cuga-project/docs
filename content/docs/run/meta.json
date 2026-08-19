@@ -1,0 +1,15 @@
+{
+  "title": "Run",
+  "icon": "Server",
+  "defaultOpen": false,
+  "pages": [
+    "cli-presets",
+    "manage-publish",
+    "self-host",
+    "demos",
+    "---Use CUGA from other apps---",
+    "cuga-as-a2a",
+    "cuga-as-mcp",
+    "langflow"
+  ]
+}

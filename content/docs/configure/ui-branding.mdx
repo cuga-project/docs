@@ -1,0 +1,33 @@
+---
+title: UI Branding
+description: White-label the CUGA demo UI — hide the logo and change the displayed app name.
+---
+
+The demo UI exposes two simple branding hooks under the `[ui]` section of `settings.toml`. Use them when CUGA is embedded in a customer-facing product, evaluation environment, or internal tool that should carry your own branding.
+
+## Settings
+
+```toml
+[ui]
+hide_cuga_logo = false
+brand_name = "CUGA Agent"
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `hide_cuga_logo` | Boolean | `false` | Hide the CUGA logo in the demo header. |
+| `brand_name` | String | `"CUGA Agent"` | App name shown in the header. |
+
+Both options take effect on the next demo restart (`cuga start demo`, `cuga start demo_crm`, etc.).
+
+## Example
+
+```toml
+[ui]
+hide_cuga_logo = true
+brand_name = "Acme Assistant"
+```
+
+This produces a header with no CUGA mark and "Acme Assistant" in place of the default product name.
+
+For deeper UI customization (custom logos, themes, or full white-label builds), build the demo frontend from source — see the cuga-agent repo for the build instructions.

@@ -1,0 +1,86 @@
+---
+title: Quick Start
+description: "CUGA — configurable generalist agent for enterprise automation. Pick a path: try the demo, use the SDK, or manage an agent in the UI."
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Rocket, Code, Server } from 'lucide-react';
+
+<img
+  src="/images/banner.png"
+  alt="CUGA Banner"
+  style={{
+    display: 'block',
+    width: 'min(520px, 85%)',
+    margin: '0 auto 1.5rem',
+    borderRadius: '0.5rem',
+  }}
+/>
+
+# Quick Start
+
+**CUGA** (ConfigUrable Generalist Agent) is an open-source agent harness from IBM Research. You attach tools (APIs, MCP, Python functions), optional policies and documents, and CUGA runs the task — in your app via the SDK, or as a server with `cuga start`.
+
+Not sure where to begin? Pick one path:
+
+<Cards>
+  <Card
+    href="/docs/run/demos"
+    title="Try the demo"
+    description="cuga start demo — chat UI with sample tools in under 5 minutes"
+    icon={<Rocket />}
+  />
+  <Card
+    href="/docs/build/cuga-agent"
+    title="Use the SDK"
+    description="CugaAgent(tools=[...]) → await agent.invoke(...) in Python"
+    icon={<Code />}
+  />
+  <Card
+    href="/docs/run/manage-publish"
+    title="Manage an agent"
+    description="cuga start manager — draft tools & policies in the UI, then publish"
+    icon={<Server />}
+  />
+</Cards>
+
+Install first if you have not already: [Installation](/docs/start/installation).
+
+Want the mental model before diving in? Read [How CUGA works](/docs/start/how-it-works).
+
+CUGA is built in **five layers** — Clients → Orchestrator → Capabilities → Persistence → External services. Your path above maps to the **Clients** layer; the orchestrator and capabilities run behind it.
+
+---
+
+## Benchmarks
+
+- **#2 on [AppWorld](https://appworld.dev/leaderboard)** — 750 real-world tasks across 457 APIs
+- Top-tier on **[WebArena](https://docs.google.com/spreadsheets/d/1M801lEpBbKSNwP-vDBkC_pF7LdyGU1f_ufZb_NWNBZQ/edit?gid=0#gid=0)** (#1 from 02/25–09/25)
+
+---
+
+## What you get
+
+- **CugaAgent** — one agent, your tools, `invoke()` / `stream()`
+- **CugaSupervisor** — delegate across several agents (local or A2A)
+- **Policies** — Intent Guard, Playbooks, Tool Approval, ToolGuard, and more
+- **Knowledge** — ingest PDFs/Office/HTML, cite sources in answers
+- **Memory** — learn from past runs; inject guidelines next time
+- **Agent skills** — reusable `SKILL.md` playbooks
+- **Manage & self-host** — draft in the browser, publish a version, deploy with Helm
+
+Full component map: [System components](/docs/start/components).
+
+---
+
+## Ecosystem
+
+`cuga-agent` is the harness. These repos sit beside it:
+
+| Repo | Role |
+| --- | --- |
+| [cuga-skills](https://github.com/cuga-project/cuga-skills) | Catalog of runtime `SKILL.md` playbooks you install into `.cuga/skills` |
+| [cuga-harness-kit](https://github.com/cuga-project/cuga-harness-kit) | IDE skills that teach Cursor, Claude Code, Codex, and Bob how to install and build with CUGA |
+| [cuga-eval](https://github.com/cuga-project/cuga-eval) | Evaluation harness for running agent benchmarks against CUGA |
+
+Skills in the product: [Build → Skills](/docs/build/skills). Benchmarks: [cuga-eval](https://github.com/cuga-project/cuga-eval).

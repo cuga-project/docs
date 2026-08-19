@@ -1,0 +1,18 @@
+{
+  "title": "Configure",
+  "icon": "Settings",
+  "defaultOpen": false,
+  "pages": [
+    "overview",
+    "models",
+    "environment",
+    "task-modes",
+    "settings-reference",
+    "---Platform---",
+    "storage",
+    "secrets-vault",
+    "authentication",
+    "observability",
+    "ui-branding"
+  ]
+}

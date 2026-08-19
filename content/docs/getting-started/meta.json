@@ -1,10 +1,4 @@
 {
-  "title": "Getting Started",
-  "icon": "Rocket",
-  "defaultOpen": true,
-  "pages": [
-    "index",
-    "installation"
-  ]
+  "title": "Getting Started (moved)",
+  "pages": ["index", "installation"]
 }
-

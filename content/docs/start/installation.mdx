@@ -1,0 +1,357 @@
+---
+title: Installation Guide
+description: Complete installation instructions for CUGA
+---
+
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { CodeBlock } from 'fumadocs-ui/components/codeblock';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+
+# Installation Guide
+
+Get CUGA up and running on your system in just a few minutes. This comprehensive guide will walk you through installing CUGA, from quick setup to detailed configuration options. CUGA is an enterprise agent you can trust for building reliable agents for real-world use.
+
+## Prerequisites
+
+### System Requirements
+
+<Callout type="info">
+CUGA requires Python 3.12 or higher and works on Windows, macOS, and Linux systems.
+</Callout>
+
+- **Python**: 3.12 or higher
+- **RAM**: 8GB minimum, 16GB recommended
+- **Storage**: 2GB free space (5GB for development)
+- **Network**: Internet connection for API access
+- **OS**: Ubuntu 20.04+, macOS 12+, or Windows 10+
+
+### Required Tools
+
+Before you begin, ensure you have the following:
+
+- **UV Package Manager** - Modern Python dependency management (see [installation guide](#installing-uv) below)
+- **Git** - For cloning the repository
+- **API Keys** - OpenAI API key or compatible LLM provider
+
+<Callout type="warning">
+Additional requirements vary by installation method. See the specific installation section below for details.
+</Callout>
+
+<Accordions type="single">
+  <Accordion id="installing-uv" title="📦 Installing UV">
+    UV is the recommended package manager for CUGA, providing faster dependency resolution and better virtual environment management than pip.
+
+    <Tabs defaultValue="macos">
+      <TabsList>
+        <TabsTrigger value="macos">macOS</TabsTrigger>
+        <TabsTrigger value="linux">Linux</TabsTrigger>
+        <TabsTrigger value="windows">Windows</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="macos">
+        <h4>macOS Installation</h4>
+
+        **Using Homebrew (Recommended):**
+        ```bash
+        brew install uv
+        ```
+
+        **Using curl:**
+        ```bash
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        ```
+
+        **Using pip:**
+        ```bash
+        pip install uv
+        ```
+      </TabsContent>
+
+      <TabsContent value="linux">
+        <h4>Linux Installation</h4>
+
+        **Using curl (Recommended):**
+        ```bash
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        ```
+
+        **Using pip:**
+        ```bash
+        pip install uv
+        ```
+      </TabsContent>
+
+      <TabsContent value="windows">
+        <h4>Windows Installation</h4>
+
+        **Using PowerShell (Recommended):**
+        ```powershell
+        powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+        ```
+
+        **Using pip:**
+        ```bash
+        pip install uv
+        ```
+      </TabsContent>
+    </Tabs>
+  </Accordion>
+</Accordions>
+
+---
+
+## 🚀 Quick Start
+
+Get started with the essential setup steps to have CUGA running quickly using the standard installation method.
+
+<Steps>
+  <Step title="Clone Repository">
+    Clone the CUGA repository to your local machine:
+
+    ```bash
+    git clone https://github.com/cuga-project/cuga-agent.git
+    cd cuga-agent
+    ```
+  </Step>
+
+  <Step title="Setup Environment">
+    Create a virtual environment and install dependencies:
+
+    ```bash
+    uv venv --python=3.12
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    uv sync
+    ```
+
+    <Callout type="warning">
+    Make sure to activate the virtual environment before running any CUGA commands.
+    </Callout>
+  </Step>
+
+  <Step title="Configure Environment">
+    Copy the example environment file and add your API key:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+    Edit the `.env` file and add your OpenAI API key:
+
+    ```bash
+    OPENAI_API_KEY=your_api_key_here
+    ```
+
+    <Callout type="info">
+    For IBM team members, you can use the ETE LiteLLM API key from the [ETE LiteLLM portal](https://ete-litellm.bx.cloud9.ibm.com/ui/).
+    </Callout>
+  </Step>
+
+</Steps>
+
+### First Run
+
+Start CUGA in demo mode to explore its capabilities:
+
+```bash
+cuga start demo
+```
+
+Try this example query to test the system:
+
+```text
+get my top account by revenue from digital sales
+```
+
+<Callout type="success">
+Congratulations! You've successfully installed CUGA. Continue reading for detailed configuration options and advanced setup.
+</Callout>
+
+---
+
+### Visualize trajectories
+
+Once you've run CUGA a few times, you can visualize the trajectories.
+
+Start the visualization server:
+
+```bash
+cuga viz
+```
+
+Navigate to Cuga Visualizer at [http://localhost:8988](http://localhost:8988). You can see a list of trajectories, and open any trajectory by clicking Open:
+
+<img
+  src="/images/cuga-viz-home.png"
+  alt="CUGA Visualizer home"
+  style={{ width: '100%', borderRadius: '0.5rem', marginBottom: '2rem' }}
+/>
+
+Here you can see an overview of the trajectory:
+
+<img
+  src="/images/cuga-viz-trajectory.png"
+  alt="CUGA Visualizer home"
+  style={{ width: '100%', borderRadius: '0.5rem', marginBottom: '2rem' }}
+/>
+
+You can view the details by clicking on the link under TASK_ID on the left:
+
+<img
+  src="/images/cuga-viz-details.png"
+  alt="CUGA Visualizer home"
+  style={{ width: '100%', borderRadius: '0.5rem', marginBottom: '2rem' }}
+/>
+
+
+## Alternative Installation Methods
+
+Choose the installation method that best fits your use case:
+
+<Tabs defaultValue="standard">
+  <TabsList>
+    <TabsTrigger value="standard">Standard Installation</TabsTrigger>
+    <TabsTrigger value="development">Development Setup</TabsTrigger>
+  </TabsList>
+  
+  <TabsContent value="standard">
+    <h3>Standard Installation</h3>
+    <p>Recommended for most users. Install CUGA directly on your system.</p>
+
+    **Requirements:**
+    - Python 3.12+
+    - UV package manager
+    - Git
+    - 2GB free storage
+    - OpenAI API key or compatible provider
+
+    <Steps>
+      <Step title="Clone Repository">
+        ```bash
+        git clone https://github.com/cuga-project/cuga-agent.git
+        cd cuga-agent
+        ```
+      </Step>
+      <Step title="Create Environment">
+        ```bash
+        uv venv --python=3.12
+        source .venv/bin/activate  # Windows: .venv\Scripts\activate
+        ```
+      </Step>
+      <Step title="Install Dependencies">
+        ```bash
+        uv sync
+        ```
+      </Step>
+      <Step title="Configure Environment">
+        ```bash
+        cp .env.example .env
+        # Edit .env with your API keys
+        ```
+      </Step>
+    </Steps>
+  </TabsContent>
+    
+  <TabsContent value="development">
+    <h3>Development Setup</h3>
+    <p>For contributors and developers working on CUGA.</p>
+
+    **Requirements:**
+    - Python 3.12+
+    - UV package manager
+    - Git
+    - 5GB free storage (for dev dependencies)
+    - OpenAI API key or compatible provider
+    - Pre-commit (installed automatically)
+    - IDE or text editor (we use [VSCode](https://code.visualstudio.com) and provide launch.json for debugging)
+
+    <Steps>
+      <Step title="Clone Repository with Submodules">
+        ```bash
+        git clone --recursive https://github.com/cuga-project/cuga-agent.git
+        cd cuga-agent
+        ```
+      </Step>
+      <Step title="Create Environment">
+        ```bash
+        uv venv --python=3.12
+        source .venv/bin/activate  # Windows: .venv\Scripts\activate
+        ```
+      </Step>
+      <Step title="Install in Development Mode">
+        ```bash
+        uv sync --dev
+        ```
+      </Step>
+      <Step title="Configure Environment">
+        ```bash
+        cp .env.example .env
+        # Edit .env with your API keys
+        ```
+      </Step>
+      <Step title="Install Pre-commit Hooks">
+        ```bash
+        pre-commit install
+        # This is to statically check the code before committing to git.
+        ```
+      </Step>
+    </Steps>
+
+  </TabsContent>
+</Tabs>
+
+## First Run
+
+Start CUGA for the first time:
+
+```bash
+# Start in demo mode
+cuga start demo
+```
+
+Open **http://localhost:7860**. Other useful presets:
+
+```bash
+cuga start manager          # draft config in the UI, then publish
+cuga start demo_knowledge   # documents + citations
+cuga start demo_skills      # SKILL.md playbooks
+```
+
+See [Control Commands](/docs/run/cli-presets) and [Manage, publish, and self-host](/docs/run/manage-publish).
+
+## Troubleshooting
+
+### Common Issues
+
+<Callout type="warning">
+Most installation issues are related to Python version, dependencies, or API key configuration.
+</Callout>
+
+| Issue | Solution |
+|-------|----------|
+| **Python version error** | Ensure Python 3.12+ is installed and in PATH |
+| **Module not found** | Run `uv sync` to install dependencies |
+| **API key errors** | Verify your `.env` file has correct API keys |
+| **Port conflicts** | Check the demo UI port (**7860**) and the registry port (**8001**) |
+
+### Getting Help
+
+- **GitHub Issues**: [CUGA Issues](https://github.com/cuga-project/cuga-agent/issues)
+- **Contributing**: [Contributing guide](/docs/contribute/CONTRIBUTING)
+
+## Next Steps
+
+<Callout type="info">
+Now that CUGA is installed, explore these resources:
+</Callout>
+
+- **[Configure](/docs/configure/overview)**: Customize CUGA for your needs
+- **[Manage & self-host](/docs/run/manage-publish)**: Draft, publish, and deploy
+- **[Knowledge](/docs/build/knowledge)**: Ingest documents and cite sources
+- **[Skills](/docs/build/skills)**: Runtime playbooks — catalog at [cuga-skills](https://github.com/cuga-project/cuga-skills)
+- **[API Integration](/docs/build/tools)**: Connect your OpenAPI and MCP tools
+
+---
+
+*Installation complete! CUGA is ready to enhance your development workflow with AI-powered code understanding and generation.*

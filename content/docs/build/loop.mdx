@@ -1,0 +1,69 @@
+---
+title: Todos, reflection, shortlisting
+description: Enable todos, a reflection pass, and the LLM tool shortlister (find_tools).
+---
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Todos, reflection, and shortlisting
+
+These are **Orchestrator** knobs — they change how CugaLite plans and retries, not which tools you attach.
+
+<Callout type="info">
+**Architecture:** Reflection and todos run inside the agent loop. The shortlister is the same LLM filter used by `find_tools` when the tool catalog is large. See [How CUGA works](/docs/start/how-it-works#3-capability-layer).
+</Callout>
+
+All three live under `[advanced_features]` in `settings.toml`.
+
+---
+
+## Todos
+
+Off by default. When on, CugaLite gets a `create_update_todos` tool and prompt instructions so it can keep a checklist for multi-step work (and reset it between tasks).
+
+```toml
+[advanced_features]
+enable_todos = true
+```
+
+Use it when a task has several independent steps you want the model to track. Leave it off for short, single-tool runs.
+
+---
+
+## Reflection
+
+Off by default. After a sandbox/code step, CUGA checks whether the result actually moved the task forward. If not, it can retry instead of answering from a bad state.
+
+```toml
+[advanced_features]
+reflection_enabled = true
+```
+
+Turn it on when wrong-but-confident answers are costly. Leave it off when latency matters more than a second look.
+
+---
+
+## Tool shortlister (`find_tools`)
+
+When an app has **more tools than the threshold**, CugaLite does not dump the whole catalog into the prompt. It exposes **`find_tools`**: the model describes what it needs in natural language, and an **LLM shortlister** returns the relevant subset.
+
+```toml
+[advanced_features]
+shortlisting_tool_threshold = 35   # find_tools when total tools > this
+cuga_lite_enable_few_shots = true  # few-shots for the shortlister path
+```
+
+Over-cap on **native** `bind_tools` (providers that reject > ~128 tools) uses the **same** shortlister:
+
+```toml
+[advanced_features]
+cuga_lite_bind_tools_max_count = 128   # 0 disables the cap
+cuga_lite_bind_tools_pad_to_cap = false
+cuga_lite_bind_tools_include_find_tools = false
+```
+
+---
+
+## Related
+
+- [Settings reference — planning](/docs/configure/settings-reference#planning--optimization-options)
+- [Context summarization](/docs/build/context-summarization)
