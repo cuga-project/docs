@@ -39,8 +39,8 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
 
 export async function generateStaticParams() {
   const params = source.generateParams();
-  if (!params.some((p) => !p.slug || p.slug.length === 0)) {
-    params.push({ slug: [] });
+  if (!params.some((p) => !p.slug || p.slug.length === 0) && params[0]) {
+    params.push({ ...params[0], slug: [] });
   }
   return params;
 }
