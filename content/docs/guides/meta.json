@@ -1,20 +1,4 @@
 {
-  "title": "Guides & Examples",
-  "icon": "BookOpen",
-  "defaultOpen": false,
-  "pages": [
-    "agent-skills",
-    "openapi-integration",
-    "openapi-auth",
-    "mcp-server",
-    "runtime-tools",
-    "hybrid-demo",
-    "human-in-the-loop",
-    "save-reuse",
-    "---Demo Applications---",
-    "crm-demo",
-    "digital-sales-api",
-    "email-mcp-demo",
-    "filesystem-mcp-demo"
-  ]
+  "title": "Guides (moved)",
+  "pages": ["agent-skills", "openapi-integration", "openapi-auth", "mcp-server", "runtime-tools", "hybrid-demo", "human-in-the-loop", "save-reuse", "crm-demo", "digital-sales-api", "email-mcp-demo", "filesystem-mcp-demo"]
 }

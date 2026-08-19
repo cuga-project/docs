@@ -1,0 +1,90 @@
+---
+title: System Components
+description: Every piece of CUGA mapped to the five architectural layers.
+---
+
+# System Components
+
+CUGA is organized into **five layers**. This table maps each product piece to its layer and where to read more.
+
+## By layer
+
+### 1. Clients
+
+| Piece | What it does | Docs |
+| --- | --- | --- |
+| **Web UI** | Chat and Manage UI in the browser | [Demos](/docs/run/demos) · [Manage](/docs/run/manage-publish) |
+| **Python SDK** | `CugaAgent` / `CugaSupervisor` in your app | [CugaAgent](/docs/build/cuga-agent) |
+| **CLI** | `cuga start`, knowledge/policy helpers | [CLI presets](/docs/run/cli-presets) |
+
+### 2. Orchestrator (LangGraph)
+
+| Piece | What it does | Docs |
+| --- | --- | --- |
+| **CugaAgent** | Single-agent graph — plan, execute, answer | [CugaAgent](/docs/build/cuga-agent) |
+| **CugaSupervisor** | Router across several agents (local or A2A) | [CugaSupervisor](/docs/build/cuga-supervisor) |
+| **Policies** | Intent Guard, Playbook, Tool Guide, Tool Approval, Output Formatter, ToolGuard | [Policies](/docs/build/policies) |
+| **Human-in-the-loop** | Suggest action → wait for approval → continue | [Tool Approval](/docs/build/policies/tool-approval) |
+| **Reflection** | Second look after a step; retry if off-track | [Todos, reflection, shortlisting](/docs/build/loop) |
+| **Todos** | Checklist for multi-step CugaLite tasks | [Todos, reflection, shortlisting](/docs/build/loop) |
+| **Tool shortlister** | `find_tools` when the catalog is large | [Todos, reflection, shortlisting](/docs/build/loop) |
+| **Context summarization** | Compress older turns in long threads | [Context summarization](/docs/build/context-summarization) |
+| **Agent spawn** | Nested `CugaAgent` mid-run (`spawn_agent`) | [How it works — Multi-agent](/docs/start/how-it-works#multi-agent-supervisor-vs-spawn) |
+
+Internal graph nodes (Task Analyzer, Plan Decomposition, Browser/API Planners, Code Agent, Action Agent) run automatically — you configure agents and policies, not individual nodes.
+
+### 3. Capability layer
+
+| Piece | What it does | Docs |
+| --- | --- | --- |
+| **LLM Client** | Provider abstraction (OpenAI, WatsonX, Groq, …) | [Models](/docs/configure/models) |
+| **Browser Runtime** | Playwright automation for web tasks | [Task modes](/docs/configure/task-modes) |
+| **Tool Adapter** | Python tools, OpenAPI, MCP | [Tools](/docs/build/tools) |
+| **Knowledge Engine** | Docling ingest, embeddings, search, citations | [Knowledge](/docs/build/knowledge) |
+| **Memory** | Learn from past runs (guidelines + trajectories) | [Memory](/docs/build/memory) |
+| **Agent Skills** | `SKILL.md` playbooks via `load_skill` | [Skills](/docs/build/skills) |
+| **Sandbox** | Code execution backends (`native`, `e2b`, …) | [Sandbox](/docs/build/sandbox) |
+
+### 4. Persistence
+
+| Piece | What it does | Docs |
+| --- | --- | --- |
+| **Vector DB** | Milvus or pgvector for knowledge/policy vectors | [Storage](/docs/configure/storage) |
+| **Config DB** | Conversations, policies, published agent versions | [Storage](/docs/configure/storage) |
+
+### 5. External services
+
+| Piece | What it does | Docs |
+| --- | --- | --- |
+| **LLM providers** | Remote model APIs | [Models](/docs/configure/models) |
+| **MCP / OpenAPI servers** | External tool sources | [Tools](/docs/build/tools) |
+| **Secrets vault** | API keys and credentials | [Secrets vault](/docs/configure/secrets-vault) |
+| **Observability** | OpenLit, Langfuse, Activity tracker + cuga-viz | [Observability](/docs/configure/observability) |
+
+---
+
+## Quick lookup
+
+| I want to… | Start here |
+| --- | --- |
+| Embed an agent in Python | [CugaAgent](/docs/build/cuga-agent) |
+| Run several agents on one task | [CugaSupervisor](/docs/build/cuga-supervisor) |
+| Govern behavior safely | [Policies](/docs/build/policies) |
+| Add documents the agent can cite | [Knowledge](/docs/build/knowledge) |
+| Learn from past runs | [Memory](/docs/build/memory) |
+| Package reusable workflows | [Skills](/docs/build/skills) |
+| Start the server locally | [CLI presets](/docs/run/cli-presets) |
+| Draft and publish in the UI | [Manage and publish](/docs/run/manage-publish) |
+| Deploy to Kubernetes | [Self-host](/docs/run/self-host) |
+| Tune models and storage | [Configure](/docs/configure/overview) |
+
+Full walkthrough: [How CUGA works](/docs/start/how-it-works).
+
+## Ecosystem
+
+| Repo | Role |
+| --- | --- |
+| [cuga-agent](https://github.com/cuga-project/cuga-agent) | This harness (SDK, server, policies, knowledge, Memory) |
+| [cuga-skills](https://github.com/cuga-project/cuga-skills) | Shared runtime skill catalog |
+| [cuga-harness-kit](https://github.com/cuga-project/cuga-harness-kit) | IDE assistant skills for building with CUGA |
+| [cuga-eval](https://github.com/cuga-project/cuga-eval) | Multi-benchmark evaluation |

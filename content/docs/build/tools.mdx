@@ -1,0 +1,114 @@
+---
+title: Tools
+description: Connect Python functions, OpenAPI APIs, and MCP servers to CugaAgent.
+---
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Tools
+
+<Callout type="info">
+**Architecture:** Tools are the **Tool Adapter** in the Capability layer — Python functions (SDK), OpenAPI apps, and MCP servers. The registry service discovers them for server mode. See [How CUGA works — Capability layer](/docs/start/how-it-works#3-capability-layer).
+</Callout>
+
+CUGA agents call **tools**. You can attach them three ways:
+
+| Method | Best for |
+| --- | --- |
+| **Python functions** | Your own logic in the SDK |
+| **OpenAPI** | REST APIs with an OpenAPI spec |
+| **MCP** | Model Context Protocol servers (local or remote) |
+
+---
+
+## Python functions (SDK)
+
+Pass LangChain tools directly to `CugaAgent`:
+
+```python
+from cuga import CugaAgent
+from langchain_core.tools import tool
+
+@tool
+def get_accounts(limit: int = 10) -> str:
+    """List CRM accounts."""
+    return f"Found {limit} accounts"
+
+agent = CugaAgent(tools=[get_accounts])
+```
+
+For advanced wiring (custom discovery, lazy loading), see [Tool provider](/docs/build/tool-provider).
+
+---
+
+## OpenAPI
+
+Register an OpenAPI service in the tools registry config (`mcp_servers.yaml` by default):
+
+```yaml
+services:
+  - crm:
+      url: "http://localhost:8007/openapi.json"
+      description: "CRM API"
+```
+
+Then either:
+
+- **SDK** — start the registry (`cuga start registry`) and point the agent at it, or
+- **Server / demo** — use a preset that already includes the app (`cuga start demo_crm`)
+
+Override the config file:
+
+```bash
+export MCP_SERVERS_FILE="/path/to/mcp_servers.yaml"
+```
+
+OpenAPI auth (API keys, OAuth) is configured in the same YAML. See the agent repo’s registry examples for `api_overrides` and `include` filters.
+
+---
+
+## MCP servers
+
+Connect to any MCP server — STDIO for local dev, HTTP/SSE for production:
+
+```yaml
+mcpServers:
+  github:
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-github"]
+  docs:
+    url: "http://localhost:8112/sse"
+```
+
+Three common setups:
+
+1. **Existing server** — add `command` + `args` (STDIO) or `url` (HTTP)
+2. **Local STDIO server** — run your own Python/Node MCP process
+3. **HTTP server** — expose tools over SSE (recommended for remote access)
+
+<Callout type="info">
+**CUGA as an MCP server** (other apps call CUGA) is a different job — see [CUGA as MCP](/docs/run/cuga-as-mcp).
+</Callout>
+
+---
+
+## Registry (server mode)
+
+When you run CUGA as a server, the **tools registry** loads OpenAPI + MCP from YAML and serves tools to the agent.
+
+```bash
+cuga start registry
+# default: http://127.0.0.1:8001
+```
+
+Useful endpoints: `GET /applications`, `POST /functions/call`, `POST /functions/onboard`.
+
+The Manage UI (`cuga start manager`) edits the same tool list as a draft before you publish.
+
+---
+
+## Next steps
+
+- [CugaAgent](/docs/build/cuga-agent) — attach tools in Python
+- [CLI presets](/docs/run/cli-presets) — demos that ship with sample apps
+- [Task modes](/docs/configure/task-modes) — API-only, web, or hybrid
+- [Settings reference](/docs/configure/settings-reference) — registry ports and tool limits

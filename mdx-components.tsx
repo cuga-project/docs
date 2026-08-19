@@ -1,11 +1,25 @@
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import type { MDXComponents } from 'mdx/types';
+import { ArchitectureStack, SupervisorFlow } from '@/components/architecture-stack';
+import {
+  CugaAsMcpFlow,
+  LangflowFlow,
+  MemoryFlow,
+  PolicyFlow,
+  SkillsFlow,
+} from '@/components/docs-diagrams';
 import { Mermaid } from '@/components/mdx/mermaid';
 
-// use this function to get MDX components, you will need it for rendering MDX
 export function getMDXComponents(components?: MDXComponents): MDXComponents {
   return {
     ...defaultMdxComponents,
+    ArchitectureStack,
+    SupervisorFlow,
+    SkillsFlow,
+    CugaAsMcpFlow,
+    LangflowFlow,
+    MemoryFlow,
+    PolicyFlow,
     Mermaid,
     ...components,
   };

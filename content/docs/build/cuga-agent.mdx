@@ -1,0 +1,451 @@
+---
+title: CugaAgent
+description: The main entry point for interacting with the CUGA agent.
+---
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# CugaAgent
+
+<Callout type="info">
+**Architecture:** `CugaAgent` is the **Orchestrator** layer in Python — a LangGraph agent pipeline with integrated policies and optional capabilities (tools, knowledge, skills, sandbox). See [How CUGA works](/docs/start/how-it-works#2-orchestrator--cugaagent-and-cugasupervisor).
+</Callout>
+
+The `CugaAgent` class provides a simple, high-level interface for creating and running CUGA agents. It wraps the underlying LangGraph execution complexity, offering an easy way to manage tools, handle conversations, and integrate policies.
+
+## Model Configuration
+
+CUGA supports multiple LLM providers (OpenAI, IBM WatsonX, Azure OpenAI, Groq, OpenRouter, and more). Configure the model provider and settings using environment variables in a `.env` file, or override programmatically by passing a `model` parameter to `CugaAgent`.
+
+For detailed configuration instructions and all supported providers, see the [Model Configuration documentation](/docs/configure/models).
+
+## Initialization
+
+<Steps>
+<Step>
+### Import
+Import the agent and necessary tools from `cuga` and `langchain_core`.
+
+```python
+from cuga import CugaAgent
+from langchain_core.tools import tool
+```
+</Step>
+
+<Step>
+### Define Tools
+Create the tools your agent will use.
+
+```python
+@tool
+def get_weather(city: str) -> str:
+    """Get weather for a city"""
+    return f"Weather in {city}: Sunny, 72°F"
+```
+</Step>
+
+<Step>
+### Create Agent
+Initialize the `CugaAgent` with your tools and optional model configuration.
+
+```python
+agent = CugaAgent(
+    tools=[get_weather],
+    # model=... (optional)
+    # special_instructions="Always respond in JSON." (optional)
+)
+```
+</Step>
+</Steps>
+
+### Parameters
+
+<TypeTable
+  type={{
+    tools: {
+      description: 'Optional list of LangChain tools (BaseTool or \u0040tool decorated functions).',
+      type: 'List[BaseTool]',
+      default: 'None'
+    },
+    tool_provider: {
+      description: 'Optional custom tool provider for advanced usage. Overrides tools.',
+      type: 'ToolProviderInterface',
+      default: 'None'
+    },
+    model: {
+      description: 'Optional language model. Defaults to the system configured model.',
+      type: 'BaseChatModel',
+      default: 'None'
+    },
+    callbacks: {
+      description: 'Optional list of callback handlers for monitoring.',
+      type: 'List[BaseCallbackHandler]',
+      default: 'None'
+    },
+    policy_system: {
+      description: 'Optional policy configuration instance.',
+      type: 'PolicyConfigurable',
+      default: 'None'
+    },
+    special_instructions: {
+      description: 'Optional instructions added globally to the system prompt (e.g. guidelines, constraints, or context for all turns).',
+      type: 'Optional[str]',
+      default: 'None'
+    },
+    enable_knowledge: {
+      description: 'Enable the built-in knowledge base (Docling-powered ingestion + retrieval). When True, knowledge tools and an awareness block are auto-injected into the agent. None reads the setting from config.',
+      type: 'Optional[bool]',
+      default: 'None'
+    },
+    cuga_folder: {
+      description: 'Folder for policy markdown, ToolGuard domain files, and related agent files. Default ".cuga".',
+      type: 'Optional[str]',
+      default: 'None'
+    },
+    auto_load_policies: {
+      description: 'Load policies from cuga_folder on first invoke/stream. Call await agent.initialize() to load immediately.',
+      type: 'Optional[bool]',
+      default: 'None'
+    },
+    filesystem_sync: {
+      description: 'When True, policies you add or update are written back to the .cuga folder.',
+      type: 'Optional[bool]',
+      default: 'None'
+    },
+    reset_policy_storage: {
+      description: 'If True, clear stored policies before the first load.',
+      type: 'bool',
+      default: 'False'
+    },
+    enable_skills: {
+      description: 'Enable SKILL.md discovery and the load_skill tool. None reads [skills].enabled from settings.',
+      type: 'Optional[bool]',
+      default: 'None'
+    },
+    skills_folder: {
+      description: 'Override the skills root for this agent. None uses [skills].root.',
+      type: 'Optional[str]',
+      default: 'None'
+    }
+  }}
+/>
+
+## Tool Provider
+
+The `tool_provider` parameter allows you to customize how tools are provided to the agent. By default, CUGA uses `CombinedToolProvider` internally. For advanced use cases, you can implement a custom tool provider or use one of the built-in implementations.
+
+For detailed information about tool providers, including built-in implementations and how to create custom providers, see the [Tool Provider documentation](/docs/build/tool-provider).
+
+## Core Methods
+
+### `invoke`
+
+Run the agent with a message. Returns an `InvokeResult` containing the answer, tool calls, thread ID, and any errors.
+
+<Tabs items={['Single Turn', 'With Tool Tracking', 'Multi-turn / Resume']}>
+<Tab value="Single Turn">
+```python
+result = await agent.invoke("What is the weather in Tokyo?")
+print(result.answer)  # The agent's response
+print(result.thread_id)  # Thread ID used for this invocation
+```
+</Tab>
+<Tab value="With Tool Tracking">
+```python
+# Enable tool call tracking to see which tools were called
+result = await agent.invoke(
+    "What is 10 + 5?",
+    track_tool_calls=True
+)
+print(result.answer)      # "15" or similar
+print(result.tool_calls)  # List of tool calls with metadata
+
+# Each tool call record contains:
+# - name: Tool name
+# - operation_id: Function name or OpenAPI operationId
+# - arguments: Arguments passed to the tool
+# - result: Return value
+# - app_name: App/service name (if set)
+# - duration_ms: Execution time in milliseconds
+# - timestamp: ISO timestamp
+# - error: Error message (if any)
+```
+</Tab>
+<Tab value="Multi-turn / Resume">
+```python
+from langchain_core.messages import HumanMessage, AIMessage
+
+# Multi-turn with list of messages
+result = await agent.invoke([
+    HumanMessage(content="My name is Alice"),
+    AIMessage(content="Hello Alice"),
+    HumanMessage(content="What is my name?")
+])
+print(result.answer)
+
+# Resume execution (e.g. after tool approval)
+result = await agent.invoke(
+    None,
+    thread_id="user-123",
+    action_response=approval_response
+)
+```
+</Tab>
+</Tabs>
+
+**Signature Parameters**
+
+<TypeTable
+  type={{
+    message: {
+      description: 'User message (string), list of messages, or None to resume execution.',
+      type: 'Union[str, List[BaseMessage], None]',
+      default: 'None'
+    },
+    thread_id: {
+      description: 'Thread ID (required for resume, auto-generated for new conversations).',
+      type: 'Optional[str]',
+      default: 'None'
+    },
+    config: {
+      description: 'Optional LangGraph config (for advanced usage).',
+      type: 'Optional[Dict[str, Any]]',
+      default: 'None'
+    },
+    action_response: {
+      description: 'Optional ActionResponse for resuming after approval/interruption.',
+      type: 'Optional[Any]',
+      default: 'None'
+    },
+    track_tool_calls: {
+      description: 'If True, tracks all tool calls with metadata and returns them in result.tool_calls.',
+      type: 'bool',
+      default: 'False'
+    }
+  }}
+/>
+
+### `InvokeResult`
+
+The `invoke` method returns an `InvokeResult` object with the following fields:
+
+<TypeTable
+  type={{
+    answer: {
+      description: 'The agent\'s final answer as a string.',
+      type: 'str',
+      default: '""'
+    },
+    tool_calls: {
+      description: 'List of tool calls made during execution (when track_tool_calls=True).',
+      type: 'List[Dict[str, Any]]',
+      default: '[]'
+    },
+    thread_id: {
+      description: 'Thread ID used for this invocation.',
+      type: 'str',
+      default: '""'
+    },
+    error: {
+      description: 'Error message if execution failed.',
+      type: 'Optional[str]',
+      default: 'None'
+    },
+    sources: {
+      description: 'Citation sources when knowledge citations are on: filename, page, snippet, score, and related fields.',
+      type: 'List[Dict[str, Any]]',
+      default: '[]'
+    },
+    variables: {
+      description: 'Variables produced during the run (also used when a supervisor bridges values between agents).',
+      type: 'Dict[str, Any]',
+      default: '{}'
+    },
+    policy_decisions: {
+      description: 'Ordered policy decisions for this invocation (approvals, blocks, ToolGuard, formatters).',
+      type: 'List[PolicyDecision]',
+      default: '[]'
+    },
+    receipt: {
+      description: 'Per-run token and timing receipt when [advanced_features].run_receipt is true. None otherwise.',
+      type: 'Optional[RunReceipt]',
+      default: 'None'
+    }
+  }}
+/>
+
+**Backward Compatibility**: `str(result)` returns the answer, so existing code using the result as a string will continue to work.
+
+### Run Receipt
+
+Turn on a per-run token and timing summary without an external tracing stack:
+
+```toml
+[advanced_features]
+run_receipt = true   # default false — no overhead when off
+```
+
+```python
+result = await agent.invoke("how many accounts are there?")
+print(result.receipt)
+# model, input/output tokens, LLM vs tool time, slowest tool
+result.receipt.input_tokens
+result.receipt.tool_timings
+```
+
+CUGA reports **tokens and time**, not dollars — multiply by your own rates. If a provider sends `cache_read_tokens` or `reasoning_tokens`, they are included.
+
+Unless you also pass `track_tool_calls=True`, the receipt records **timings only** (tool name, app, duration) — not arguments or results.
+
+### Sub-agent spawn (opt-in)
+
+Off by default. When enabled, the agent can spawn a helper sub-agent for a nested task and collect the result (`spawn_agent` / `get_agent_result`).
+
+```toml
+[agent_spawn]
+enabled = true
+max_spawn_depth = 2
+```
+
+Leave this off unless you need nested agents — there is no prompt or tool overhead when it is disabled.
+
+### `stream`
+
+Stream the agent's execution step-by-step.
+
+```python
+async for state in agent.stream("Analyze this dataset"):
+    print(state)
+```
+
+**Signature Parameters**
+
+<TypeTable
+  type={{
+    message: {
+      description: 'User message or list of messages.',
+      type: 'Union[str, List[BaseMessage], None]',
+      default: 'None'
+    },
+    thread_id: {
+        description: 'Thread ID.',
+        type: 'Optional[str]',
+        default: 'None'
+    },
+    config: {
+        description: 'LangGraph config',
+        type: 'Optional[Dict[str, Any]]'
+    },
+    action_response: {
+        description: 'Resume action response',
+        type: 'Optional[Any]'
+    }
+  }}
+/>
+
+## Properties
+
+### `graph`
+
+Access the underlying compiled LangGraph `StateGraph`.
+
+```python
+compiled_graph = agent.graph
+# Use the graph directly
+await compiled_graph.ainvoke(...)
+```
+
+### `policies`
+
+Access the `PoliciesManager`. See [Policies](../policies).
+
+### `knowledge`
+
+Access the `KnowledgeManager` when the agent is constructed with `enable_knowledge=True` (the default).
+
+```python
+await agent.knowledge.ingest("/path/to/quarterly_report.pdf")
+results = await agent.knowledge.search("Q4 revenue figures")
+docs = await agent.knowledge.list_documents()
+```
+
+Both `ingest` and `search` accept a `scope` argument (`"agent"` for permanent, shared documents — the default — or `"session"` for thread-scoped documents that require a `thread_id`). See the [Knowledge Base guide](/docs/build/knowledge) for the full surface, supported document types, and storage details.
+
+## Resource Cleanup
+
+### `aclose`
+
+Release async resources held by the agent (DB connections, background tasks, etc.). Call this at the end of long-running scripts or before process exit:
+
+```python
+agent = CugaAgent(enable_knowledge=True)
+try:
+    result = await agent.invoke("...")
+finally:
+    await agent.aclose()
+```
+
+Short-lived scripts can rely on garbage collection, but `aclose` is recommended any time `enable_knowledge=True` is used.
+
+## Tool Call Tracking
+
+CUGA provides built-in tool call tracking to help with debugging, observability, and auditing. When enabled, every tool invocation is recorded with detailed metadata.
+
+### Enabling Tracking
+
+Pass `track_tool_calls=True` to the `invoke` method:
+
+```python
+result = await agent.invoke(
+    "Get the top account by revenue",
+    track_tool_calls=True
+)
+
+# Access tracked tool calls
+for call in result.tool_calls:
+    print(f"Tool: {call['name']}")
+    print(f"Arguments: {call['arguments']}")
+    print(f"Result: {call['result']}")
+    print(f"Duration: {call['duration_ms']}ms")
+```
+
+### Custom Tool Tracking with `@tracked_tool`
+
+For custom tool providers or when you want to add tracking metadata to your tools, use the `@tracked_tool` decorator:
+
+```python
+from cuga import CugaAgent, tracked_tool
+from langchain_core.tools import tool
+
+# Simple usage - just add the decorator
+@tracked_tool
+def multiply(a: int, b: int) -> int:
+    return a * b
+
+# With optional app_name for grouping
+@tracked_tool(app_name="calculator")
+def add(a: int, b: int) -> int:
+    return a + b
+
+# Combine with LangChain @tool decorator
+@tool
+@tracked_tool(app_name="math")
+def divide(a: int, b: int) -> float:
+    '''Divide two numbers'''
+    return a / b
+```
+
+The `@tracked_tool` decorator automatically captures:
+- **name**: Function name (also used as `operation_id`)
+- **arguments**: Arguments passed to the function
+- **result**: Return value
+- **duration_ms**: Execution time in milliseconds
+- **timestamp**: When the call was made
+- **error**: Error message if the call failed
+- **app_name**: Optional grouping (if specified)
+
+For more details on custom tool providers with tracking, see the [Tool Provider documentation](/docs/build/tool-provider).
+

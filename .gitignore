@@ -13,6 +13,10 @@
 *.tsbuildinfo
 
 # Fumadocs build outputs
+/docs/_next/
+/docs/404.html
+/docs/index.html
+/docs/index.txt
 /docs/build/
 /docs/cache/
 /docs/server/

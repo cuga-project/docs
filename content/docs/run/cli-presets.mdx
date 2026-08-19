@@ -1,0 +1,74 @@
+---
+title: CLI Presets
+description: Start CUGA demos, the manage UI, and related services from the command line.
+---
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# CLI presets
+
+<Callout type="info">
+**Architecture:** The CLI is a **Clients layer** entry point — it starts the Web UI, backend, registry, and sample apps as one local stack. See [How CUGA works — Clients](/docs/start/how-it-works#1-clients--how-you-connect).
+</Callout>
+
+The `cuga` CLI starts a preset stack (demo UI, registry, sample apps) on your machine.
+
+```bash
+cuga start <preset>
+```
+
+The UI is at **http://localhost:7860** unless you change `[server_ports].demo`.
+
+## Start presets
+
+| Preset | What it starts |
+| --- | --- |
+| `demo` | Default chat demo |
+| `manager` | Manage UI — draft tools, MCP, models, and policies, then **publish** |
+| `demo_knowledge` | Demo with the knowledge engine on (upload and query documents) |
+| `demo_skills` | Demo with agent skills and a sandbox |
+| `demo_crm` | CRM + email sample apps |
+| `demo_supervisor` | CRM demo with `CugaSupervisor` multi-agent coordination |
+| `demo_health` | Healthcare OpenAPI sample (`cuga-oak-health`) |
+| `demo_docs` | IBM Docs MCP sample |
+| `travel_agent` | Multi-agent travel sample |
+| `registry` | API registry only |
+
+```bash
+cuga start demo
+cuga start manager
+cuga start demo_knowledge
+cuga start demo_skills
+```
+
+More detail on each demo: [Demos](/docs/run/demos).
+
+<Callout type="info">
+Prefer `cuga start manager` when you want to configure an agent in the UI and publish a version. See [Manage and publish](/docs/run/manage-publish).
+</Callout>
+
+## Useful flags
+
+These are the flags you will actually use. Run `cuga start --help` for the full list.
+
+| Flag | Typical use |
+| --- | --- |
+| `--host 0.0.0.0` | Allow connections from other machines |
+| `--sandbox` | Remote sandbox via llm-sandbox (install with `uv sync --group sandbox`) |
+| `--no-email` | Skip email services on `demo_crm` / `demo_supervisor` |
+| `--filesystem` / `--crm` / `--email` / `--docs` | Turn sample apps on for a preset that does not include them |
+| Knowledge `--embeddings-*` / `--knowledge-profile` | Override embeddings and RAG profile for `demo_knowledge` |
+
+## Other CLI groups
+
+```bash
+cuga --help
+cuga knowledge --help   # ingest, search, and collection helpers
+cuga policy --help      # policy helpers
+```
+
+## Next steps
+
+- [Manage and publish](/docs/run/manage-publish)
+- [Knowledge](/docs/build/knowledge)
+- [Skills](/docs/build/skills)
+- [Policies](/docs/build/policies)

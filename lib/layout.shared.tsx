@@ -1,7 +1,6 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import { BookOpenIcon, BuildingIcon, PlugIcon, SettingsIcon, RocketIcon, WrenchIcon, PackageIcon } from 'lucide-react';
+import { BookOpenIcon, BuildingIcon, PlugIcon, SettingsIcon, RocketIcon, WrenchIcon, PackageIcon, CodeIcon, ServerIcon, ShieldIcon } from 'lucide-react';
 import { config, getAssetPath } from './config';
-import { GithubInfo } from 'fumadocs-ui/components/github-info';
 import type { Metadata } from 'next';
 
 /**
@@ -43,12 +42,6 @@ export function baseOptions(): BaseLayoutProps {
     // see https://fumadocs.dev/docs/ui/navigation/links
     links: [
       {
-        type: 'custom',
-        children: (
-          <GithubInfo owner="cuga-project" repo="cuga-agent"  />
-        ),
-      },
-      {
         text: 'Website',
         url: config.urls.website,
         external: true,
@@ -68,4 +61,7 @@ export const iconMap = {
   Building: BuildingIcon,
   Wrench: WrenchIcon,
   Package: PackageIcon,
+  Code: CodeIcon,
+  Server: ServerIcon,
+  Shield: ShieldIcon,
 };

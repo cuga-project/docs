@@ -1,0 +1,41 @@
+---
+title: Configure
+description: Models, environment, task modes, persistence, and external services.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Configure
+
+<Callout type="info">
+**Architecture:** This section covers the **Persistence layer** (vector DB, config DB, embeddings) and **External services** (LLM providers, secrets vault, observability). The Orchestrator and Capability layers read these settings at runtime. See [How CUGA works](/docs/start/how-it-works#4-persistence-layer).
+</Callout>
+
+CUGA behavior is driven by **`settings.toml`**, environment variables, and optional `.env` files. Use this section when you need to tune models, modes, storage, or platform settings — not when you are wiring tools or capabilities (see [Build](/docs/build/cuga-agent)).
+
+## Essentials
+
+| Topic | Layer | Page |
+| --- | --- | --- |
+| LLM providers (OpenAI, WatsonX, Groq, Ollama, …) | External | [Models](/docs/configure/models) |
+| `.env` and system variables | External | [Environment](/docs/configure/environment) |
+| API / web / hybrid execution | Orchestrator | [Task modes](/docs/configure/task-modes) |
+| Every TOML key | All | [Settings reference](/docs/configure/settings-reference) |
+
+## Platform (Persistence + External)
+
+| Topic | Layer | Page |
+| --- | --- | --- |
+| Vector DB + embeddings for policies, knowledge, and Memory | Persistence | [Storage](/docs/configure/storage) |
+| Secrets vault | External | [Secrets vault](/docs/configure/secrets-vault) |
+| Auth for the server UI | Clients | [Authentication](/docs/configure/authentication) |
+| Tracing, Langfuse, and cuga-viz | External | [Observability](/docs/configure/observability) |
+| Chat UI branding | Clients | [UI branding](/docs/configure/ui-branding) |
+
+Custom config directory:
+
+```bash
+export CUGA_CONFIGURATIONS_DIR="/path/to/your/configurations"
+```
+
+Each folder under `src/cuga/configurations/` holds preset model and mode TOML files you can copy and adapt.

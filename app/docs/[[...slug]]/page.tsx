@@ -6,13 +6,16 @@ import {
   DocsTitle,
 } from 'fumadocs-ui/page';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
 import { getMDXComponents } from '@/mdx-components';
 import { createMetadata } from '@/lib/metadata';
 
 export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const params = await props.params;
+  if (!params.slug || params.slug.length === 0) {
+    redirect('/docs/start');
+  }
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
@@ -35,13 +38,23 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
 }
 
 export async function generateStaticParams() {
-  return source.generateParams();
+  const params = source.generateParams();
+  if (!params.some((p) => !p.slug || p.slug.length === 0)) {
+    params.push({ slug: [] });
+  }
+  return params;
 }
 
 export async function generateMetadata(
   props: PageProps<'/docs/[[...slug]]'>,
 ): Promise<Metadata> {
   const params = await props.params;
+  if (!params.slug || params.slug.length === 0) {
+    return createMetadata({
+      title: 'Quick Start',
+      description: 'CUGA documentation',
+    });
+  }
   const page = source.getPage(params.slug);
   if (!page) notFound();
 

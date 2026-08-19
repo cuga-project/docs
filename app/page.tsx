@@ -9,7 +9,7 @@ export const metadata: Metadata = createMetadata({
 });
 
 export default function HomePage() {
-  redirect('/docs/getting-started');
+  redirect('/docs/start');
 }
 
 

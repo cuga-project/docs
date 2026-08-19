@@ -1,26 +1,4 @@
 {
-  "title": "Customization",
-  "icon": "Settings",
-  "defaultOpen": false,
-  "pages": [
-    "overview",
-    "llm-config",
-    "environment",
-    "modes",
-    "task-modes",
-    "special-instructions",
-    "tools",
-    "cli-sdk",
-    "knowledge",
-    "context-summarization",
-    "evolve",
-    "storage",
-    "secrets-vault",
-    "authentication",
-    "observability",
-    "ui-branding",
-    "memory",
-    "e2b-sandbox",
-    "settings-reference"
-  ]
+  "title": "Customization (moved)",
+  "pages": ["overview", "llm-config", "environment", "task-modes", "tools", "cli-sdk", "manage-publish", "knowledge", "e2b-sandbox", "context-summarization", "evolve", "storage", "secrets-vault", "authentication", "observability", "ui-branding", "settings-reference", "memory"]
 }

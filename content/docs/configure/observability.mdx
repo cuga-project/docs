@@ -1,0 +1,124 @@
+---
+title: Observability
+description: Three ways to watch a CUGA run — OpenLit, Langfuse, and the Activity tracker with cuga-viz.
+---
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Observability
+
+CUGA can record a run three ways. Pick one, or combine them — they are independent.
+
+| Option | What you get | Best for |
+| --- | --- | --- |
+| **OpenLit** | OpenTelemetry traces, metrics, and logs for every LLM call | OTel / Grafana / Tempo pipelines |
+| **Langfuse** | Nested traces in the [Langfuse](https://langfuse.com) dashboard | LLM-ops dashboards and prompt debugging |
+| **Activity tracker + cuga-viz** | Local trajectory files + a CUGA visualizer | Debugging a run on your machine — no extra account |
+
+<Callout type="info">
+**Architecture:** These sit in the **External services** layer (OpenLit, Langfuse) or write local trajectory files the **Activity tracker** collects during the Orchestrator loop. See [How CUGA works](/docs/start/how-it-works#5-external-services).
+</Callout>
+
+---
+
+## OpenLit
+
+[OpenLit](https://github.com/openlit/openlit) instruments LLM SDKs and exports OpenTelemetry traces, metrics, and logs.
+
+**Install** (optional extra):
+
+```bash
+uv sync --group observability
+# or
+pip install "cuga[observability]"
+```
+
+**Enable:**
+
+```toml
+[observability]
+openlit = true
+```
+
+```bash
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4318"
+```
+
+`OTEL_SERVICE_NAME` and `OTEL_RESOURCE_ATTRIBUTES` work as usual.
+
+**Local stack:** `deployment/docker-compose/openlit/` in the cuga-agent repo (OTel Collector, Tempo, Prometheus, Grafana). Start it, point CUGA at the collector, run a task — you get per-call traces with model, tokens, latency, and cost.
+
+Each LLM call records span timing, model/provider attributes, token counts, and latency histograms. Prompt/response content is off by default — see [OpenLit docs](https://docs.openlit.io/).
+
+CUGA instruments the providers it ships (OpenAI, LiteLLM, WatsonX). Custom providers need OpenLit's own instrumentation.
+
+---
+
+## Langfuse
+
+Langfuse traces the LangGraph loop: planner, tools, nested LLM calls, one tree per `invoke()` when tracing is on.
+
+**Enable:**
+
+```toml
+[advanced_features]
+langfuse_tracing = true
+```
+
+Set in `.env` (see the agent repo `.env.example`):
+
+```bash
+LANGFUSE_PUBLIC_KEY=...
+LANGFUSE_SECRET_KEY=...
+LANGFUSE_HOST=https://cloud.langfuse.com   # or your self-hosted URL
+```
+
+Open the Langfuse UI → Traces after a run. Independent of OpenLit — you can run both.
+
+---
+
+## Activity tracker + cuga-viz
+
+The **Activity tracker** records steps (plans, tool calls, observations, token usage) into local trajectory files. It is **off by default**. Turn it on before you expect `cuga viz` to show anything:
+
+```toml
+[advanced_features]
+tracker_enabled = true
+```
+
+**cuga-viz** is the dashboard for those files.
+
+After a few runs:
+
+```bash
+cuga viz
+```
+
+Open **http://localhost:8988**. You get a list of trajectories; click one for the overview, then the task id for step details.
+
+<img
+  src="/images/cuga-viz-home.png"
+  alt="cuga-viz home — list of trajectories"
+  style={{ width: '100%', borderRadius: '0.5rem', marginBottom: '1rem' }}
+/>
+
+<img
+  src="/images/cuga-viz-trajectory.png"
+  alt="cuga-viz trajectory overview"
+  style={{ width: '100%', borderRadius: '0.5rem', marginBottom: '1rem' }}
+/>
+
+<img
+  src="/images/cuga-viz-details.png"
+  alt="cuga-viz step details"
+  style={{ width: '100%', borderRadius: '0.5rem' }}
+/>
+
+`cuga viz` uses the `dev` extra (`uv run --group dev cuga-viz`). No Langfuse account and no OTel collector required.
+
+---
+
+## Related
+
+- [Settings reference — Observability](/docs/configure/settings-reference#observability)
+- [Settings reference — `langfuse_tracing`](/docs/configure/settings-reference#advanced-features)
+- [Run receipt](/docs/build/cuga-agent#run-receipt) — tokens and timings on `InvokeResult` without an external stack

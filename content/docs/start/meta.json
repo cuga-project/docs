@@ -1,0 +1,11 @@
+{
+  "title": "Start",
+  "icon": "Rocket",
+  "defaultOpen": true,
+  "pages": [
+    "index",
+    "installation",
+    "how-it-works",
+    "components"
+  ]
+}

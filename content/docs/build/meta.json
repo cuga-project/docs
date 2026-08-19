@@ -1,0 +1,17 @@
+{
+  "title": "Build",
+  "icon": "Code",
+  "defaultOpen": false,
+  "pages": [
+    "cuga-agent",
+    "cuga-supervisor",
+    "tools",
+    "policies",
+    "knowledge",
+    "memory",
+    "skills",
+    "context-summarization",
+    "loop",
+    "sandbox"
+  ]
+}

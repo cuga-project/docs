@@ -1,0 +1,16 @@
+{
+  "title": "Policies",
+  "icon": "Shield",
+  "defaultOpen": false,
+  "pages": [
+    "index",
+    "supervisor",
+    "intent-guard",
+    "playbook",
+    "tool-guide",
+    "tool-guard",
+    "tool-approval",
+    "output-formatter",
+    "triggers"
+  ]
+}

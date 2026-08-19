@@ -1,0 +1,74 @@
+---
+title: Demos
+description: Try CUGA with sample apps — CRM, knowledge, skills, supervisor, and more.
+---
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Demos
+
+<Callout type="info">
+**Architecture:** Demos start the full **Clients + Orchestrator + Capability** stack locally — Web UI, LangGraph backend, sample tools, and optional knowledge/skills/sandbox. See [How CUGA works](/docs/start/how-it-works).
+</Callout>
+
+Every demo is a `cuga start <preset>` command. UI defaults to **http://localhost:7860**.
+
+## Core presets
+
+| Preset | What you get |
+| --- | --- |
+| `demo` | Default chat demo |
+| `demo_knowledge` | Upload documents and query them (RAG + citations) |
+| `demo_skills` | Agent skills + sandbox (`SKILL.md` playbooks) |
+| `demo_crm` | CRM + email sample OpenAPI apps |
+| `demo_supervisor` | Same stack with `CugaSupervisor` (CRM + email delegation) |
+| `demo_health` | Healthcare OpenAPI sample (`cuga-oak-health`) |
+| `demo_docs` | IBM Docs MCP sample |
+| `travel_agent` | Multi-agent travel sample |
+| `registry` | API registry only (no chat UI) |
+
+```bash
+cuga start demo
+cuga start demo_supervisor
+cuga start demo_knowledge
+```
+
+Full flag list: [CLI presets](/docs/run/cli-presets).
+
+---
+
+## Sample apps behind the demos
+
+These are reference implementations in the [cuga-agent](https://github.com/cuga-project/cuga-agent) repo — not separate doc journeys.
+
+| App | Used in | Notes |
+| --- | --- | --- |
+| **CRM API** | `demo_crm`, `demo_supervisor` | FastAPI CRM with accounts, leads, contacts |
+| **Email MCP** | `demo_crm`, `demo_supervisor` | `--no-email` skips it |
+| **Filesystem MCP** | optional via `--filesystem` | File read/write tools |
+| **Digital Sales OpenAPI** | registry examples | Illustrates OpenAPI in `mcp_servers.yaml` |
+| **IBM Docs MCP** | `demo_docs` | External documentation search |
+
+<Callout type="info">
+To wire your own APIs, skip the long demo walkthroughs — use [Tools](/docs/build/tools) and `cuga start manager`.
+</Callout>
+
+---
+
+## Hybrid (API + browser)
+
+Hybrid mode runs API tools and browser automation together. Enable in settings:
+
+```toml
+[advanced_features]
+mode = "hybrid"
+```
+
+See [Task modes](/docs/configure/task-modes). There is no separate hybrid demo page — use `demo` with hybrid mode on.
+
+---
+
+## Next steps
+
+- [Manage and publish](/docs/run/manage-publish) — configure in the UI instead of YAML
+- [CugaSupervisor](/docs/build/cuga-supervisor) — build your own multi-agent setup in Python
+- [Tools](/docs/build/tools) — OpenAPI and MCP wiring

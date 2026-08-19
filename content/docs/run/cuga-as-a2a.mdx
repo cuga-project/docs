@@ -1,0 +1,83 @@
+---
+title: CUGA as A2A
+description: Expose CUGA over the Agent-to-Agent protocol so other agents can call it.
+---
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# CUGA as A2A
+
+**A2A** (Agent-to-Agent) is the protocol other agents use to call CUGA as a peer — same job as [CUGA as MCP](/docs/run/cuga-as-mcp), but for agent runtimes instead of MCP tool clients.
+
+Off by default. When you enable it, the CUGA server mounts an A2A router and publishes an AgentCard so remote supervisors can discover and delegate to this instance.
+
+<Callout type="info">
+**Architecture:** This is a **Clients** entry point in reverse — other orchestrators hit your CUGA server over HTTP. See [How CUGA works](/docs/start/how-it-works#1-clients--how-you-connect).
+</Callout>
+
+---
+
+## Expose this CUGA
+
+Enable in `settings.toml`:
+
+```toml
+[a2a]
+enabled = true
+agent_name = "cuga"
+agent_description = "CUGA agent exposed over A2A."
+agent_url = "http://localhost:8000"
+```
+
+Then start a server preset (`cuga start demo` or `cuga start manager`). Other A2A clients point at `agent_url`.
+
+| Option | What it does |
+| --- | --- |
+| `enabled` | Mount the A2A router (lazy-imports the A2A package) |
+| `agent_name` / `agent_description` / `agent_version` | Shown on the AgentCard |
+| `agent_url` | Public URL clients should call |
+| `auth_required` | Advertise a bearer scheme on the AgentCard |
+| `skill_ids` | Skills listed on the AgentCard (default `delegate_task`) |
+| `supervisor_config_path` | YAML for the supervisor that handles inbound A2A. Empty = simple runner |
+| `auto_approve` | Simple runner only: auto-confirm HITL interrupts |
+
+Full key list: [Settings reference — A2A](/docs/configure/settings-reference#a2a).
+
+---
+
+## Two directions
+
+| Direction | What you do |
+| --- | --- |
+| **Expose CUGA** (this page) | Other agents call *your* CUGA over A2A |
+| **Call a remote agent** | Your `CugaSupervisor` delegates to an external A2A endpoint |
+
+To consume a remote A2A agent from Python:
+
+```python
+remote_config = {
+    "name": "analytics",
+    "type": "external",
+    "description": "Remote analytics service",
+    "config": {
+        "a2a_protocol": {
+            "endpoint": "http://localhost:9999",
+            "transport": "http",
+        },
+    },
+}
+
+supervisor = CugaSupervisor(agents={
+    "crm": crm_agent,
+    "analytics": remote_config,
+})
+```
+
+Details: [CugaSupervisor — External Agents](/docs/build/cuga-supervisor#external-agents-a2a). Set `pass_variables_a2a = true` under `[supervisor]` if you need to send variables in A2A metadata.
+
+---
+
+## Related
+
+- [CUGA as MCP](/docs/run/cuga-as-mcp) — expose CUGA as MCP tools instead
+- [CugaSupervisor](/docs/build/cuga-supervisor) — mix local agents with remote A2A
+- [Langflow](/docs/run/langflow) — visual workflows that can call CUGA

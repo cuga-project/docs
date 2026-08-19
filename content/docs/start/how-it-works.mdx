@@ -1,0 +1,268 @@
+---
+title: How CUGA works
+description: Five-layer architecture — clients, orchestrator, capabilities, persistence, and external services — built on LangGraph.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# How CUGA works
+
+CUGA is a multi-agent system built on **LangGraph**: intelligent orchestration, policy enforcement, and integration with multiple LLM providers and execution backends.
+
+You interact through **`CugaAgent`** (one agent) or **`CugaSupervisor`** (several agents). Everything else — policies, knowledge, memory, skills, reflection, summarization, spawning — plugs into those two.
+
+---
+
+## Five layers
+
+The stack has five primary layers. Policy enforcement and human-in-the-loop sit inside the **Orchestrator**, not as separate products you wire yourself.
+
+<ArchitectureStack />
+
+| Layer | What it does | Docs |
+| --- | --- | --- |
+| **Clients** | How you talk to CUGA | [Run](/docs/run/cli-presets) · [Build](/docs/build/cuga-agent) |
+| **Orchestrator** | LangGraph agent graph — routing, planning, execution, policies, HITL | This page · [CugaAgent](/docs/build/cuga-agent) · [CugaSupervisor](/docs/build/cuga-supervisor) |
+| **Capability** | LLM, browser, tools, knowledge, memory, skills, sandboxes | [Build](/docs/build/tools) |
+| **Persistence** | Vectors, conversations, published config | [Configure → Storage](/docs/configure/storage) |
+| **External** | Model APIs, tool servers, secrets, tracing | [Configure](/docs/configure/overview) |
+
+---
+
+## 1. Clients — how you connect
+
+| Client | Use when | Start here |
+| --- | --- | --- |
+| **Web UI** | Chat, Manage UI, draft/publish | `cuga start demo` or `cuga start manager` — [Run](/docs/run/demos) |
+| **Python SDK** | Embed in your app | `CugaAgent(tools=[...])` — [Build](/docs/build/cuga-agent) |
+| **CLI** | Local demos, registry, knowledge helpers | `cuga start <preset>` — [CLI presets](/docs/run/cli-presets) |
+
+The server also exposes HTTP routes (`/api/chat`, `/api/knowledge`, `/api/manage`, …) for the Web UI, browser extension, and integrations. Other agents can call this instance over **A2A** or **MCP** — [CUGA as A2A](/docs/run/cuga-as-a2a) · [CUGA as MCP](/docs/run/cuga-as-mcp).
+
+---
+
+## 2. Orchestrator — CugaAgent and CugaSupervisor
+
+The orchestrator is a **dynamic LangGraph** that runs your task. You do not wire individual graph nodes; you configure agents and let CUGA route internally.
+
+### Product surface
+
+| Class | Use when |
+| --- | --- |
+| [`CugaAgent`](/docs/build/cuga-agent) | One agent, one tool set, one conversation |
+| [`CugaSupervisor`](/docs/build/cuga-supervisor) | Several specialists on one task — CRM + email, local + remote A2A |
+
+```python
+# Single agent
+agent = CugaAgent(tools=[get_customers, send_email])
+result = await agent.invoke("Email our top customer a thank-you")
+
+# Multi-agent
+supervisor = CugaSupervisor(agents={"crm": crm_agent, "email": email_agent})
+result = await supervisor.invoke("Get top 5 customers, then email the top one")
+```
+
+### What runs inside (under the hood)
+
+When a task arrives, the orchestrator typically:
+
+1. **Analyzes** the request (Task Analyzer)
+2. **Decomposes** complex work into steps (Plan Decomposition)
+3. **Routes** to the right path — API/code planner, browser planner, or a sub-agent (Supervisor/Router, Plan Controller)
+4. **Executes** — Action Agent (browser), Code Agent (generated Python), tool calls
+5. **Checks policies** and **pauses for humans** when required
+6. **Reflects** *(optional)* — validates a step before continuing
+7. **Summarizes** older context when the window fills up
+8. **Synthesizes** the final answer
+
+You tune behavior with policies and settings (`cuga_mode`, reflection, summarization) — not by editing planner nodes.
+
+---
+
+## Policy system and human-in-the-loop
+
+Policies are orchestrator guardrails. They attach to `CugaAgent` / `CugaSupervisor` via `agent.policies` and appear in the [Manage UI](/docs/run/manage-publish).
+
+| Policy | Role |
+| --- | --- |
+| **Intent Guard** | Block or rewrite a request before tools run |
+| **Playbook** | Step-by-step guidance when a trigger matches |
+| **Tool Guide** | Extra context for a specific tool |
+| **Tool Approval** | Pause for a human before a sensitive tool call |
+| **Output Formatter** | Shape the final answer |
+| **[ToolGuard](/docs/build/policies/tool-guard)** | Validate tool arguments before execution |
+
+**Human-in-the-loop** flows through Tool Approval and the Manage UI: the graph **suggests an action**, **waits for your response**, then continues or adjusts.
+
+Details: [Policies](/docs/build/policies).
+
+---
+
+## 3. Capability layer
+
+Runtime services the orchestrator calls into:
+
+| Capability | What it does | Docs |
+| --- | --- | --- |
+| **LLM Client** | LangChain abstraction — OpenAI, WatsonX, Groq, Ollama, Azure, … | [Models](/docs/configure/models) |
+| **Browser Runtime** | Playwright + BrowserGym for web tasks | [Task modes](/docs/configure/task-modes) |
+| **Tool Adapter** | Python functions, OpenAPI, MCP | [Tools](/docs/build/tools) |
+| **Knowledge Engine** | Docling ingest, embeddings, retrieval, citations | [Knowledge](/docs/build/knowledge) |
+| **Memory** | Learn from past runs — guidelines in, trajectories out | [Memory](/docs/build/memory) |
+| **Agent Skills** | `SKILL.md` playbooks loaded on demand via `load_skill` | [Skills](/docs/build/skills) |
+| **Sandbox** | Where generated code and skill scripts run (`native`, `e2b`, …) | [Sandbox](/docs/build/sandbox) |
+
+### Knowledge
+
+Documents (PDF, Office, HTML, Markdown, images) are ingested via Docling and searched during runs. Citations land on `result.sources`.
+
+- **Agent scope** — shared across conversations
+- **Session scope** — one thread only
+
+```python
+await agent.knowledge.ingest("handbook.pdf")
+result = await agent.invoke("What is the PTO policy?")
+print(result.sources)
+```
+
+Demo: `cuga start demo_knowledge`.
+
+### Memory
+
+Memory learns across runs. Before a similar task, CUGA injects guidelines; after the run, it saves the trajectory. The backend is Evolve (`[evolve]` in settings) — you treat it as **Memory**, not a separate integration.
+
+```toml
+[evolve]
+enabled = true
+mode = "auto"
+```
+
+Demo: `cuga start demo_crm --sample-memory-data`. Guide: [Memory](/docs/build/memory).
+
+### Agent skills
+
+Skills are folders with **`SKILL.md`** (frontmatter + instructions). CUGA discovers them at startup, shows short summaries in the prompt, and exposes **`load_skill`** so the full playbook loads only when needed.
+
+Demo: `cuga start demo_skills`.
+
+### Reflection
+
+After a step, reflection asks whether the result moved the task forward. If not, the agent can retry instead of answering from a bad state.
+
+```toml
+[advanced_features]
+reflection_enabled = true
+```
+
+### Todos
+
+Off by default. Enables a `create_update_todos` checklist for multi-step CugaLite tasks.
+
+```toml
+[advanced_features]
+enable_todos = true
+```
+
+### Tool shortlister
+
+When the tool catalog is large (`shortlisting_tool_threshold`, default 35), CugaLite uses **`find_tools`**: the model describes what it needs, and a shortlister returns a smaller tool set.
+
+How to enable: [Todos, reflection, shortlisting](/docs/build/loop).
+
+### Context summarization
+
+Long threads trigger a rolling summary so the last *N* messages stay verbatim and older turns compress. Works for both `CugaAgent` and `CugaSupervisor`.
+
+```toml
+[context_summarization]
+enabled = true
+keep_last_n_messages = 10
+trigger_fraction = 0.75
+```
+
+Guide: [Context summarization](/docs/build/context-summarization).
+
+---
+
+## 4. Persistence layer
+
+| Store | Holds | Configure |
+| --- | --- | --- |
+| **Vector DB** (Milvus · pgvector) | Knowledge, policy, and Memory embeddings | [Storage](/docs/configure/storage) |
+| **SQLite · Postgres** | Conversations, policies, published agent config | [Storage](/docs/configure/storage) |
+
+When `storage.mode = "prod"`, published configs survive restarts — important for [Manage and publish](/docs/run/manage-publish).
+
+---
+
+## 5. External services
+
+| Service | Examples | Configure |
+| --- | --- | --- |
+| **LLM providers** | OpenAI, Anthropic, Groq, WatsonX, Ollama | [Models](/docs/configure/models) · [Environment](/docs/configure/environment) |
+| **MCP / OpenAPI** | Tool registry, third-party APIs | [Tools](/docs/build/tools) |
+| **Secrets** | Vault, AWS Secrets Manager | [Secrets vault](/docs/configure/secrets-vault) |
+| **Observability** | OpenLit, Langfuse, or Activity tracker + cuga-viz | [Observability](/docs/configure/observability) |
+
+---
+
+## Multi-agent: supervisor vs spawn
+
+Two ways to run more than one agent:
+
+**Supervisor (you wire the team).** Pass named `CugaAgent` instances (or remote A2A agents) to `CugaSupervisor`. The router delegates subtasks and passes variables between agents.
+
+**Spawn (agent hires help mid-run).** A `CugaAgent` can start a nested agent for a subtask (`spawn_agent` / `get_agent_result`). Off by default:
+
+```toml
+[agent_spawn]
+enabled = true
+max_spawn_depth = 2
+```
+
+See [CugaAgent — sub-agent spawn](/docs/build/cuga-agent#sub-agent-spawn-opt-in).
+
+<SupervisorFlow />
+
+Try multi-agent: `cuga start demo_supervisor`.
+
+---
+
+## Deployment (server mode)
+
+When you run CUGA as a server (`cuga start demo`, `manager`, or Helm on Kubernetes), the stack typically includes:
+
+- **CUGA backend** — FastAPI app (chat, knowledge, manage, config, auth)
+- **Tool registry** — OpenAPI + MCP tool discovery (optional separate process)
+- **Web UI** — React chat and Manage UI
+- **Persistence** — vector store + config DB
+
+Self-host on kind, minikube, or a cloud cluster: [Self-host](/docs/run/self-host).
+
+---
+
+## What you configure vs what CUGA runs
+
+| You set | CUGA runs |
+| --- | --- |
+| Tools (functions, OpenAPI, MCP) | Tool selection and calls |
+| Policies | Guards, playbooks, approvals, ToolGuard, formatters |
+| Knowledge documents and scope | Retrieval + citations |
+| Memory (`[evolve]`) | Guidelines from past runs + saved trajectories |
+| Skills (`SKILL.md`) | `load_skill` when the task matches |
+| Sandbox backend | Generated code and skill scripts |
+| Supervisor agent map | Delegation and variable passing |
+| `[agent_spawn]` | Nested sub-agents mid-run |
+| `cuga_mode`, reflection, summarization | How careful / compact the loop is |
+
+Component reference: [System components](/docs/start/components).
+
+---
+
+## Ecosystem
+
+CUGA the product lives in [cuga-agent](https://github.com/cuga-project/cuga-agent). Related repos:
+
+- **[cuga-skills](https://github.com/cuga-project/cuga-skills)** — ready-made runtime skills (`SKILL.md`) for the Capability layer
+- **[cuga-harness-kit](https://github.com/cuga-project/cuga-harness-kit)** — teaches coding agents (Cursor, Claude Code, Codex, Bob) to work on CUGA projects
+- **[cuga-eval](https://github.com/cuga-project/cuga-eval)** — run AppWorld-style and other benchmarks against this stack
