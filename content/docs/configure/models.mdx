@@ -16,6 +16,7 @@ CUGA supports multiple LLM providers with flexible configuration options. You ca
 - **Google Gemini** - Google GenAI
 - **Ollama** - Local OpenAI-compatible models (for example gpt-oss)
 - **RITS** - IBM Research Internal Token Service (IBM internal)
+- **watsonx Orchestrate (wxO)** - Routes LLM calls through an Orchestrate tenant for tracing, guardrails, and entitlement-based billing
 
 ### Option 1: OpenAI 🌐
 
@@ -220,6 +221,41 @@ The bundled profile uses a 300s timeout (local generation can exceed the default
 MODEL_NAME="gpt-oss:20b"
 ```
 
+### Option 10: watsonx Orchestrate (wxO)
+
+Routes every agent role's LLM calls through your watsonx Orchestrate tenant instead of a
+provider directly — calls become traced/observable in the tenant, pass through its
+guardrails, and are billed against its entitlement.
+
+**Setup Instructions:**
+
+1. Install the optional SDK (requires Python >= 3.11):
+   ```bash
+   uv sync --extra wxo
+   ```
+2. In watsonx Orchestrate, go to **Settings -> API details** and click **Generate API key**;
+   copy the **Service instance URL** shown on the same page.
+3. Add to your `.env` file:
+   ```bash
+   AGENT_SETTING_CONFIG="settings.wxo.toml"
+   WXO_API_KEY="XXXXXX"
+   WXO_INSTANCE_URL="https://api.dl.watson-orchestrate.ibm.com/instances/XXXXXX"
+   ```
+
+**Default Values:**
+- Model: `watsonx/openai/gpt-oss-120b`
+- Instance URL: `http://localhost:4321` (local ADK dev server, used when `WXO_INSTANCE_URL`
+  is unset — no API key required in that case)
+
+**Environment Variable Override:**
+Model ids are provider-prefixed per your tenant's Settings -> Models list:
+```bash
+MODEL_NAME="groq/openai/gpt-oss-120b"
+```
+
+**Note:** `WXO_API_KEY` is only required for a remote instance. A local ADK dev server
+(`WXO_INSTANCE_URL=http://localhost:4321`) is auto-detected and runs keyless.
+
 ### LiteLLM Support
 
 CUGA supports LiteLLM through the OpenAI configuration by overriding the base URL:
@@ -254,6 +290,7 @@ CUGA uses TOML configuration files located in `src/cuga/configurations/models/`:
 - `settings.ollama.toml` - local Ollama (OpenAI-compatible)
 - `settings.rits.toml` - RITS configuration (IBM internal)
 - `settings.litellm.toml` - LiteLLM gateway
+- `settings.wxo.toml` - watsonx Orchestrate configuration
 
 Each file contains agent-specific model settings that can be overridden by environment variables.
 
@@ -371,6 +408,9 @@ export AGENT_SETTING_CONFIG="settings.ollama.toml"
 
 # Switch to RITS (IBM internal)
 export AGENT_SETTING_CONFIG="settings.rits.toml"
+
+# Switch to watsonx Orchestrate (wxO)
+export AGENT_SETTING_CONFIG="settings.wxo.toml"
 ```
 
 ### Method 2: Edit .env File
