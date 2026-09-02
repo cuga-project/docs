@@ -81,7 +81,7 @@ cuga_mode = "balanced"
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `cuga_mode` | String | `"balanced"` | Execution reasoning mode. Options: `"fast"`, `"balanced"`, `"accurate"`, `"save_reuse_fast"`, `"custom"`. Fast is quicker but less accurate; Accurate is slower but more precise; Save & Reuse caches workflows. |
+| `cuga_mode` | String | `"balanced"` | Code generation profile. Options: `"fast"`, `"balanced"`, `"accurate"`, `"custom"`. Fast is quicker; Accurate is slower but more precise. |
 
 > **Note:** The legacy `memory_provider` key (mem0) was removed from CUGA classic in cuga-agent PR #153. Current Memory is [Build → Memory](/docs/build/memory).
 
@@ -100,7 +100,6 @@ appworld_final_answer_plain = true
 
 # Vision and Analysis
 use_vision = true
-use_paraphrase = false
 
 # Tracing and Debugging
 tracker_enabled = false
@@ -108,19 +107,13 @@ langfuse_tracing = false
 
 # Integrations
 wxo_integration = false
-use_location_resolver = false
 
 # Execution Modes
 mode = 'api'
 use_extension = false
 
 # Planning and Optimization
-code_planner_enabled = true
-api_planner_hitl = false
 reflection_enabled = false
-lite_mode = true
-lite_mode_tool_threshold = 70
-force_lite_mode_apps = ["knowledge"]
 shortlisting_tool_threshold = 35
 cuga_lite_enable_few_shots = true
 cuga_lite_max_steps = 70
@@ -129,10 +122,6 @@ cuga_lite_bind_tools_apps = []
 cuga_lite_bind_tools_include_find_tools = false
 cuga_lite_nl_auto_continue = false
 enable_todos = false
-
-# Workflows
-save_reuse_generate_html = false
-decomposition_strategy = "flexible"
 
 # E2B Cloud Sandbox
 e2b_sandbox = false
@@ -144,7 +133,6 @@ e2b_cleanup_on_create = true
 e2b_cleanup_frequency = 0
 
 # Variable Lifecycle
-sub_task_keep_last_n = 5
 code_executor_keep_last_n = -1
 
 # Limits & Timeouts
@@ -171,7 +159,6 @@ force_autonomous_mode = false
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `use_vision` | Boolean | `true` | Enable vision capabilities for analyzing screenshots and visual page content. Enhances page understanding. |
-| `use_paraphrase` | Boolean | `false` | Paraphrase user inputs for better interpretation. Can improve understanding of ambiguous queries. |
 
 ### Tracing & Debugging Options
 
@@ -185,7 +172,6 @@ force_autonomous_mode = false
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `wxo_integration` | Boolean | `false` | Enable IBM WatsonX Orchestrate integration. For enterprise IBM customers. |
-| `use_location_resolver` | Boolean | `false` | Enable location resolution for geographic context. Helps when tasks involve location-based data. |
 
 ### Execution Mode Options
 
@@ -198,14 +184,9 @@ force_autonomous_mode = false
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `code_planner_enabled` | Boolean | `true` | Enable code generation planning. Controls whether CUGA generates Python code for complex operations. |
-| `api_planner_hitl` | Boolean | `false` | Enable Human-in-the-Loop for API planner. Pauses at decision points requiring human approval. See [Human-in-the-Loop](/docs/build/policies/tool-approval). |
 | `reflection_enabled` | Boolean | `false` | Extra reflection pass after a step. See [Todos, reflection, shortlisting](/docs/build/loop). |
 | `shortlisting_tool_threshold` | Integer | `35` | If total tools exceed this, enable `find_tools` (LLM shortlister). See [shortlisting](/docs/build/loop). |
 | `enable_todos` | Boolean | `false` | Checklist tool for multi-step tasks. See [Todos](/docs/build/loop). |
-| `lite_mode` | Boolean | `true` | Enable CugaLite mode for simple API tasks. Automatically routes simple tasks to faster execution path. |
-| `lite_mode_tool_threshold` | Integer | `70` | Tool count threshold for CugaLite routing. If app has fewer than this many tools, use CugaLite. |
-| `force_lite_mode_apps` | Array&lt;String&gt; | `["knowledge"]` | App names that always run in CugaLite regardless of `lite_mode_tool_threshold` (e.g. `["knowledge", "crm"]`). |
 | `cuga_lite_enable_few_shots` | Boolean | `true` | MCP few-shots: prompt block + few-shot chat prefix in CugaLite. Set `false` to disable. |
 | `cuga_lite_max_steps` | Integer | `70` | Maximum number of steps (call_model + sandbox cycles) in CugaLite before returning an error. |
 | `cuga_lite_bind_tools_mode` | String | `"none"` | How CugaLite binds tools to the model. Options: `"none"`, `"all"`, `"apps"`. (Per-model overrides live in `model_runtime_profile.py`.) |
@@ -229,13 +210,6 @@ force_autonomous_mode = false
 | `strip_harmony_control_tokens` | String / Boolean | `"auto"` | Strip gpt-oss harmony tokens from the final answer. `"auto"` only for harmony models. |
 | `variables_summary_max_length` | Integer | `12000` | Cap on the “Available Variables” prompt addendum. |
 
-### Workflow Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `save_reuse_generate_html` | Boolean | `false` | Generate HTML visualization for saved workflows. Creates interactive diagrams of workflow execution. Disabled by default for performance. |
-| `decomposition_strategy` | String | `"flexible"` | Task decomposition strategy. Options: `"exact"` (one subtask per app), `"flexible"` (multiple subtasks per app). Flexible allows more efficient task splitting. |
-
 ### E2B Cloud Sandbox Options
 
 See [E2B Cloud Sandbox](/docs/build/sandbox) for detailed E2B configuration.
@@ -254,7 +228,6 @@ See [E2B Cloud Sandbox](/docs/build/sandbox) for detailed E2B configuration.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `sub_task_keep_last_n` | Integer | `5` | Number of most recent generated variables to keep when executing sub-tasks. |
 | `code_executor_keep_last_n` | Integer | `-1` | Variables retained after code execution. `-1` keeps all; positive integers keep the last N. |
 
 ### Limit & Timeout Options
@@ -308,7 +281,7 @@ oak_health_api = 8090
 | `demo_server_startup_max_retries` | Integer | `420` | CLI `cuga start` polls the demo Uvicorn process every ~0.5s up to this many times before timing out (default ≈ 3 minutes). |
 | `apis_url` | Integer | `9000` | APIs service port. (Rarely used) |
 | `crm_api` | Integer | `8007` | CRM demo application port. Used in `cuga start demo_crm`. |
-| `saved_flows` | Integer | `8003` | Saved workflows service port. For Save & Reuse feature. |
+| `saved_flows` | Integer | `8003` | Internal ChatAgent SSE helper port. |
 | `environment_url` | Integer | `8000` | Environment service port. Base configuration service. |
 | `filesystem_mcp` | Integer | `8112` | Filesystem MCP server port. Used in the [Filesystem MCP demo](/docs/run/demos). |
 | `docs_mcp` | Integer | `8113` | Docs MCP server port. |
@@ -724,7 +697,6 @@ enabled = true
 url = "http://127.0.0.1:8201/sse"
 mode = "auto"
 app_name = "evolve"
-lite_mode_only = true
 save_on_success = true
 save_on_failure = true
 async_save = true
@@ -737,7 +709,6 @@ timeout = 30.0
 | `url` | String | `"http://127.0.0.1:8201/sse"` | SSE endpoint of a manually-run Evolve MCP server (used when `mode = "direct"` or as a fallback in `"auto"`). |
 | `mode` | String | `"auto"` | `"auto"` = registry first then direct SSE fallback; `"registry"` = registry only; `"direct"` = direct SSE only. |
 | `app_name` | String | `"evolve"` | MCP app/server name when Evolve is managed by the CUGA registry. |
-| `lite_mode_only` | Boolean | `true` | Only activate Evolve for CugaLite mode. |
 | `save_on_success` | Boolean | `true` | Save trajectory on successful task completion. |
 | `save_on_failure` | Boolean | `true` | Save trajectory on failed task completion. |
 | `async_save` | Boolean | `true` | Save trajectories in the background (non-blocking). |
@@ -755,9 +726,6 @@ cuga_mode = "fast"
 
 [advanced_features]
 use_vision = true
-code_planner_enabled = true
-api_planner_hitl = false
-lite_mode = true
 mode = 'api'
 
 [server_ports]
@@ -773,9 +741,6 @@ cuga_mode = "accurate"
 
 [advanced_features]
 use_vision = true
-code_planner_enabled = true
-api_planner_hitl = true          # Require approval for critical actions
-lite_mode = true
 langfuse_tracing = true          # Full observability
 mode = 'api'
 message_window_limit = 200
@@ -794,7 +759,7 @@ vault_k8s_role = "cuga"
 
 [storage]
 mode = "prod"
-postgres_url = "postgresql+psycopg://user:pass@db:5432/cuga"
+postgres_url = "postgresql+psycopg://user:pass@db:5432/cuga"  # pragma: allowlist secret
 
 [observability]
 openlit = true                   # OTLP-based tracing
@@ -815,7 +780,6 @@ e2b_sandbox = true
 e2b_sandbox_mode = "per-session"
 e2b_sandbox_idle_ttl = 600
 use_vision = true
-code_planner_enabled = true
 
 [server_ports]
 demo = 7860
@@ -836,7 +800,6 @@ cuga_mode = "balanced"
 mode = 'hybrid'                    # or 'web' for web-only
 use_extension = true
 use_vision = true
-code_planner_enabled = true
 
 [server_ports]
 demo = 7860
@@ -956,10 +919,10 @@ Use `DYNACONF_SERVER_PORTS__<NAME>` to override port settings:
 ```bash
 # LLM Provider (choose one)
 AGENT_SETTING_CONFIG="settings.openai.toml"
-OPENAI_API_KEY="sk-..."
+OPENAI_API_KEY="sk-..."  # pragma: allowlist secret
 
 # Optional: E2B Cloud Sandbox
-E2B_API_KEY="e2b_..."
+E2B_API_KEY="e2b_..."  # pragma: allowlist secret
 
 # Optional: Chrome profile for demo mode
 MAC_USER_DATA_PATH="~/Library/Application Support/Google/Chrome/AgentS"
@@ -1010,10 +973,9 @@ kill -9 <PID>
 ### Performance Issues
 
 **Optimization Strategy**:
-1. Enable `lite_mode = true` for simple tasks
-2. Reduce `message_window_limit` to 50 to keep prompts small
-3. Disable `langfuse_tracing` unless needed
-4. Use `fast` mode if accuracy isn't critical
+1. Reduce `message_window_limit` to 50 to keep prompts small
+2. Disable `langfuse_tracing` unless needed
+3. Use `fast` mode if accuracy isn't critical
 
 ---
 
