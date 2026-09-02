@@ -149,15 +149,6 @@ cuga start demo_knowledge --knowledge-profile max_quality
 
 You can also override embeddings from the CLI (`--embeddings-provider`, `--embeddings-model`, `--embeddings-base-url`, …). Built-in embedding families: local `fastembed` (default), Hugging Face, OpenAI-compatible, Ollama, and OpenRouter.
 
-## Routing Knowledge Through CugaLite
-
-The `[advanced_features].force_lite_mode_apps` list defaults to `["knowledge"]`, so knowledge queries always run through CugaLite's faster execution path regardless of `lite_mode_tool_threshold`. To change this, edit `settings.toml`:
-
-```toml
-[advanced_features]
-force_lite_mode_apps = ["knowledge", "crm"]   # add more apps as needed
-```
-
 <Callout type="info">
 The agent's awareness block is rebuilt as documents are ingested or removed, so newly added documents are usable immediately on the next invocation.
 </Callout>

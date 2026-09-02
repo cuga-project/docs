@@ -11,10 +11,10 @@ import { Callout } from 'fumadocs-ui/components/callout';
 # CugaAgent
 
 <Callout type="info">
-**Architecture:** `CugaAgent` is the **Orchestrator** layer in Python — a LangGraph agent pipeline with integrated policies and optional capabilities (tools, knowledge, skills, sandbox). See [How CUGA works](/docs/start/how-it-works#2-orchestrator--cugaagent-and-cugasupervisor).
+**Architecture:** `CugaAgent` runs the **CugaLite** loop plus HITL. It does not wrap `CugaEntryGraph` — that graph is the demo/server orchestrator. For several agents, construct [`CugaSupervisor`](/docs/build/cuga-supervisor) separately. See [How CUGA works](/docs/start/how-it-works#2-orchestrator--cugaentrygraph-and-sdk-constructors).
 </Callout>
 
-The `CugaAgent` class provides a simple, high-level interface for creating and running CUGA agents. It wraps the underlying LangGraph execution complexity, offering an easy way to manage tools, handle conversations, and integrate policies.
+The `CugaAgent` class provides a simple, high-level interface for creating and running CUGA agents. It hides LangGraph wiring so you can manage tools, conversations, and policies without assembling the graph yourself.
 
 ## Model Configuration
 

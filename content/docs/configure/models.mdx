@@ -292,7 +292,7 @@ CUGA uses TOML configuration files located in `src/cuga/configurations/models/`:
 - `settings.litellm.toml` - LiteLLM gateway
 - `settings.wxo.toml` - watsonx Orchestrate configuration
 
-Each file contains agent-specific model settings that can be overridden by environment variables.
+Each file can be overridden by environment variables.
 
 ### Reasoning-effort profiles
 
@@ -306,76 +306,45 @@ Use `settings.openai.reasoning-high-32k.toml` if high effort crowds out visible 
 
 ### Settings File Content Structure
 
-Each settings file contains configuration for different CUGA agents. You can configure each agent independently with different models and parameters:
+Each settings file configures six agent roles: **planner**, **chat**, **final_answer**, **code**, **qa**, and **action**. You can set model and parameters independently on each role. Other providers use the same keys with a different `platform` (and `model_name` where the provider requires it).
 
 #### OpenAI Configuration Example
 
 ```toml
-[agent.task_decomposition.model]
-platform = "openai"
-temperature = 0.1
-max_tokens = 1000
-
 [agent.planner.model]
 platform = "openai"
 temperature = 0.1
-max_tokens = 5000
+max_tokens = 16000
 
 [agent.chat.model]
 platform = "openai"
 temperature = 0.1
-max_tokens = 5000
+max_tokens = 16000
 
-[agent.shortlister.model]
+[agent.final_answer.model]
 platform = "openai"
 temperature = 0.1
-max_tokens = 7000
+max_tokens = 16000
+
+[agent.code.model]
+platform = "openai"
+temperature = 0.1
+max_tokens = 16000
+
+[agent.qa.model]
+platform = "openai"
+temperature = 0.1
+max_tokens = 16000
+
+[agent.action.model]
+platform = "openai"
+temperature = 0.1
+max_tokens = 400
 ```
 
-#### WatsonX Configuration Example
+#### Other providers
 
-```toml
-[agent.shortlister.model]
-platform = "watsonx"
-model_name = "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
-temperature = 0.1
-max_tokens = 7000
-
-[agent.planner.model]
-platform = "watsonx"
-model_name = "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
-temperature = 0.1
-max_tokens = 5000
-
-[agent.chat.model]
-platform = "watsonx"
-model_name = "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
-temperature = 0.1
-max_tokens = 5000
-```
-
-#### OpenRouter Configuration Example
-```toml
-[agent.task_decomposition.model]
-platform = "openrouter"
-temperature = 0.1
-max_tokens = 1000
-
-[agent.planner.model]
-platform = "openrouter"
-temperature = 0.1
-max_tokens = 5000
-
-[agent.chat.model]
-platform = "openrouter"
-temperature = 0.1
-max_tokens = 5000
-
-[agent.shortlister.model]
-platform = "openrouter"
-temperature = 0.1
-max_tokens = 7000
-```
+WatsonX, Azure, Groq, OpenRouter, MiniMax, Gemini, Ollama, RITS, LiteLLM, and watsonx Orchestrate files in `src/cuga/configurations/models/` use the same six `[agent.*.model]` keys. Change `platform` and provider-specific fields; do not add extra agent roles.
 
 ## Switching Between Providers
 
