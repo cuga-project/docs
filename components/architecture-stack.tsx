@@ -126,7 +126,7 @@ export function ArchitectureStack() {
                 </Chip>
               </div>
               <p className="mb-2 text-center font-mono text-[10px] font-semibold uppercase tracking-widest text-indigo-500 dark:text-indigo-300/80">
-                demo / server / eval / stream
+                server graph only
               </p>
               <div className="flex flex-col items-center gap-1.5">
                 <div className="flex flex-wrap items-center justify-center gap-1">
@@ -139,7 +139,11 @@ export function ArchitectureStack() {
                   </span>
                 </div>
                 <ArrowRight className="h-3 w-3 rotate-90 text-indigo-400" />
-                <div className="flex flex-wrap items-center justify-center gap-1">
+                <div
+                  className="flex flex-wrap items-center justify-center gap-1"
+                  role="group"
+                  aria-label="CugaLite, CugaSupervisor, or CugaBrowser"
+                >
                   {SERVER_RUNTIMES.map((name, i) => (
                     <span key={name} className="flex items-center gap-1">
                       {i > 0 ? (
@@ -161,11 +165,11 @@ export function ArchitectureStack() {
                   FinalAnswerAgent
                 </span>
               </div>
-              <p className="mt-2.5 text-center text-[11px] leading-snug text-indigo-700/80 dark:text-indigo-200/70">
-                SDK: <span className="font-semibold">CugaAgent</span> (CugaLite + HITL) ·{' '}
-                <span className="font-semibold">CugaSupervisor</span>
-              </p>
             </div>
+            <p className="mt-2.5 text-center text-[11px] leading-snug text-indigo-700/80 dark:text-indigo-200/70">
+              SDK: <span className="font-semibold">CugaAgent</span> (CugaLite + HITL) ·{' '}
+              <span className="font-semibold">CugaSupervisor</span>
+            </p>
             <div className="mt-2.5 flex flex-wrap gap-1.5">
               <Chip className="border-violet-300/80 bg-white/70 text-violet-800 dark:border-violet-400/30 dark:bg-violet-950/50 dark:text-violet-100">
                 <Shield className="mr-1 h-3 w-3" />
