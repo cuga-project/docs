@@ -10,7 +10,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-const PIPELINE = ['Analyze', 'Decompose', 'Route', 'Execute', 'Answer'] as const;
+const SERVER_RUNTIMES = ['CugaLite', 'CugaSupervisor', 'CugaBrowser'] as const;
 
 function Chip({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
@@ -109,7 +109,7 @@ export function ArchitectureStack() {
           <Layer
             n="02"
             title="Orchestrator"
-            subtitle="LangGraph — CugaAgent and CugaSupervisor"
+            subtitle="CugaEntryGraph on the server; CugaAgent / CugaSupervisor in the SDK"
             icon={GitBranch}
             accent={{
               wrap: 'border-indigo-400/50 bg-indigo-50/80 dark:border-indigo-500/40 dark:bg-[#1e1b4b]/85',
@@ -122,24 +122,49 @@ export function ArchitectureStack() {
             <div className="rounded-lg border border-indigo-300/50 bg-white/60 p-3 dark:border-indigo-500/25 dark:bg-[#0f0d2e]/70">
               <div className="mb-2 text-center">
                 <Chip className="border-indigo-400/60 bg-indigo-600 text-white dark:border-indigo-400/40 dark:bg-indigo-500/90">
-                  Supervisor / Router
+                  CugaEntryGraph
                 </Chip>
               </div>
               <p className="mb-2 text-center font-mono text-[10px] font-semibold uppercase tracking-widest text-indigo-500 dark:text-indigo-300/80">
-                Agent pipeline
+                demo / server / eval / stream
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-1">
-                {PIPELINE.map((step, i) => (
-                  <span key={step} className="flex items-center gap-1">
-                    <span className="rounded-md bg-indigo-100 px-2 py-1 text-[11px] font-semibold text-indigo-900 dark:bg-indigo-200 dark:text-indigo-950">
-                      {step}
-                    </span>
-                    {i < PIPELINE.length - 1 ? (
-                      <ArrowRight className="h-3 w-3 text-indigo-400" />
-                    ) : null}
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="flex flex-wrap items-center justify-center gap-1">
+                  <span className="rounded-md bg-indigo-100 px-2 py-1 text-[11px] font-semibold text-indigo-900 dark:bg-indigo-200 dark:text-indigo-950">
+                    ChatAgent
                   </span>
-                ))}
+                  <ArrowRight className="h-3 w-3 text-indigo-400" />
+                  <span className="rounded-md bg-indigo-100 px-2 py-1 text-[11px] font-semibold text-indigo-900 dark:bg-indigo-200 dark:text-indigo-950">
+                    EntryRouter
+                  </span>
+                </div>
+                <ArrowRight className="h-3 w-3 rotate-90 text-indigo-400" />
+                <div className="flex flex-wrap items-center justify-center gap-1">
+                  {SERVER_RUNTIMES.map((name, i) => (
+                    <span key={name} className="flex items-center gap-1">
+                      {i > 0 ? (
+                        <span
+                          aria-hidden
+                          className="px-0.5 font-mono text-[11px] font-semibold text-indigo-400"
+                        >
+                          |
+                        </span>
+                      ) : null}
+                      <span className="rounded-md border border-indigo-300/70 bg-white px-2 py-1 text-[11px] font-semibold text-indigo-900 dark:border-indigo-400/40 dark:bg-indigo-950/60 dark:text-indigo-100">
+                        {name}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+                <ArrowRight className="h-3 w-3 rotate-90 text-indigo-400" />
+                <span className="rounded-md bg-indigo-100 px-2 py-1 text-[11px] font-semibold text-indigo-900 dark:bg-indigo-200 dark:text-indigo-950">
+                  FinalAnswerAgent
+                </span>
               </div>
+              <p className="mt-2.5 text-center text-[11px] leading-snug text-indigo-700/80 dark:text-indigo-200/70">
+                SDK: <span className="font-semibold">CugaAgent</span> (CugaLite + HITL) ·{' '}
+                <span className="font-semibold">CugaSupervisor</span>
+              </p>
             </div>
             <div className="mt-2.5 flex flex-wrap gap-1.5">
               <Chip className="border-violet-300/80 bg-white/70 text-violet-800 dark:border-violet-400/30 dark:bg-violet-950/50 dark:text-violet-100">
@@ -254,8 +279,8 @@ export function ArchitectureStack() {
         </div>
       </div>
       <figcaption className="mt-3 text-center text-sm text-fd-muted-foreground">
-        Five layers — clients hit the LangGraph orchestrator, which calls capabilities, stores, and
-        external services.
+        Five layers — clients hit the orchestrator (CugaEntryGraph on the server; CugaAgent or
+        CugaSupervisor in the SDK), which calls capabilities, stores, and external services.
       </figcaption>
     </figure>
   );
