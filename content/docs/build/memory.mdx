@@ -30,14 +30,10 @@ If Memory is unavailable, times out, or returns nothing, CUGA continues — it n
 Memory is used in **CugaLite**. Turn it on in `settings.toml`:
 
 ```toml
-[advanced_features]
-lite_mode = true
-
 [evolve]
 enabled = true
 mode = "auto"
 app_name = "evolve"
-lite_mode_only = true
 save_on_success = true
 save_on_failure = true
 async_save = true
@@ -66,10 +62,10 @@ EVOLVE_BACKEND=postgres
 EVOLVE_PG_HOST=localhost
 EVOLVE_PG_PORT=5432
 EVOLVE_PG_USER=postgres
-EVOLVE_PG_PASSWORD=postgres
+EVOLVE_PG_PASSWORD=postgres  # pragma: allowlist secret
 EVOLVE_PG_DBNAME=evolve
 EVOLVE_MODEL_NAME=Azure/gpt-4o
-OPENAI_API_KEY=env://OPENAI_API_KEY
+OPENAI_API_KEY=env://OPENAI_API_KEY  # pragma: allowlist secret
 OPENAI_BASE_URL=env://OPENAI_BASE_URL
 ```
 
@@ -122,7 +118,6 @@ Identify the common cities between my cuga_workspace/cities.txt and cuga_workspa
 | `mode = "auto"` | Registry first, then direct SSE |
 | `mode = "registry"` | Registry only |
 | `mode = "direct"` | Use `url` only |
-| `lite_mode_only = true` | Memory only on the CugaLite path |
 
 ---
 
