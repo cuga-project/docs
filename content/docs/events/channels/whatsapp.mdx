@@ -1,0 +1,83 @@
+---
+title: WhatsApp
+description: Talk to CUGA on WhatsApp via Meta's Cloud API — four values, a signed webhook, and the test-number gotchas to know.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+WhatsApp is a **direct** channel over Meta's **Cloud API**: Meta posts each inbound message to a CUGA
+webhook, and CUGA replies through the Graph API. It needs a **public URL**. Four values:
+
+```bash
+WHATSAPP_TOKEN=…              # a System User token (permanent) — not the 24h test token
+WHATSAPP_PHONE_NUMBER_ID=…    # the number's id (not the phone number itself)
+WHATSAPP_APP_SECRET=…         # validates inbound signatures
+WHATSAPP_VERIFY_TOKEN=…       # any secret you choose; echoed on webhook verification
+```
+
+<Steps>
+
+<Step>
+
+### Create a Meta app with WhatsApp
+
+**[developers.facebook.com](https://developers.facebook.com) → your app → add the **WhatsApp**
+product.** The **API Setup** page gives you a **Phone number ID** → `WHATSAPP_PHONE_NUMBER_ID`.
+
+</Step>
+
+<Step>
+
+### Get a permanent token
+
+The temporary token on API Setup **expires in 24 hours**. For anything real, create a **System User**
+token (Business Settings → Users → System Users → generate a token with `whatsapp_business_messaging`)
+→ `WHATSAPP_TOKEN`. A System User token does not expire.
+
+</Step>
+
+<Step>
+
+### App secret + a verify token
+
+**App → Settings → Basic → App Secret** → `WHATSAPP_APP_SECRET` (CUGA verifies the inbound HMAC with
+it). Pick any random string as `WHATSAPP_VERIFY_TOKEN` — you'll paste the same value into the webhook
+config next.
+
+</Step>
+
+<Step>
+
+### Point the webhook at CUGA + subscribe `messages`
+
+**WhatsApp → Configuration → Webhook**: Callback URL = `https://<your-events-url>/api/events/whatsapp/events`,
+Verify token = your `WHATSAPP_VERIFY_TOKEN`. Then **subscribe to the `messages` field**.
+
+</Step>
+
+</Steps>
+
+## Run it
+
+```bash
+make up-noap-slack     # a tunnel so Meta's webhook can reach you (Slack + WhatsApp both use it)
+make channels
+```
+
+Message your WhatsApp number; CUGA replies. Arm automations with `/automate …`.
+
+<Callout type="warn" title="Test Number → allow-list your phone">
+Meta's free **Test Number** can only exchange messages with **numbers you've added to its allow-list**
+(API Setup → the **"To"** list → add your number + verify the code). If your phone isn't on the list,
+your message may arrive but the **reply is rejected by Meta** — and you see nothing. A **verified/real**
+number can message anyone, subject to Meta's rate tiers.
+</Callout>
+
+<Callout title="Two more WhatsApp rules">
+- **24-hour window** — a business can only send free-form replies within 24h of the user's last
+  message; after that you need an approved **template**.
+- **WABA subscription** — the app must be subscribed to your WhatsApp Business Account, or inbound
+  never arrives (it fails *silently* — the console's own "Send message" button still works). Confirm
+  it under Configuration.
+</Callout>

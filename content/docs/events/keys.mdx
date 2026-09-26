@@ -1,0 +1,82 @@
+---
+title: Keys & environment
+description: Every environment variable the events layer reads, grouped so you only read the rows for the pieces you turn on.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+You add capability one credential at a time. Read only the group you're turning on — nothing here
+blocks anything above it.
+
+Two helpers you'll use throughout:
+
+```bash
+# a random secret (gateway token, webhook key, verify token…)
+python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+# a Fernet key (CUGA_SECRET_KEY)
+python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+
+## 1. The floor — arm & fire a flow
+
+The minimum to run events and deliver to the built-in web chat. Nothing else is required.
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `AGENT_SETTING_CONFIG` | ✅ | Model profile, e.g. `settings.watsonx.toml` (or `settings.openai.toml`). |
+| `LLM_PROVIDER` / `LLM_MODEL` | ✅ | Provider + model. |
+| `WATSONX_APIKEY` · `WATSONX_URL` · `WATSONX_PROJECT_ID` (or `WATSONX_SPACE_ID`) | ✅ | watsonx creds. *(Or `OPENAI_API_KEY` for the OpenAI profile.)* |
+| `GATEWAY_TOKEN` | ✅ | Shared secret for `/run` + `/invoke`. Both **fail closed (401)** without it. |
+| `CUGA_EVENTS_ENABLED` | recommended | `true` turns the events layer on. Redundant under `make up-noap` (it defaults to `true`); **required** if you run the events service standalone. |
+| `EVENTS_DB` | recommended | SQLite **file** path locally (armed flows survive a restart). Unset ⇒ in-memory, wiped on restart. In production this is a **Postgres DSN**. |
+
+## 2. Events niceties (optional)
+
+| Variable | When | Purpose |
+| --- | --- | --- |
+| `EVENTS_WEBHOOK_KEY` | using the [generic webhook](/docs/events/triggers/webhooks) | Gates `POST /api/events/hook/<name>`. Unset ⇒ the webhook **401s every request** (fails closed). Not used by cron/poll/web. |
+| `CUGA_SECRET_KEY` | recommended | A **Fernet key** that encrypts the config store + admin-entered OAuth secrets. Unset ⇒ plaintext + a warning; still runs. |
+| `EVENTS_SCHEDULER` | default `native` | `native` = AP-free in-process cron/poll. `ap` = legacy Activepieces schedule. |
+
+## 3. Add a channel (each optional)
+
+Provide the token(s) to enable a channel; each is **direct** (no Activepieces). Full setup — including
+how to get every value — is on each channel's page.
+
+| Channel | Variables | Guide |
+| --- | --- | --- |
+| **Slack** | `SLACK_BOT_TOKEN`, `SLACK_SIGNING_SECRET` | [Slack](/docs/events/channels/slack) |
+| **Discord** | `DISCORD_BOT_TOKEN` | [Discord](/docs/events/channels/discord) |
+| **Telegram** | `TELEGRAM_BOT_TOKEN`, `EVENTS_TELEGRAM_BOT_USERNAME` | [Telegram](/docs/events/channels/telegram) |
+| **WhatsApp** | `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN` | [WhatsApp](/docs/events/channels/whatsapp) |
+
+<Callout type="warn">
+Slack and WhatsApp receive over a **public webhook**, so they need a reachable URL — a tunnel
+locally (`make up-noap-slack`) or your deployed URL. Discord (gateway socket) and Telegram
+(long-poll) need **no** public URL. See each channel's page.
+</Callout>
+
+## 4. Add a trigger integration (each optional)
+
+Watch an external system and fire a flow on its events.
+
+| Integration | Variables | Guide |
+| --- | --- | --- |
+| **Generic webhook** | `EVENTS_WEBHOOK_KEY` | [Webhooks](/docs/events/triggers/webhooks) |
+| **GitHub** (14 triggers) | `GITHUB_WEBHOOK_SECRET` *(+ App creds for write-back)* | [GitHub](/docs/events/triggers/github) |
+| **Box** (files/folders/comments) | `EVENTS_BOX_BACKEND=direct` + CCG creds | [Box](/docs/events/triggers/box) |
+
+## 5. Deploy knobs
+
+Set by the Code Engine scripts; see [Deploy](/docs/events/deploy).
+
+| Variable | Purpose |
+| --- | --- |
+| `EVENTS_PUBLIC_URL` | The deployed events URL — where provider webhooks (Slack/WhatsApp/GitHub) post. |
+| `EVENTS_DB` (Postgres DSN) · `EVENTS_DB_CA_B64` | Durable store in production. |
+
+<Callout title="Everything AP-free">
+The whole top half runs with **no Activepieces** — channels, the native cron/poll scheduler, the
+generic webhook, GitHub-direct and Box-direct. Activepieces is only for the SaaS OAuth push triggers
+still on it (Gmail, Outlook), which are optional.
+</Callout>

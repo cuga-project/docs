@@ -1,0 +1,90 @@
+---
+title: Triggers
+description: Every "when" CUGA can act on — a schedule, a change it polls for, an event from GitHub/Box/a channel/a webhook, or your own function on a timer.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+A **trigger** is the "when" of an automation. You describe it in plain language with `/automate`, CUGA
+proposes a standing flow, you confirm — and from then on it fires on its own and delivers the result to
+your web chat or a channel.
+
+## Three kinds of "when"
+
+| Kind | You say | How it works |
+| --- | --- | --- |
+| **Schedule (cron)** | *"every weekday at 9am…"* | the **native scheduler** runs the agent on a cron — no external scheduler |
+| **Poll (watch for change)** | *"check this every 10 minutes and only tell me if it changed"* | CUGA polls the source on an interval and delivers **only on a real change** (a fingerprint/threshold, not raw content) |
+| **Push (an event arrives)** | *"when a PR opens…"*, *"when someone reacts 🐛…"* | an external system or a channel **pushes** the event to CUGA, or CUGA polls the integration for you |
+
+## What you can watch — the full catalog
+
+Every source below is **direct** (no Activepieces) unless marked otherwise. Each trigger has a short
+name (e.g. `new_pr`) that you never have to type — you describe it in words and CUGA maps it.
+
+### Your tools & integrations
+
+| Source | Triggers | Notes |
+| --- | --- | --- |
+| **GitHub** (14) | `new_pr` · `new_issue` · `new_push` · `new_branch` · `new_release` · `new_star` · `new_collaborator` · `new_milestone` · `new_repo_label` · `new_discussion` · `new_discussion_comment` · `new_commit` · `new_review_request` · `new_gh_mention` | one signed webhook, any repo the App sees → [GitHub](/docs/events/triggers/github) |
+| **Box** (3) | `new_file` · `new_folder` · `new_box_comment` | polled via CCG on a watched folder → [Box](/docs/events/triggers/box) |
+| **Webhook** | `inbound` | any system that can POST JSON → [Webhooks](/docs/events/triggers/webhooks) |
+
+### Your channels are trigger sources too
+
+The same Slack/Discord/Telegram bots you talk to can also be *watched* — react to messages, reactions,
+mentions, and workspace lifecycle:
+
+| Channel | Triggers | Example |
+| --- | --- | --- |
+| **Slack** (9) | `new_channel_message` · `new_reaction` *(filter by emoji, e.g. 🐛)* · `reaction_removed` · `new_slack_mention` · `channel_created` · `new_slack_user` · `new_emoji` · `saved_message` · `new_member` | *"when someone reacts 🐛 in #support, triage it"* |
+| **Discord** (3) | `new_member` · `new_channel_message` · `new_reaction` | *"welcome every new member with an onboarding note"* |
+| **Telegram** (1) | `new_channel_message` *(content-filtered)* | *"when a message here mentions 'refund', flag it"* |
+| **WhatsApp** | — *(converse only today)* | inbound WhatsApp is chat-only; watcher-dispatch isn't wired yet |
+
+<Callout type="info" title="Optional via Activepieces">
+Turn Activepieces on to add SaaS OAuth triggers: **Gmail** (`new_email`, `new_labeled_email`,
+`new_attachment`, `new_gmail_label`), **Google Calendar** (`new_event`, `new_or_updated_event`,
+`event_ends`), plus Pinterest, YouTube and RSS. Everything above needs no Activepieces.
+</Callout>
+
+## Function & tool triggers — bring your own
+
+Anything CUGA can *call* can be *watched*. If you register your own function — a **Python tool**, an
+**OpenAPI** endpoint, or an **MCP server** (see [Build → Tools](/docs/build/tools)) — you can put it on
+a schedule or a poll without writing any trigger code:
+
+<Cards>
+  <Card title="Schedule your function (cron)">
+    *"every morning at 8, call my `get_open_orders` tool and post the count to Slack."* CUGA runs the
+    agent, which calls your function, and delivers the result on your cron.
+  </Card>
+  <Card title="Watch your function for change (poll)">
+    *"check my `inventory_level` tool every 10 minutes and alert me only when it drops below 10."* CUGA
+    polls, compares against the last value (threshold/fingerprint), and fires **only on a real change**.
+  </Card>
+</Cards>
+
+So the trigger set isn't fixed to the integrations above — **your own functions become triggers** the
+moment you expose them as tools. The agent is the bridge: a trigger fires → the agent calls whatever
+tools it has → CUGA delivers the answer.
+
+## Arming, and how it fires
+
+```
+/automate when a new pull request opens on owner/repo, summarize it and flag risks
+```
+
+CUGA shows a confirm card; reply **yes** to arm it. It stores a **direct subscription** (no
+Activepieces). When the event arrives — GitHub delivers the signed webhook, a Slack reaction comes in,
+or the poller detects a change — CUGA verifies it, matches your subscription, and hands it to the right
+agent, which produces the answer and delivers it to your target.
+
+Which agent handles which trigger, and how to bring your own, is the subject of
+**[Agents & rosters](/docs/events/rosters)**.
+
+<Callout type="info">
+Direct fires are confirmed through the events log (`github.direct … matched=N`), because the
+Activepieces run list (`/api/events/runs`) is empty on an AP-free deploy.
+</Callout>

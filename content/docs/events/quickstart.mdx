@@ -1,0 +1,122 @@
+---
+title: Run events locally
+description: Prove the whole arm → schedule → fire → deliver loop on your laptop in five minutes — no channels, no Activepieces, no cloud.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+This is the smallest possible events run: **two local processes**, the native scheduler, and the
+built-in **web chat**. You'll arm a standing flow by messaging CUGA `/automate …` and watch it fire.
+No bot tokens, no public URL, no Activepieces.
+
+<Callout title="What you need">
+Just your **LLM credentials** and one generated **gateway token**. That's it — 8 keys. Channels are
+added later, one token at a time; without them, external channels simply show `not_configured` and
+are skipped.
+</Callout>
+
+<Steps>
+
+<Step>
+
+### Write a minimal `.env`
+
+Copy this into `.env` at the repo root and fill in your LLM values. (Not on watsonx? Swap the block
+for `settings.openai.toml` + `OPENAI_API_KEY`, etc.)
+
+```bash
+# ── LLM (required) ──
+AGENT_SETTING_CONFIG=settings.watsonx.toml
+LLM_PROVIDER=watsonx
+LLM_MODEL=<your model, e.g. openai/gpt-oss-120b>
+WATSONX_APIKEY=<your key>
+WATSONX_URL=https://us-south.ml.cloud.ibm.com
+WATSONX_PROJECT_ID=<your project id>
+WATSONX_SPACE_ID=<your space id>
+
+# ── the /run + /invoke shared secret (required) ──
+GATEWAY_TOKEN=<generate: python3 -c "import secrets; print(secrets.token_urlsafe(32))">
+
+# ── turn events on + a durable local DB (recommended) ──
+CUGA_EVENTS_ENABLED=true
+EVENTS_DB=/absolute/path/to/your/clone/events.db
+```
+
+<Callout type="info">
+`EVENTS_DB` is a real SQLite **file**, so armed flows survive a restart. Omit it and the store is
+in-memory (wiped on restart). See the [Keys](/docs/events/keys) page for the two optional niceties
+(`EVENTS_WEBHOOK_KEY`, `CUGA_SECRET_KEY`).
+</Callout>
+
+</Step>
+
+<Step>
+
+### Boot both services
+
+```bash
+uv sync --python 3.12
+make up-noap
+```
+
+`make up-noap` starts CUGA (`:7860`, agent + UI) **and** the events service (`:8100`, triggers +
+concierge + native scheduler) with **no Activepieces and no tunnel**. Stop them anytime with
+`make stop`.
+
+</Step>
+
+<Step>
+
+### Confirm events are on
+
+```bash
+curl -s localhost:7860/health && echo
+curl -s localhost:8100/health && echo
+curl -s localhost:8100/api/events/status | python3 -m json.tool | grep -E 'enabled|scheduler'
+# → "enabled": true , "scheduler": "native"
+```
+
+Open **http://localhost:7860** — because events are on, a **Studio** tab appears in the top nav
+(channels + armed flows).
+
+</Step>
+
+<Step>
+
+### Arm a flow with `/automate`
+
+In the main chat box, type:
+
+```
+/automate every minute send me the price of bitcoin
+```
+
+CUGA proposes the standing flow — reply **yes** to arm it. Within a minute the native scheduler fires
+it and the agent's answer lands back in the web chat. Try a poll too:
+
+```
+/automate check the weather in Tokyo every minute and only tell me if it changed
+```
+
+That is the entire events loop — **arm → schedule → fire → deliver** — with no channels and no cloud.
+
+</Step>
+
+</Steps>
+
+## Prove it from the command line (optional)
+
+```bash
+EVENTS_SERVER_URL=http://localhost:8100 EVENTS_SCHEDULER=native \
+  .venv/bin/python tests/events/live_fire.py --only cron poll   # → 2 of 2 fired
+```
+
+## Next
+
+<Callout>
+- Add a **channel** so you can talk to CUGA from Slack / WhatsApp / Telegram / Discord → [Channels](/docs/events/channels)
+- Add a **trigger** so CUGA watches GitHub / Box / a webhook → [Triggers](/docs/events/triggers)
+- See every variable, grouped by what you turn on → [Keys](/docs/events/keys)
+- Ship it to the cloud → [Deploy to Code Engine](/docs/events/deploy)
+</Callout>

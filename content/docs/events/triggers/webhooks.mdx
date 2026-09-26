@@ -1,0 +1,58 @@
+---
+title: Webhooks
+description: The catch-all trigger — let anything that can POST JSON hand CUGA an event to act on.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+When there's no built-in integration, the **generic webhook** is the universal inbound trigger: any
+system that can POST JSON — a monitor, a SaaS's custom webhook, a CI job, a cron on another box — can
+hand CUGA an event.
+
+```bash
+EVENTS_WEBHOOK_KEY=…    # generate: python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+## The endpoint
+
+```
+POST https://<your-events-url>/api/events/hook/<name>?key=<EVENTS_WEBHOOK_KEY>
+Content-Type: application/json
+
+{ "any": "json you like" }
+```
+
+- `<name>` is a label you choose (e.g. `alerts`, `ci`) — it's how a watcher targets this hook.
+- The `key` **must** match `EVENTS_WEBHOOK_KEY`. Without it (or if the key is unset) the endpoint
+  **401s every request** — it fails closed.
+- The body is delivered to the armed watcher as the event payload.
+
+<Callout title="Fast ack, async work">
+The endpoint returns **`202 Accepted`** immediately and runs the agent in the background — so a caller
+that expects a quick webhook ack won't time out. Add `?wait=1` to run synchronously and get the result
+in the response instead.
+</Callout>
+
+## Arm and fire
+
+```
+/automate when my "alerts" webhook fires, triage the payload and post the severity
+```
+
+Reply **yes**, then send a test event:
+
+```bash
+curl -sS -X POST \
+  "https://<your-events-url>/api/events/hook/alerts?key=$EVENTS_WEBHOOK_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"service":"checkout","status":"degraded"}'
+# → 202 {"ok":true,"accepted":true,...}
+```
+
+The watcher matches the `alerts` hook, runs the agent on your payload, and delivers the verdict to the
+target you armed.
+
+<Callout type="info">
+Want to watch a service that has **no** webhooks — an endpoint, a page, an API? Use a **poll** instead:
+*"check this URL every 10 minutes and tell me only if it changed."* See [Triggers](/docs/events/triggers).
+</Callout>

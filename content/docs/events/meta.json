@@ -1,0 +1,14 @@
+{
+  "title": "Events & Channels",
+  "icon": "Zap",
+  "defaultOpen": false,
+  "pages": [
+    "index",
+    "quickstart",
+    "keys",
+    "channels",
+    "triggers",
+    "rosters",
+    "deploy"
+  ]
+}

@@ -1,0 +1,63 @@
+---
+title: Channels
+description: Talk to CUGA from Slack, Discord, Telegram or WhatsApp — ask questions or set up automations in plain language, wherever you already are.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+A **channel** lets you converse with CUGA outside the web UI. You message its bot; it answers. You can
+also arm automations from a channel (`/automate …`) and have the results delivered right back there.
+
+Every channel is **optional** and **direct** (it talks to the provider itself — no Activepieces).
+Turn on only the ones you want by adding that channel's token; the rest report `not_configured` and
+are skipped. The **web chat is always on**, no setup needed.
+
+<Cards>
+  <Card title="Slack" href="/docs/events/channels/slack" />
+  <Card title="Discord" href="/docs/events/channels/discord" />
+  <Card title="Telegram" href="/docs/events/channels/telegram" />
+  <Card title="WhatsApp" href="/docs/events/channels/whatsapp" />
+</Cards>
+
+## How a channel reaches CUGA
+
+There are two shapes, and they decide whether you need a **public URL**:
+
+| Channel | Inbound transport | Public URL needed? |
+| --- | --- | --- |
+| **Slack** | signed **Events API webhook** | ✅ yes (tunnel locally, or your deployed URL) |
+| **WhatsApp** | signed **Meta Cloud API webhook** | ✅ yes |
+| **Discord** | **gateway WebSocket** (outbound) | ❌ no |
+| **Telegram** | **long-poll** (outbound) | ❌ no |
+
+<Callout type="warn" title="One owner per bot token">
+A channel that owns a socket or a long-poll (Discord gateway, Telegram) can only run in **one place at
+a time**. Never point a local run and a deployment at the **same** bot token — they fight (Telegram
+returns `getUpdates 409`). Use separate tokens, or stop one.
+</Callout>
+
+## Running channels locally
+
+Discord and Telegram need no public URL, so they work under plain `make up-noap`. Slack and WhatsApp
+need their webhook to reach you — use `make up-noap-slack`, which brings up a tunnel and prints the
+public URL to register:
+
+```bash
+make up-noap          # web · Telegram · Discord
+make up-noap-slack    # + a tunnel so Slack's / WhatsApp's webhook can reach you
+make channels         # arm every channel that has a token in .env
+```
+
+## Identity & isolation
+
+A channel **is** an authentication authority: each sender is isolated by their native id (their
+Slack/Telegram/WhatsApp user), so different people talking to the same bot get their own conversation
+memory and their own automations. A sender can optionally **link** their channel to a CUGA account
+(`/link <token>`) to unlock privileged agents — until then they're an isolated, bounded user.
+
+## Delivery
+
+When a flow you armed fires, CUGA delivers the answer to the channel you asked for — the same thread on
+Slack, the same chat on Telegram/WhatsApp, the same channel on Discord. Web deliveries land in a
+durable inbox the browser reads.

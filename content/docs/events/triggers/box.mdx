@@ -1,0 +1,84 @@
+---
+title: Box
+description: Watch a Box folder for new files, folders, and comments — server-to-server auth, no OAuth, no dev-token expiry.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+CUGA watches a Box folder using a **Client Credentials Grant (CCG)** — server-to-server auth. It mints
+and refreshes its own tokens, so there's **no 60-minute dev-token expiry, no per-user OAuth consent, and
+no redirect URL**.
+
+```bash
+EVENTS_BOX_BACKEND=direct
+BOX_CLIENT_ID=…
+BOX_CLIENT_SECRET=…
+BOX_ENTERPRISE_ID=…          # a number; or BOX_USER_ID to act as one user
+BOX_FOLDER_ID=…              # the folder to watch
+```
+
+<Callout title="You need an enterprise">
+CCG requires an account with an **enterprise** (an Admin Console). A free personal Box account has
+none. A free **Box Developer** account (developer.box.com) gives you a developer-edition enterprise —
+that's the zero-cost path.
+</Callout>
+
+<Steps>
+
+<Step>
+
+### Create a CCG app
+
+Box Developer Console → **Create Platform App → Custom App → Server Authentication (Client Credentials
+Grant)**. Copy the **Client ID** / **Client Secret** → `BOX_CLIENT_ID` / `BOX_CLIENT_SECRET`.
+
+</Step>
+
+<Step>
+
+### App + Enterprise Access
+
+On the **Configuration** tab set **App Access Level = App + Enterprise Access**, and tick **Read all
+files and folders** under Application Scopes. Save.
+
+<Callout type="warn">
+If this is left at *App Access Only*, a CCG token request fails with `400 "box_subject_type" value is
+unauthorized for this client_id`.
+</Callout>
+
+</Step>
+
+<Step>
+
+### Authorize the app
+
+Box **Admin Console → Apps → Custom Apps Manager → Add App** → paste the Client ID → **Authorize**.
+Until an admin does this, CCG requests return `invalid_grant`.
+
+</Step>
+
+<Step>
+
+### Enterprise ID + the folder
+
+Copy your **Enterprise ID** (Admin Console → Account & Billing) → `BOX_ENTERPRISE_ID`. The folder id is
+in its URL `app.box.com/folder/<id>` → `BOX_FOLDER_ID`.
+
+</Step>
+
+</Steps>
+
+<Callout type="warn" title="Collaborate the service account into the folder">
+A CCG service account starts with an **empty** Box space — it can only see folders shared with it. So a
+folder you created in your own account returns **404** until you **invite the service account**
+(`AutomationUser_…@boxdevedition.com`) as a collaborator on it. Otherwise the watcher sees nothing.
+</Callout>
+
+## Arm and fire
+
+```
+/automate when a new file lands in my Box folder, screen it and post a one-line verdict
+```
+
+Reply **yes**, drop a file in the folder; the poller detects it and runs the agent.

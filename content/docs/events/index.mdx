@@ -1,0 +1,74 @@
+---
+title: Events & Channels
+description: Give CUGA a life outside the chat box — let it watch the world, react to events from your tools, and talk to you on Slack, WhatsApp, Telegram and Discord.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+Out of the box, CUGA answers when you ask. The **events layer** gives it a life of its own: it can
+**watch for things to happen** and act, and it can **talk to you where you already are**.
+
+Everything here is **opt-in** and **runs with no extra infrastructure** — no Activepieces, no
+message queue, no external scheduler. It's a second process next to CUGA, and you turn on exactly
+the pieces you need.
+
+## Three things it adds
+
+<Cards>
+  <Card title="⏰ Proactive triggers" href="/docs/events/triggers">
+    CUGA watches the world on a schedule and acts on change — *"every morning post the crypto
+    prices"*, *"check this page every 10 minutes and tell me only if it changed"*. Native cron and
+    polling, in-process.
+  </Card>
+  <Card title="🔔 Watch your tools" href="/docs/events/triggers">
+    React to events from **GitHub, Box, Slack, Discord, Telegram** and any system that can send a
+    **webhook** — *"when a PR opens, summarize it"*, *"when someone reacts 🐛, triage it"*. Or watch
+    **your own function** on a timer — anything CUGA can call, it can watch.
+  </Card>
+  <Card title="💬 Channels" href="/docs/events/channels">
+    Talk to CUGA from **Slack, Discord, Telegram, WhatsApp** — not just the web chat. Ask questions,
+    or set up automations by messaging it in plain language.
+  </Card>
+</Cards>
+
+## The mental model
+
+Think of the events layer as three verbs, all reachable in one natural-language command — **`/automate`**:
+
+| Verb | You say | What CUGA does |
+| --- | --- | --- |
+| **Schedule** | *"every weekday at 9am, send me the weather"* | runs the agent on a **cron**, delivers the answer |
+| **Poll** | *"watch this API every 10 min, ping me if it changed"* | runs on an interval, delivers **only on a real change** |
+| **Watch** | *"when a new PR opens on my repo, review it"* | subscribes to a **trigger** from GitHub / Box / a webhook and fires on the event |
+
+The answer is delivered wherever you asked for it — the **web chat**, or a **channel** like Slack or
+WhatsApp. Arming is a one-line human-in-the-loop step: you type `/automate …`, CUGA proposes the
+standing flow, and you confirm with **yes**.
+
+Behind every fire is a **roster** — a team of specialist agents where a supervisor routes each event to
+the one whose job it is (a PR → the reviewer, a Box file → the screener). You can extend it with your
+own agents and tools. See **[Agents & rosters](/docs/events/rosters)**.
+
+<Callout title="No Activepieces required">
+Channels, the cron/poll scheduler, the generic webhook, GitHub triggers and Box triggers are all
+**direct** — they talk to each provider themselves. Activepieces is only involved for the SaaS OAuth
+triggers still on it (Gmail, Outlook), which are optional and off by default.
+</Callout>
+
+## What's optional (almost everything)
+
+You add capability one credential at a time. Nothing below blocks anything above it:
+
+1. **Events alone** — arm and fire cron/poll/webhook flows, delivered to the built-in **web chat**.
+   Needs only your LLM keys + a gateway token. **No channel tokens, no public URL.** → [Quickstart](/docs/events/quickstart)
+2. **+ a channel** — add one bot token to talk to CUGA from Slack / Discord / Telegram / WhatsApp. → [Channels](/docs/events/channels)
+3. **+ a trigger integration** — add a secret to watch GitHub / Box / webhooks. → [Triggers](/docs/events/triggers)
+4. **Deploy** — ship the whole thing to IBM Code Engine. → [Deploy](/docs/events/deploy)
+
+<Callout type="info">
+New here? Start with the **[Quickstart](/docs/events/quickstart)** — it proves the whole
+arm → schedule → fire → deliver loop locally in five minutes, with no channels and no cloud.
+The **[Keys](/docs/events/keys)** page is the one place every environment variable is listed, grouped
+so you only read the rows for the pieces you turn on.
+</Callout>

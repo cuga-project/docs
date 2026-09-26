@@ -1,0 +1,92 @@
+---
+title: Deploy to Code Engine
+description: Ship events + channels to IBM Code Engine — the same .env you ran locally, three commands, and where each key goes.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+The cloud deploy is the split topology: **`cuga-core`** (`:7860`, agent + UI) and **`cuga-events-svc`**
+(`:8100`, triggers + scheduler + channels). Both run from one image. Your local `.env` is the source of
+truth — a script turns it into the Code Engine secret.
+
+<Callout title="Prerequisites">
+The `ibmcloud` CLI logged in (`ibmcloud login`), and a **Postgres** DSN for durability (armed flows
+survive a restart). All the keys are the same ones from [Keys](/docs/events/keys) — you just add the
+deploy knobs below.
+</Callout>
+
+<Steps>
+
+<Step>
+
+### Generate the CE secret from your `.env`
+
+```bash
+cd events/deploy && ./make_env_ce.sh
+```
+
+This writes `.env.ce` (the events secret — every credential) and `.env.ce.core` (the core secret,
+minus channel tokens). It carries forward the provisioned `EVENTS_DB` (Postgres DSN) + CA.
+
+</Step>
+
+<Step>
+
+### Build + deploy
+
+```bash
+make ce-build      # cloud buildrun → pushes the image to ICR
+make ce-deploy     # secret update (merges) + recreate cuga-core + cuga-events-svc
+make ce-url        # print the deployed URLs
+```
+
+</Step>
+
+<Step>
+
+### Point provider webhooks at the deployed URL
+
+Set each provider's webhook to the events URL:
+
+```
+https://<events-url>/api/events/github/events
+https://<events-url>/api/events/whatsapp/events
+https://<events-url>/api/events/slack/events
+```
+
+`make ce-deploy` sets `EVENTS_PUBLIC_URL` on the service automatically.
+
+</Step>
+
+</Steps>
+
+## Keys in the cloud
+
+Same variables as local, plus:
+
+| Variable | Purpose |
+| --- | --- |
+| `EVENTS_DB` (Postgres DSN) · `EVENTS_DB_CA_B64` | Durable store — without it, armed flows are lost on an instance replace. |
+| `EVENTS_PUBLIC_URL` | The deployed events URL (set for you by the deploy). |
+
+The channel and integration keys ([Keys §3–4](/docs/events/keys)) go into the **events** secret; the
+core secret withholds channel tokens. `make_env_ce.sh` already knows which key belongs where.
+
+## Verify
+
+```bash
+make ce-status                 # capability report: channels · scheduler · durability · public URL
+make test-webhooks-ce          # signed generic hook + GitHub ping + WhatsApp verify
+make test-e2e-ce               # channel round-trips (web/Slack full; Discord/Telegram real send)
+make test-github-e2e-ce        # opens a REAL PR → verifies it matched a watcher
+make test-box-e2e-ce           # real upload → Box poll → agent verdict → cleanup
+```
+
+<Callout type="warn" title="Two deploy gotchas">
+- **The secret merges.** `ibmcloud ce secret update` keeps keys you removed from `.env`. A stale
+  static token (e.g. a leftover `BOX_DEV_TOKEN`) can shadow a newer credential — remove it explicitly.
+- **One instance, on purpose.** The events service is pinned to a single always-on instance (the
+  scheduler + channel loops are process-wide singletons). Don't run a local stack on the **same** bot
+  tokens as the deployment, or channel loops will collide.
+</Callout>

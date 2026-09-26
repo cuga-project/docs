@@ -1,0 +1,87 @@
+---
+title: GitHub
+description: Watch a repo with one signed webhook — 14 triggers, no Activepieces, no per-repo setup.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+CUGA receives GitHub events through **one signed webhook** and can optionally call the GitHub API back
+with a **GitHub App**. No Activepieces, no OAuth flow, no per-repo webhooks.
+
+```bash
+GITHUB_WEBHOOK_SECRET=…       # REQUIRED — verifies inbound events (fails closed)
+# Optional, for API write-back (fetch a diff, comment, open a PR) — pick ONE:
+GITHUB_APP_ID=…               # a GitHub App (production path)
+GITHUB_APP_PRIVATE_KEY=…      # the .pem on one line with \n escapes
+GITHUB_APP_INSTALLATION_ID=…
+# …or GITHUB_TOKEN=ghp_…      # a PAT (simple demo alternative; if both are set, the PAT wins)
+```
+
+<Callout title="Receiving vs acting">
+**Receiving** events needs only `GITHUB_WEBHOOK_SECRET`. The App/PAT creds are only for when an agent
+**calls the API** (reads a diff, posts a comment). A pure trigger reaction needs neither.
+</Callout>
+
+<Steps>
+
+<Step>
+
+### Create a GitHub App
+
+**Settings → Developer settings → GitHub Apps → New GitHub App** (use the org's settings for an
+org-wide App). Set:
+
+- **Webhook → Active**, URL = `https://<your-events-url>/api/events/github/events`.
+- **Webhook secret** — generate one, keep it: this is `GITHUB_WEBHOOK_SECRET`.
+- **Repository permissions** — *Read* on Contents / Issues / Pull requests / Metadata for pure
+  triggers; set Contents + Pull requests to *Read and write* if agents will act.
+- **Subscribe to events** — tick Pull request, Issues, Push, etc. (these map to CUGA's 14 triggers).
+
+</Step>
+
+<Step>
+
+### App ID + private key (only if agents act)
+
+On the App's **General** page copy the **App ID** → `GITHUB_APP_ID`, and **Generate a private key**
+(downloads a `.pem`). Put it on one line:
+
+```bash
+python3 -c 'print(open("your-app.private-key.pem").read().replace(chr(10),"\\n"))'
+```
+
+Paste that as `GITHUB_APP_PRIVATE_KEY`.
+
+</Step>
+
+<Step>
+
+### Install the App
+
+**Install App** → choose the repos (All, or select). This is what grants access; the **Installation
+ID** is in the install URL `github.com/settings/installations/<id>` → `GITHUB_APP_INSTALLATION_ID`.
+
+</Step>
+
+</Steps>
+
+## Arm and fire
+
+```
+/automate when a new pull request opens on owner/repo, summarize it and flag risks
+```
+
+Reply **yes**. Open a PR; CUGA verifies GitHub's signed delivery, matches your watcher, and delivers
+the summary. Confirm a fire in the events log:
+
+```bash
+# a github.direct line with matched=N (N>0) means it matched + dispatched
+```
+
+<Callout type="warn" title="Two gotchas that look like bugs">
+- **`signature mismatch` / `missing X-Hub-Signature-256`** — the App's **Webhook Secret** must equal
+  `GITHUB_WEBHOOK_SECRET` byte-for-byte. Reconfiguring the App can silently blank it; re-set it.
+- **`403 Resource not accessible by integration` on every write** while reads work — the repo is
+  **archived** (read-only). Unarchive it. This is not a permission problem.
+</Callout>
