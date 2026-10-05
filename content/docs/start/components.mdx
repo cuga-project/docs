@@ -21,8 +21,8 @@ CUGA is organized into **five layers**. This table maps each product piece to it
 
 | Piece | What it does | Docs |
 | --- | --- | --- |
-| **CugaAgent** | Single-agent graph — plan, execute, answer | [CugaAgent](/docs/build/cuga-agent) |
-| **CugaSupervisor** | Router across several agents (local or A2A) | [CugaSupervisor](/docs/build/cuga-supervisor) |
+| **CugaAgent** | SDK single-agent loop (CugaLite + HITL). Does not wrap `CugaEntryGraph`. | [CugaAgent](/docs/build/cuga-agent) |
+| **CugaSupervisor** | SDK multi-agent router (`create_cuga_supervisor_graph`) | [CugaSupervisor](/docs/build/cuga-supervisor) |
 | **Policies** | Intent Guard, Playbook, Tool Guide, Tool Approval, Output Formatter, ToolGuard | [Policies](/docs/build/policies) |
 | **Human-in-the-loop** | Suggest action → wait for approval → continue | [Tool Approval](/docs/build/policies/tool-approval) |
 | **Reflection** | Second look after a step; retry if off-track | [Todos, reflection, shortlisting](/docs/build/loop) |
@@ -31,7 +31,7 @@ CUGA is organized into **five layers**. This table maps each product piece to it
 | **Context summarization** | Compress older turns in long threads | [Context summarization](/docs/build/context-summarization) |
 | **Agent spawn** | Nested `CugaAgent` mid-run (`spawn_agent`) | [How it works — Multi-agent](/docs/start/how-it-works#multi-agent-supervisor-vs-spawn) |
 
-Internal graph nodes (Task Analyzer, Plan Decomposition, Browser/API Planners, Code Agent, Action Agent) run automatically — you configure agents and policies, not individual nodes.
+On the server, `EntryRouter` sends API → **CugaLite**, multi-agent → **CugaSupervisor**, web/hybrid → **CugaBrowser**. That fan-out is `CugaEntryGraph` (demo, eval, `/stream`) — not `CugaAgent`.
 
 ### 3. Capability layer
 
