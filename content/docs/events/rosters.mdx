@@ -1,0 +1,110 @@
+---
+title: Agents & rosters
+description: How a trigger becomes an answer — a supervisor routes each event to the specialist agent whose job it is, and you can bring your own.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+A **channel** or a **trigger** decides *when* CUGA acts. A **roster** decides *who* acts. A roster is a
+small team of specialist sub-agents behind one **supervisor** (named `cuga`); the supervisor reads each
+incoming message or event and hands it to the sub-agent whose job it is.
+
+## The whole loop, end to end
+
+```
+you arm:   /automate when a PR opens on owner/repo, review it        → a direct subscription is stored
+a PR opens → github-direct verifies the signed webhook               → matches your subscription
+           → dispatches to the supervisor as  [github/new_pr] {…}    → cuga routes by source
+           → pr_reviewer  (uses cuga_code + cuga_text)               → summarizes + flags risks
+           → delivered to your target                                → Slack thread / web chat
+```
+
+Every event is handed to the supervisor **prefixed with its source**, e.g. `[github/new_pr]` or
+`[box/new_file]` or `[slack/new_reaction]`. The supervisor's instructions say: *pick the sub-agent whose
+role covers that source.* For a plain chat message it routes by topic instead ("weather in NYC" →
+`weatherbot`).
+
+<Callout title="One supervisor, many specialists">
+Delegating to a specialist (rather than answering directly) is what makes automations auditable — a
+named agent, with a defined role and a fixed set of tools, handled the event. You can see exactly which
+agent ran.
+</Callout>
+
+## The default roster
+
+The shipped roster (`events/examples/rosters/default.yaml`) is ten specialists — enough to cover every
+built-in tool and every direct trigger, with **nothing that needs Activepieces**:
+
+| Agent | Handles | Tools |
+| --- | --- | --- |
+| **pricebot** | crypto / stock price questions | `cuga_finance` |
+| **weatherbot** | current weather for a city | `cuga_web` |
+| **geobot** | geography — capital, population, nearby places | `cuga_knowledge`, `cuga_geo` |
+| **wiki_dive** | deep Wikipedia research | `cuga_knowledge` |
+| **webpage_summarizer** | summarize a URL / page | `cuga_web` |
+| **code_auditor** | analyze a pasted code snippet | `cuga_code`, `cuga_web` |
+| **pr_reviewer** | `[github/new_pr]`, review requests — summarize + flag risks | `cuga_code`, `cuga_text` |
+| **repo_watcher** | `[github/*]` repo lifecycle — pushes, branches, releases, stars, mentions… | `cuga_code`, `cuga_web`, `cuga_text` |
+| **incident_triage** | a webhook alert, `[github/new_issue]`, a 🐛 reaction, a blocker comment | `cuga_text` |
+| **doc_screener** | `[box/new_file]`, `[box/new_folder]`, `[box/new_box_comment]` | `cuga_text`, `cuga_web` |
+
+Notice how the trigger catalog maps onto agents: **PRs → `pr_reviewer`**, **repo events → `repo_watcher`**,
+**alerts / issues / bug-reactions → `incident_triage`**, **Box files → `doc_screener`**. Arm a watcher for
+any of those and the right specialist answers automatically.
+
+## Worked examples
+
+Each of these is one `/automate` line; the roster does the rest.
+
+- **`/automate when a PR opens on acme/api, summarize it and flag risks`** → `[github/new_pr]` →
+  `pr_reviewer` reads the diff with `cuga_code`, writes the summary with `cuga_text`.
+- **`/automate when a new release is published on acme/api, post what changed to #eng`** →
+  `[github/new_release]` → `repo_watcher` → delivered to Slack.
+- **`/automate when someone reacts 🐛 in #support, triage it`** → `[slack/new_reaction]` (emoji filter) →
+  `incident_triage` classifies severity and names the likely component.
+- **`/automate when a résumé lands in my Box folder, screen it against the JD`** → `[box/new_file]` →
+  `doc_screener` reads the file text and returns MATCH/SKIP.
+- **`/automate every weekday at 9am, post the crypto prices to #general`** → cron → `pricebot`.
+
+## Bring your own agent (and your own tools)
+
+A roster is just YAML. Add a specialist, give it your **MCP servers** (your Python tools, OpenAPI
+endpoints, or an MCP server — see [Build → Tools](/docs/build/tools)), and describe its job. Anything
+that agent can *call* becomes something you can *schedule* or *watch*:
+
+```yaml
+supervisor:
+  name: cuga
+agents:
+  - name: ops_watcher
+    special_instructions: >
+      You handle infrastructure alerts. On a [webhook/inbound] payload from our monitoring, say in one
+      line WHAT broke, its severity, and the first action. On a schedule, call get_service_health and
+      post a one-line status.
+    mcp_servers:
+      - name: my_ops_tools        # your own MCP server — your functions become triggers
+```
+
+Then arm it in plain language:
+
+```
+/automate every 10 minutes call get_service_health and alert #ops only if something changed
+/automate when my "monitoring" webhook fires, triage the payload
+```
+
+<Callout type="info">
+Point CUGA at your roster with `CUGA_SUPERVISOR_ROSTER=path/to/roster.yaml`. The full 27-agent example
+is `events/examples/rosters/supervisor_agents_full.yaml`; domain rosters (e.g.
+`box_document_intelligence.yaml`) show a coherent team built around one source. Managing agents live in
+the UI is gated by the registry flag — see the events service settings.
+</Callout>
+
+## How it all fits
+
+- **Channels** bring the message in (and are trigger sources themselves).
+- **Triggers** decide when — a schedule, a change, a pushed event, or your own function on a timer.
+- **The roster** decides who — the supervisor routes to the specialist whose role and tools fit.
+- **Delivery** sends the answer back to where you asked — a channel thread, or the web chat.
+
+That's the events layer: *watch the world → route to the right agent → act → deliver*, all armed with one
+sentence.

@@ -1,0 +1,78 @@
+---
+title: Slack
+description: Talk to CUGA from a Slack workspace — a bot token, a signing secret, and one Events API URL.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Slack is a **direct** channel (no Activepieces). CUGA answers `@mentions` and DMs, and posts replies
+back into the same thread. Because Slack delivers over a webhook, it needs a **public URL** — a
+tunnel locally, or your deployed events URL.
+
+```bash
+SLACK_BOT_TOKEN=xoxb-…
+SLACK_SIGNING_SECRET=…
+```
+
+<Steps>
+
+<Step>
+
+### Create a Slack app
+
+**[api.slack.com/apps](https://api.slack.com/apps) → Create New App → From scratch.** Name it, pick
+your workspace.
+
+</Step>
+
+<Step>
+
+### Add bot scopes and install
+
+**OAuth & Permissions → Bot Token Scopes**, add: `app_mentions:read`, `chat:write`,
+`channels:history` (add `im:history` for DMs). Then **Install to Workspace** and copy the **Bot User
+OAuth Token** (`xoxb-…`) → `SLACK_BOT_TOKEN`.
+
+</Step>
+
+<Step>
+
+### Copy the signing secret
+
+**Basic Information → App Credentials → Signing Secret** → `SLACK_SIGNING_SECRET`. CUGA uses it to
+verify every inbound request (fails closed on a bad signature).
+
+</Step>
+
+<Step>
+
+### Point the Events API at CUGA
+
+**Event Subscriptions → Enable Events**, set the **Request URL** to:
+
+```
+https://<your-events-url>/api/events/slack/events
+```
+
+The endpoint answers Slack's challenge automatically. Under **Subscribe to bot events** add
+`app_mention` (and `message.im` for DMs). Save; reinstall if prompted.
+
+</Step>
+
+</Steps>
+
+## Run it
+
+```bash
+make up-noap-slack     # brings up a tunnel; use the printed URL as the Request URL above
+make channels          # arms the channel
+```
+
+Invite the bot to a channel, then `@your-bot what's the weather in NYC?` — it replies in-thread. Arm
+an automation the same way: `@your-bot /automate every morning post the crypto prices here`.
+
+<Callout title="No public URL? Not for Slack.">
+Slack must reach your webhook, so a tunnel (local) or a deployed URL is required. Discord and Telegram
+avoid this — see their pages.
+</Callout>

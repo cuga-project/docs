@@ -1,0 +1,52 @@
+---
+title: Telegram
+description: Talk to CUGA from Telegram — a bot token from BotFather, no public URL.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Telegram is a **direct** channel that uses **long-polling** — outbound, so it needs **no public URL**
+and works under plain `make up-noap`. Two values:
+
+```bash
+TELEGRAM_BOT_TOKEN=…
+EVENTS_TELEGRAM_BOT_USERNAME=your_bot
+```
+
+<Steps>
+
+<Step>
+
+### Create a bot with BotFather
+
+In Telegram, message **[@BotFather](https://t.me/BotFather) → `/newbot`**, follow the prompts, and
+copy the token it gives you → `TELEGRAM_BOT_TOKEN`.
+
+</Step>
+
+<Step>
+
+### Set the bot username
+
+Set `EVENTS_TELEGRAM_BOT_USERNAME` to the bot's `@username` (without the `@`).
+
+</Step>
+
+</Steps>
+
+## Run it
+
+```bash
+make up-noap
+make channels
+```
+
+Message your bot; it replies. Arm automations with `/automate …`.
+
+<Callout type="warn" title="Only one poller per token">
+Telegram allows **one** `getUpdates` consumer per bot token. If two processes poll the same token
+(e.g. a laptop and a deployment) you'll see `getUpdates 409 Conflict`. Use a **separate bot token**
+for each environment, or stop the other one. To evict an unknown poller, revoke + reissue the token in
+BotFather.
+</Callout>

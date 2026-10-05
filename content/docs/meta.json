@@ -3,6 +3,7 @@
     "start",
     "build",
     "run",
+    "events",
     "configure",
     "contribute"
   ]

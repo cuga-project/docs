@@ -1,0 +1,59 @@
+---
+title: Discord
+description: Talk to CUGA from a Discord server — one bot token, no public URL.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Discord is a **direct** channel that connects over the **gateway WebSocket** — outbound, so it needs
+**no public URL** and works under plain `make up-noap`. One token:
+
+```bash
+DISCORD_BOT_TOKEN=…
+```
+
+<Steps>
+
+<Step>
+
+### Create the application + bot
+
+**[discord.com/developers/applications](https://discord.com/developers/applications) → New
+Application → Bot → Reset Token** → copy it → `DISCORD_BOT_TOKEN`.
+
+</Step>
+
+<Step>
+
+### Enable the message content intent
+
+On the **Bot** page, turn on **MESSAGE CONTENT INTENT** (otherwise the bot can't read message text).
+
+</Step>
+
+<Step>
+
+### Invite the bot to your server
+
+**OAuth2 → URL Generator →** scopes `bot`, bot permissions *Read Messages / Send Messages* → open the
+generated URL and add the bot to your server.
+
+</Step>
+
+</Steps>
+
+## Run it
+
+```bash
+make up-noap     # web · Telegram · Discord (no tunnel needed)
+make channels
+```
+
+Message the bot in a channel it can see; it replies there. Arm automations with `/automate …` the
+same way.
+
+<Callout type="warn" title="One instance per token">
+The gateway connection is single-owner — don't run a local bot and a deployed bot on the **same**
+token, or they'll both try to answer.
+</Callout>
