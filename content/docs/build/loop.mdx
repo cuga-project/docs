@@ -9,7 +9,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 These are **Orchestrator** knobs — they change how CugaLite plans and retries, not which tools you attach.
 
 <Callout type="info">
-**Architecture:** Reflection and todos run inside the agent loop. The shortlister is the same LLM filter used by `find_tools` when the tool catalog is large. See [How CUGA works](/docs/start/how-it-works#3-capability-layer).
+**Architecture:** Reflection and todos run inside the agent loop. The configured shortlister selects tools for `find_tools` and provider binding when the tool catalog is large. See [How CUGA works](/docs/start/how-it-works#3-capability-layer).
 </Callout>
 
 All three live under `[advanced_features]` in `settings.toml`.
@@ -42,9 +42,21 @@ Turn it on when wrong-but-confident answers are costly. Leave it off when latenc
 
 ---
 
+## Pre-execute VERIFY
+
+VERIFY inspects a proposed mutating code block before the sandbox runs it. It is independent of post-execution reflection and defaults to off:
+
+```toml
+[advanced_features]
+pre_execute_verify_enabled = true
+pre_execute_verify_timeout = 60
+```
+
+Read-only blocks skip the check. A `revise` decision skips the proposed block so the agent can revise it; `ok` or `unknown` allows execution. Errors/timeouts fail open, and revision caps prevent endless verification loops. VERIFY is an advisory LLM check, not human approval or a deterministic authorization boundary. Use [Tool Approval](/docs/build/policies/tool-approval) and [ToolGuard](/docs/build/policies/tool-guard) for their respective controls.
+
 ## Tool shortlister (`find_tools`)
 
-When an app has **more tools than the threshold**, CugaLite does not dump the whole catalog into the prompt. It exposes **`find_tools`**: the model describes what it needs in natural language, and an **LLM shortlister** returns the relevant subset.
+When an app has **more tools than the threshold**, CugaLite does not dump the whole catalog into the prompt. It exposes **`find_tools`**: the model describes what it needs in natural language, and the configured **shortlister** returns the relevant subset.
 
 ```toml
 [advanced_features]
@@ -52,7 +64,32 @@ shortlisting_tool_threshold = 35   # find_tools when total tools > this
 cuga_lite_enable_few_shots = true  # few-shots for the shortlister path
 ```
 
-Over-cap on **native** `bind_tools` (providers that reject > ~128 tools) uses the **same** shortlister:
+### Shortlisting strategies
+
+| Strategy | Behavior |
+| --- | --- |
+| `llm` | Ask the model to choose tools; default. |
+| `embedding` | Rank tools with local cosine similarity without an LLM call. |
+| `hybrid` | Prefilter with cosine similarity, then ask the LLM for the final selection. |
+| Dotted class path | Load a custom shortlister implementation. |
+
+```toml
+[shortlister]
+strategy = "hybrid"
+fallback_strategy = "llm"
+threshold = 128
+top_k = 128
+max_results = 10
+min_score = 0.15
+embedding_provider = "local"
+embedding_model = "BAAI/bge-small-en-v1.5"
+```
+
+`advanced_features.shortlisting_tool_threshold` decides when the prompt hides tools behind `find_tools`. `[shortlister].threshold` decides when the cosine stage engages. Shortlister embeddings are local by default and do not inherit `[storage.embedding]`. Use `[shortlister.discovery]` and `[shortlister.bind_cap]` for separate runtime-discovery and provider-cap overrides.
+
+See the [shortlister design and extension guide](https://github.com/cuga-project/cuga-agent/blob/main/docs/design/pluggable-shortlister.md) for custom implementations.
+
+Over-cap on **native** `bind_tools` (providers that reject > ~128 tools) uses the configured shortlister:
 
 ```toml
 [advanced_features]
