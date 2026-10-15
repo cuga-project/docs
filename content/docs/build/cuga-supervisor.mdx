@@ -148,7 +148,7 @@ agents:
       max_tokens: 8192
 ```
 
-`provider` selects the sub-agent's backend; `model_name` selects its model. Export the matching provider credentials. `CugaSupervisor.from_yaml()` does not set the supervisor model from this block. To supply the supervisor's own model directly, construct `CugaSupervisor(agents=..., model=...)`.
+`provider` selects the sub-agent's backend; `model_name` selects its model when no higher-priority override applies. For OpenAI and other providers supporting the global override, `MODEL_NAME` from `.env` or the process environment wins over YAML `model_name`. Remove that global override when different sub-agents need different model names. Export the matching provider credentials. `CugaSupervisor.from_yaml()` does not set the supervisor model from this block. To supply the supervisor's own model directly, construct `CugaSupervisor(agents=..., model=...)`.
 
 ### Registry and composition in Manage
 
