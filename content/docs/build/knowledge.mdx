@@ -97,9 +97,27 @@ results = await agent.knowledge.search(
 </Tab>
 </Tabs>
 
+## Identity and session ownership
+
+For authenticated server requests, session knowledge uses the logged-in caller and selected runtime agent. A `thread_id` is not permission to access another user's documents. Ownership checks apply to session ingest, search, settings, files, and related thread access.
+
+Keep the knowledge persistence directory durable across restarts: it includes session ownership metadata as well as document data. The server binds trusted run identity for internal knowledge calls. SDK applications that expose knowledge through their own API must supply authentication and authorization at that boundary.
+
+## Ingestion size and configuration overrides
+
+RAG profiles provide defaults; explicit `DYNACONF_KNOWLEDGE__...` overrides take precedence for configurable profile values. This lets an operator reduce ingestion memory without editing a profile:
+
+```bash
+export DYNACONF_KNOWLEDGE__EMBEDDINGS__BATCH_SIZE=32
+export DYNACONF_KNOWLEDGE__EMBEDDINGS__CONCURRENCY=1
+export DYNACONF_KNOWLEDGE__ENGINE__VECTOR_INSERT_BATCH_SIZE=100
+```
+
+The default embedding batch size is `64`, embedding concurrency is `4`, and vector insert batch size is `200`. Smaller batches/concurrency reduce simultaneous ingestion work; choose values for your embedder and deployment. They do not replace the deployment's overall memory sizing.
+
 ## Supported Document Types
 
-PDF, DOCX, XLSX, PPTX, HTML, Markdown, images, and more — anything Docling can parse.
+The full image supports PDF, DOCX, XLSX, PPTX, HTML, Markdown, images, and other Docling formats. The slim image supports plain text and Markdown only; Markdown falls back to plain-text chunking. See [Docker images](/docs/run/self-host#docker-images).
 
 ## Storage and Embeddings
 
@@ -149,14 +167,9 @@ cuga start demo_knowledge --knowledge-profile max_quality
 
 You can also override embeddings from the CLI (`--embeddings-provider`, `--embeddings-model`, `--embeddings-base-url`, …). Built-in embedding families: local `fastembed` (default), Hugging Face, OpenAI-compatible, Ollama, and OpenRouter.
 
-## Routing Knowledge Through CugaLite
+## Knowledge in the agent loop
 
-The `[advanced_features].force_lite_mode_apps` list defaults to `["knowledge"]`, so knowledge queries always run through CugaLite's faster execution path regardless of `lite_mode_tool_threshold`. To change this, edit `settings.toml`:
-
-```toml
-[advanced_features]
-force_lite_mode_apps = ["knowledge", "crm"]   # add more apps as needed
-```
+API/tool tasks use CugaLite, including knowledge tools. The former full CugaAgent graph and its tool-count routing are retired; `lite_mode_tool_threshold` and `force_lite_mode_apps` are not current routing controls.
 
 <Callout type="info">
 The agent's awareness block is rebuilt as documents are ingested or removed, so newly added documents are usable immediately on the next invocation.
