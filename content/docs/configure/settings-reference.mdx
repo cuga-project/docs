@@ -115,12 +115,9 @@ mode = 'api'
 use_extension = false
 
 # Planning and Optimization
-code_planner_enabled = true
-api_planner_hitl = false
 reflection_enabled = false
-lite_mode = true
-lite_mode_tool_threshold = 70
-force_lite_mode_apps = ["knowledge"]
+pre_execute_verify_enabled = false
+# pre_execute_verify_timeout = 60
 shortlisting_tool_threshold = 35
 cuga_lite_enable_few_shots = true
 cuga_lite_max_steps = 70
@@ -132,7 +129,6 @@ enable_todos = false
 
 # Workflows
 save_reuse_generate_html = false
-decomposition_strategy = "flexible"
 
 # E2B Cloud Sandbox
 e2b_sandbox = false
@@ -196,16 +192,15 @@ force_autonomous_mode = false
 
 ### Planning & Optimization Options
 
+The former full CugaAgent graph is retired. `lite_mode`, `lite_mode_tool_threshold`, `force_lite_mode_apps`, `code_planner_enabled`, `api_planner_hitl`, and `decomposition_strategy` are not current routing/planner controls. API/tool tasks use CugaLite. `CugaAgent` remains the public SDK class.
+
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `code_planner_enabled` | Boolean | `true` | Enable code generation planning. Controls whether CUGA generates Python code for complex operations. |
-| `api_planner_hitl` | Boolean | `false` | Enable Human-in-the-Loop for API planner. Pauses at decision points requiring human approval. See [Human-in-the-Loop](/docs/build/policies/tool-approval). |
+| `pre_execute_verify_enabled` | Boolean | `false` | Advisory VERIFY check before mutating code blocks; independent of reflection. |
+| `pre_execute_verify_timeout` | Float (seconds) | `60` | VERIFY timeout; errors/timeouts allow execution. Env: `DYNACONF_ADVANCED_FEATURES__PRE_EXECUTE_VERIFY_TIMEOUT`. |
 | `reflection_enabled` | Boolean | `false` | Extra reflection pass after a step. See [Todos, reflection, shortlisting](/docs/build/loop). |
-| `shortlisting_tool_threshold` | Integer | `35` | If total tools exceed this, enable `find_tools` (LLM shortlister). See [shortlisting](/docs/build/loop). |
+| `shortlisting_tool_threshold` | Integer | `35` | If total tools exceed this, enable `find_tools` (configured shortlister). See [shortlisting](/docs/build/loop). |
 | `enable_todos` | Boolean | `false` | Checklist tool for multi-step tasks. See [Todos](/docs/build/loop). |
-| `lite_mode` | Boolean | `true` | Enable CugaLite mode for simple API tasks. Automatically routes simple tasks to faster execution path. |
-| `lite_mode_tool_threshold` | Integer | `70` | Tool count threshold for CugaLite routing. If app has fewer than this many tools, use CugaLite. |
-| `force_lite_mode_apps` | Array&lt;String&gt; | `["knowledge"]` | App names that always run in CugaLite regardless of `lite_mode_tool_threshold` (e.g. `["knowledge", "crm"]`). |
 | `cuga_lite_enable_few_shots` | Boolean | `true` | MCP few-shots: prompt block + few-shot chat prefix in CugaLite. Set `false` to disable. |
 | `cuga_lite_max_steps` | Integer | `70` | Maximum number of steps (call_model + sandbox cycles) in CugaLite before returning an error. |
 | `cuga_lite_bind_tools_mode` | String | `"none"` | How CugaLite binds tools to the model. Options: `"none"`, `"all"`, `"apps"`. (Per-model overrides live in `model_runtime_profile.py`.) |
@@ -234,7 +229,6 @@ force_autonomous_mode = false
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `save_reuse_generate_html` | Boolean | `false` | Generate HTML visualization for saved workflows. Creates interactive diagrams of workflow execution. Disabled by default for performance. |
-| `decomposition_strategy` | String | `"flexible"` | Task decomposition strategy. Options: `"exact"` (one subtask per app), `"flexible"` (multiple subtasks per app). Flexible allows more efficient task splitting. |
 
 ### E2B Cloud Sandbox Options
 
@@ -365,6 +359,20 @@ cuga start demo_supervisor
 ```
 
 ---
+
+## Shortlister
+
+`[shortlister]` selects `llm` (default), `embedding`, `hybrid`, or a dotted custom class path. It supports `fallback_strategy`, `threshold`, `top_k`, `max_results`, `min_score`, `query_weight`, `embedding_provider`, and `embedding_model`. `[shortlister.discovery]` and `[shortlister.bind_cap]` override individual seams. See [shortlisting strategies](/docs/build/loop#shortlisting-strategies) for defaults and examples.
+
+## Final answer
+
+```toml
+[final_answer]
+instructions = ""
+function = ""
+```
+
+`instructions` guides the separate answer composer; CugaLite uses `special_instructions` (SDK `final_answer="..."` sets this). `function` is a trusted dotted `(str) -> str` callable applied to the delivered answer. See [Final answer](/docs/configure/final-answer) for execution order, fallback, and scope limitations.
 
 ## Agent spawn
 
@@ -755,9 +763,6 @@ cuga_mode = "fast"
 
 [advanced_features]
 use_vision = true
-code_planner_enabled = true
-api_planner_hitl = false
-lite_mode = true
 mode = 'api'
 
 [server_ports]
@@ -773,9 +778,6 @@ cuga_mode = "accurate"
 
 [advanced_features]
 use_vision = true
-code_planner_enabled = true
-api_planner_hitl = true          # Require approval for critical actions
-lite_mode = true
 langfuse_tracing = true          # Full observability
 mode = 'api'
 message_window_limit = 200
@@ -815,7 +817,6 @@ e2b_sandbox = true
 e2b_sandbox_mode = "per-session"
 e2b_sandbox_idle_ttl = 600
 use_vision = true
-code_planner_enabled = true
 
 [server_ports]
 demo = 7860
@@ -836,7 +837,6 @@ cuga_mode = "balanced"
 mode = 'hybrid'                    # or 'web' for web-only
 use_extension = true
 use_vision = true
-code_planner_enabled = true
 
 [server_ports]
 demo = 7860
@@ -1010,7 +1010,7 @@ kill -9 <PID>
 ### Performance Issues
 
 **Optimization Strategy**:
-1. Enable `lite_mode = true` for simple tasks
+1. Tune [shortlisting](/docs/build/loop#tool-shortlister-find_tools) for large tool catalogs
 2. Reduce `message_window_limit` to 50 to keep prompts small
 3. Disable `langfuse_tracing` unless needed
 4. Use `fast` mode if accuracy isn't critical
