@@ -1,0 +1,38 @@
+---
+title: AppWorld integration
+description: Configure AppWorld login ownership and connect the registry to a remote APIs host.
+---
+
+# AppWorld integration
+
+Use [cuga-eval](https://github.com/cuga-project/cuga-eval) for AppWorld benchmark execution. These settings control how CUGA's registry authenticates to AppWorld apps and reaches their API server.
+
+## Login modes
+
+| Service `auth.type` | Behavior |
+| --- | --- |
+| `oauth2` | The registry logs in to each app before execution using the supervisor's passwords; this is cuga-eval's default. |
+| `oauth2_agent` | The agent logs in itself. The registry attaches a token after the agent calls that app's `/auth/token`; before login, the app returns its own 401. |
+
+```yaml
+services:
+  - spotify:
+      url: "http://appworld:9000/spotify/openapi.json"
+      description: "Music streaming app"
+      auth:
+        type: oauth2_agent
+```
+
+Choose the login mode to match the evaluation/task setup. Do not pre-authenticate an app through the registry when the task requires the agent to perform login.
+
+## Remote APIs host
+
+When the APIs run on another host or in another container:
+
+```bash
+export DYNACONF_SERVER_PORTS__APIS_HOST=http://appworld:9000
+```
+
+This full base URL takes precedence over `http://localhost:{server_ports.apis_url}`. Set each service's OpenAPI URL to the remote host as well. To use cuga-eval's `mcp_servers_appworld.yaml` with agent login, update each app's `auth.type` and URL.
+
+For the complete registry format, see the [registry guide](https://github.com/cuga-project/cuga-agent/blob/main/src/cuga/backend/tools_env/registry/README.md#appworld-login-modes). AppWorld answer formatting has its own pipeline; see [final-answer limits](/docs/configure/final-answer#limits).
