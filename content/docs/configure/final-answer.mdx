@@ -1,0 +1,53 @@
+---
+title: Final answer
+description: Guide the answer with instructions, apply a deterministic function, or combine both.
+---
+
+# Configure the final answer
+
+Use instructions to guide the answer's wording. Use a deterministic function when your application requires a specific string transformation.
+
+## SDK
+
+```python
+from cuga import CugaAgent, FinalAnswerConfig
+
+def normalize_answer(answer: str) -> str:
+    return answer.strip()
+
+agent = CugaAgent(final_answer="Answer with the bare value only.")
+agent_with_function = CugaAgent(final_answer=normalize_answer)
+agent_with_both = CugaAgent(
+    final_answer=FinalAnswerConfig(
+        instructions="Answer with the bare value only.",
+        function=normalize_answer,
+    )
+)
+```
+
+## Settings
+
+```toml
+[final_answer]
+instructions = "Answer with the bare value only."
+function = "my_package.formats.normalize_answer"
+```
+
+The function is a dotted path to your own importable `(str) -> str` callable. CUGA imports **and calls** it, so configure only trusted application code. Environment overrides are `DYNACONF_FINAL_ANSWER__INSTRUCTIONS` and `DYNACONF_FINAL_ANSWER__FUNCTION`.
+
+| Setting | Scope |
+| --- | --- |
+| `[agent.final_answer.model]` | Model used by the separate final-answer composer. |
+| `features.final_answer` | Whether that composer runs; `fast` mode disables it. |
+| `[final_answer].instructions` | Instructions for that composer. CugaLite composes its own answer; use `special_instructions` there. SDK `final_answer="..."` handles this for CugaLite. |
+| `[final_answer].function` | Deterministic transformation of the delivered answer. |
+
+The function should be pure and deterministic; idempotence is recommended. It runs once per delivered answer, after harmony-token sanitization and before citation resolution. If it fails, CUGA logs the failure and delivers the unchanged answer. The transformation does not replace sanitization or provide a redaction boundary.
+
+## Limits
+
+- Answers synthesized by `CugaSupervisor` itself are not shaped by this feature. Forwarded sub-agent answers can already have been shaped.
+- AppWorld keeps its own answer pipeline and re-extracts the answer into `InvokeResult.answer`, so in-graph shaping does not survive that post-processing.
+- The chat transcript can differ from the transformed delivered answer.
+
+For keyword-triggered answer policies, see [Output Formatter](/docs/build/policies/output-formatter).
