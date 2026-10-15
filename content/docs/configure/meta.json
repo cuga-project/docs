@@ -5,6 +5,8 @@
   "pages": [
     "overview",
     "models",
+    "llm-connections",
+    "final-answer",
     "environment",
     "task-modes",
     "settings-reference",
