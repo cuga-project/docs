@@ -1,0 +1,94 @@
+---
+title: CUGA over ACP
+description: Run CUGA from an ACP editor or delegate to a local ACP coding agent over stdio.
+---
+
+# CUGA over Agent Client Protocol
+
+CUGA supports both local sides of **Agent Client Protocol (ACP)**: an editor can launch CUGA, and a CUGA supervisor can launch an ACP coding agent. Both use newline-delimited JSON-RPC over stdin/stdout without opening a port.
+
+## Install
+
+```bash
+pip install "cuga[acp]"
+```
+
+From a source checkout, use `uv sync --extra acp`. Configure the [LLM connection](/docs/configure/llm-connections) before launching CUGA as an ACP agent.
+
+## Use CUGA from an editor
+
+An ACP editor such as Zed can launch `cuga-acp` as a custom agent. Find its absolute path with `command -v cuga-acp` (Windows: `where cuga-acp`) and adapt the editor configuration:
+
+```json
+{
+  "agent_servers": {
+    "CUGA": {
+      "type": "custom",
+      "command": "/absolute/path/to/cuga-acp",
+      "args": [],
+      "env": {}
+    }
+  }
+}
+```
+
+Send a text prompt, then try cancelling a long-running prompt from the editor. Consult the editor's ACP logs for diagnostics. `cuga-acp` reserves stdout for protocol frames; wrappers must not print banners there.
+
+## Delegate to an ACP agent
+
+Add an external agent to your supervisor YAML:
+
+```yaml
+supervisor:
+  description: "Delegate coding tasks to a local ACP process."
+
+agents:
+  - name: coding-agent
+    description: "Local coding agent over ACP stdio."
+    acp_protocol:
+      enabled: true
+      command: your-acp-agent
+      args: ["--acp"]
+      cwd: .
+      env: [YOUR_API_KEY]
+      startup_timeout: 15
+      prompt_timeout: 120
+      shutdown_grace_period: 5
+```
+
+Replace the command/args with those of the installed ACP agent. `env` is an allowlist of environment variable **names**, not secret values. Export the values in CUGA's environment. `cwd` must resolve inside the configured CUGA workspace.
+
+From the `cuga-agent` repository root:
+
+```bash
+export DYNACONF_SUPERVISOR__ENABLED=true
+export DYNACONF_SUPERVISOR__CONFIG_PATH=docs/examples/acp_stdio/consumer.supervisor.yaml
+cuga start demo_supervisor
+```
+
+For an installed package, use an absolute path to your copied YAML file. The [complete example](https://github.com/cuga-project/cuga-agent/tree/main/docs/examples/acp_stdio) includes the editor settings and supervisor configuration.
+
+## Permissions and supported features
+
+Supervisor plan approval and an ACP agent's operation permission are separate. Interactive runs pause for a CUGA tool-approval action when the ACP child requests permission. Headless runs deny the operation and clean up the child process.
+
+| Capability | Current support |
+| --- | --- |
+| Text prompts and text response chunks | Supported |
+| Cancellation and bounded subprocess lifecycle | Supported |
+| Image/audio/embedded-context inputs | Not supported |
+| Advertised filesystem/terminal/ACP-over-MCP capabilities | Not supported |
+| Session load/resume | Not supported |
+| Remote HTTP/WebSocket ACP transports | Not supported |
+
+## Troubleshooting
+
+| Problem | Action |
+| --- | --- |
+| Agent cannot start | Install the ACP extra and use an executable path available to the editor/CUGA process. |
+| Protocol parse error | Remove stdout logs/banners from the child and wrappers. |
+| Timeout | Check for interactive login first; tune `startup_timeout` or `prompt_timeout` for the relevant phase. |
+| Stale permission resume | Start a new delegation: the original process may have exited, the permission expired, or another resume consumed it. |
+| Missing credential | Add its variable name to `env`, export its value in the parent environment, and restart. |
+
+See [A2A](/docs/run/cuga-as-a2a) for HTTP agent-to-agent delegation and [MCP](/docs/run/cuga-as-mcp) for exposing CUGA to MCP clients.
