@@ -18,6 +18,12 @@ your web chat or a channel.
 | **Poll (watch for change)** | *"check this every 10 minutes and only tell me if it changed"* | CUGA polls the source on an interval and delivers **only on a real change** (a fingerprint/threshold, not raw content) |
 | **Push (an event arrives)** | *"when a PR opens…"*, *"when someone reacts 🐛…"* | an external system or a channel **pushes** the event to CUGA, or CUGA polls the integration for you |
 
+## Schedule times and cron Sundays
+
+Daily natural-language schedules preserve 24-hour times: `every day at 18:30` means 18:30, and `every day at 00:15` means 00:15. Check the proposed flow before confirming it.
+
+For cron day-of-week fields, both `0` and `7` mean Sunday; Sunday aliases in lists/ranges are preserved. For example, `30 18 * * 0` and `30 18 * * 7` both select Sunday at 18:30.
+
 ## What you can watch — the full catalog
 
 Every source below is **direct** (no Activepieces) unless marked otherwise. Each trigger has a short
