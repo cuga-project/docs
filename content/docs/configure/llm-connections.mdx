@@ -86,11 +86,13 @@ Provide `VAULT_TOKEN` through the deployment environment. See [Secrets & Vault](
 1. Run `cuga start manager`, open **http://localhost:7860**, and select an agent.
 2. Open its LLM configuration. The current Manage selector offers **OpenAI**, **Groq**, and **LiteLLM**; TOML supports additional providers.
 3. Set the endpoint when required. LiteLLM needs the gateway base URL.
-4. Choose **API key** or **Auth header**. Select **Use saved secret** and the appropriate Vault reference. For a custom header, set its name, such as `X-API-Key`.
+4. Choose **API key** for a Bearer/API-key connection, then select **Use saved secret** and the appropriate Vault reference. See the custom-header limitation below before using **Auth header**.
 5. Enter the model ID, or use **List models**. Listing reads the selected agent's draft and supports OpenAI, Groq, and LiteLLM. A successful list request does not prove the selected model can run inference.
 6. Wait for **Draft saved**, test a task in draft chat, then **Publish**. Saving a draft alone does not update published chat.
 
-Vault references survive draft reloads without exposing plaintext credentials. If the deployment permits writing secrets, the secret manager can create a reference; otherwise provision the secret in Vault first. The listing endpoint adds `Bearer` for an `Authorization` header value without a scheme.
+Vault references survive draft reloads without exposing plaintext credentials. If the deployment permits writing secrets, the secret manager can create a reference; otherwise provision the secret in Vault first.
+
+**Custom-header limitation:** **List models** honors `auth_header_name`, but the current inference factory does not use that field to select the credential header. OpenAI-compatible and LiteLLM inference can still send the resolved credential as `Authorization: Bearer ...`. A successful custom-header list request is therefore insufficient to validate chat. Use the OpenAI TOML `default_headers` configuration below for a custom-header inference endpoint, and verify a real task.
 
 ### Advanced LLM parameters
 
@@ -108,10 +110,10 @@ Leave unsupported settings unset. Reasoning models can suppress temperature and 
 | Entry point | Model selection |
 | --- | --- |
 | `CugaAgent(model=...)` | Supplies a model instance directly through the SDK. |
-| Local sub-agent in supervisor YAML | Can set `model.provider` and `model.model_name`; export the matching credentials. |
+| Local sub-agent in supervisor YAML | Can set `model.provider` and `model.model_name`; export the matching credentials. For providers supporting the global override, `MODEL_NAME` takes precedence over `model_name`. |
 | `CugaSupervisor.from_yaml()` | The supervisor's own model uses system settings. The sub-agent model blocks do not override it. |
 
-See [CugaSupervisor](/docs/build/cuga-supervisor#from_yaml) for examples. Evolve currently requires [its own model configuration](/docs/build/memory#bundled-management-and-retention); an agent's Manage connection does not automatically configure the worker.
+For different model names per sub-agent, remove the global `MODEL_NAME` override from `.env` and the process environment, then set each YAML `model_name` explicitly. A model supplied under `model` in the model configuration takes precedence over the environment. See [CugaSupervisor](/docs/build/cuga-supervisor#from_yaml) for examples. Evolve currently requires [its own model configuration](/docs/build/memory#bundled-management-and-retention); an agent's Manage connection does not automatically configure the worker.
 
 ## Gateway headers, timeouts, and TLS
 
@@ -127,7 +129,7 @@ max_tokens = 8192
 X-API-Key = "$GATEWAY_API_KEY"
 ```
 
-Set `GATEWAY_API_KEY` in `.env` or the deployment environment. Keep header configuration separate from `extra_params`.
+Set `GATEWAY_API_KEY` in `.env` or the deployment environment. The OpenAI model factory resolves API-key/Bearer settings before `default_headers`: a configured `api_key`, `auth_token`, `apikey_name`, `auth_header`, or `LLM_AUTH_HEADER` can return before these custom headers are applied. Avoid competing resolved auth fields for this custom-header connection and test inference. LiteLLM does not forward non-Authorization headers from this helper. Keep header configuration separate from `extra_params`.
 
 For OpenAI, Azure, and OpenRouter, HTTP timeout resolution is:
 
