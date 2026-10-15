@@ -37,7 +37,7 @@ The stack has five primary layers. Policy enforcement and human-in-the-loop sit 
 | **Python SDK** | Embed in your app | `CugaAgent(tools=[...])` — [Build](/docs/build/cuga-agent) |
 | **CLI** | Local demos, registry, knowledge helpers | `cuga start <preset>` — [CLI presets](/docs/run/cli-presets) |
 
-The server also exposes HTTP routes (`/api/chat`, `/api/knowledge`, `/api/manage`, …) for the Web UI, browser extension, and integrations. Other agents can call this instance over **A2A** or **MCP** — [CUGA as A2A](/docs/run/cuga-as-a2a) · [CUGA as MCP](/docs/run/cuga-as-mcp).
+The server also exposes HTTP routes (`/api/chat`, `/api/knowledge`, `/api/manage`, …) for the Web UI, browser extension, and integrations. Other agents can call this instance over **A2A** or **MCP** — [CUGA as A2A](/docs/run/cuga-as-a2a) · [CUGA as MCP](/docs/run/cuga-as-mcp). ACP editors can launch CUGA over stdio — [CUGA over ACP](/docs/run/cuga-as-acp).
 
 ---
 
@@ -66,14 +66,15 @@ result = await supervisor.invoke("Get top 5 customers, then email the top one")
 
 When a task arrives, the orchestrator typically:
 
-1. **Analyzes** the request (Task Analyzer)
-2. **Decomposes** complex work into steps (Plan Decomposition)
-3. **Routes** to the right path — API/code planner, browser planner, or a sub-agent (Supervisor/Router, Plan Controller)
-4. **Executes** — Action Agent (browser), Code Agent (generated Python), tool calls
-5. **Checks policies** and **pauses for humans** when required
-6. **Reflects** *(optional)* — validates a step before continuing
-7. **Summarizes** older context when the window fills up
-8. **Synthesizes** the final answer
+1. **Accepts** the message and routes it through a thin entry graph.
+2. **Selects** CugaLite for API/tool work, CugaSupervisor for delegation, or the browser path for web work.
+3. **Plans and executes** through that path's agent loop, tools, and sandbox.
+4. **Checks policies** and **pauses for humans** when required.
+5. **Verifies proposed writes** or **reflects after execution** when those independent options are enabled.
+6. **Summarizes** older context when the window fills up.
+7. **Produces** the final answer and resolves citations.
+
+The former full CugaAgent graph has been retired. `CugaAgent` remains the public SDK class; API tasks no longer switch between that former graph and CugaLite based on tool count. Large catalogs use [shortlisting](/docs/build/loop#tool-shortlister-find_tools).
 
 You tune behavior with policies and settings (`cuga_mode`, reflection, summarization) — not by editing planner nodes.
 
