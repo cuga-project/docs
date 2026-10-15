@@ -7,8 +7,10 @@
     "manage-publish",
     "self-host",
     "demos",
+    "appworld",
     "---Use CUGA from other apps---",
     "cuga-as-a2a",
+    "cuga-as-acp",
     "cuga-as-mcp",
     "langflow"
   ]
