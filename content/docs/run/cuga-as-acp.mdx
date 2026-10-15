@@ -58,15 +58,21 @@ agents:
 
 Replace the command/args with those of the installed ACP agent. `env` is an allowlist of environment variable **names**, not secret values. Export the values in CUGA's environment. `cwd` must resolve inside the configured CUGA workspace.
 
-From the `cuga-agent` repository root:
+Save the YAML as `consumer.supervisor.yaml`, export the credential variables listed in `env`, and load it directly through the SDK:
 
-```bash
-export DYNACONF_SUPERVISOR__ENABLED=true
-export DYNACONF_SUPERVISOR__CONFIG_PATH=docs/examples/acp_stdio/consumer.supervisor.yaml
-cuga start demo_supervisor
+```python
+import asyncio
+from cuga import CugaSupervisor
+
+async def main():
+    supervisor = await CugaSupervisor.from_yaml("consumer.supervisor.yaml")
+    result = await supervisor.invoke("Inspect the workspace and summarize the project")
+    print(result.answer)
+
+asyncio.run(main())
 ```
 
-For an installed package, use an absolute path to your copied YAML file. The [complete example](https://github.com/cuga-project/cuga-agent/tree/main/docs/examples/acp_stdio) includes the editor settings and supervisor configuration.
+Use an absolute YAML path if the script runs from another directory. `cuga start demo_supervisor` selects the bundled CRM/email configuration, so it is not the launch command for this custom ACP YAML. The [ACP examples](https://github.com/cuga-project/cuga-agent/tree/main/docs/examples/acp_stdio) contain the editor settings and supervisor YAML.
 
 ## Permissions and supported features
 
