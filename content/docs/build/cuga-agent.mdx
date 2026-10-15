@@ -139,6 +139,12 @@ The `tool_provider` parameter allows you to customize how tools are provided to 
 
 For detailed information about tool providers, including built-in implementations and how to create custom providers, see the [Tool Provider documentation](/docs/build/tool-provider).
 
+## Final-answer configuration
+
+`CugaAgent(final_answer=...)` accepts instruction text, a pure `(str) -> str` callable, or `FinalAnswerConfig` combining both. The SDK applies instruction text to CugaLite's `special_instructions`; a deterministic function shapes the delivered answer.
+
+See [Final answer](/docs/configure/final-answer) for examples, TOML configuration, failure handling, and supervisor/AppWorld limits.
+
 ## Core Methods
 
 ### `invoke`

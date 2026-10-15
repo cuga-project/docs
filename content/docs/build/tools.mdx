@@ -20,6 +20,12 @@ CUGA agents call **tools**. You can attach them three ways:
 
 ---
 
+## Provider binding and rejected calls
+
+When native `bind_tools` is used, names outside the provider's accepted format are bound with deterministic aliases. CUGA resolves aliases back to the real tool names for execution and approval checks; keep the original names in tool configuration and policies.
+
+The registry's rejected-call guard stops identical rejected API calls from being issued repeatedly. Correct the rejected arguments or choose another operation instead of retrying the same request unchanged.
+
 ## Python functions (SDK)
 
 Pass LangChain tools directly to `CugaAgent`:

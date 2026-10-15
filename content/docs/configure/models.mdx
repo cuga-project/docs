@@ -5,6 +5,8 @@ description: Configure different LLM providers for CUGA
 
 CUGA supports multiple LLM providers with flexible configuration options. You can configure models through TOML files or override specific settings using environment variables.
 
+For the default `.env` connection workflow, optional Vault-backed Manage configuration, and troubleshooting, see [LLM connections](/docs/configure/llm-connections).
+
 ## Supported Platforms
 
 - **OpenAI** - GPT models via OpenAI API (also supports LiteLLM via base URL override)
@@ -311,7 +313,7 @@ Each settings file contains configuration for different CUGA agents. You can con
 #### OpenAI Configuration Example
 
 ```toml
-[agent.task_decomposition.model]
+[agent.code.model]
 platform = "openai"
 temperature = 0.1
 max_tokens = 1000
@@ -356,7 +358,7 @@ max_tokens = 5000
 
 #### OpenRouter Configuration Example
 ```toml
-[agent.task_decomposition.model]
+[agent.code.model]
 platform = "openrouter"
 temperature = 0.1
 max_tokens = 1000

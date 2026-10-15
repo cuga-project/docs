@@ -87,6 +87,10 @@ asyncio.run(main())
 </Step>
 </Steps>
 
+## Per-agent isolation
+
+Supervisor policies apply at the orchestration layer. Sub-agent policies remain attached to each sub-agent's own policy collection; a playbook configured for one agent is not automatically shared with another. In Manage, select the intended agent before editing its policies. Add a shared policy explicitly to each agent that requires it.
+
 ## Policy Support
 
 | Policy | Supervisor runtime | Notes |

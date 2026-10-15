@@ -1,0 +1,154 @@
+---
+title: LLM connections
+description: Configure inference through .env by default, or use Vault-backed agent configuration in production.
+---
+
+# LLM connections
+
+**By default, configure the LLM connection through `.env`.** CUGA ships with `[secrets].mode = "local"` and `force_env = true`, so the selected TOML profile and environment supply the provider and credentials. Use [Models](/docs/configure/models) for each provider's required variables.
+
+## Default workflow: update .env
+
+From a source checkout, copy `.env.example` to `.env` if you have not created it. For OpenAI:
+
+```bash
+AGENT_SETTING_CONFIG=settings.openai.toml
+OPENAI_API_KEY="<your-api-key>"
+MODEL_NAME=gpt-4o
+```
+
+For an OpenAI-compatible gateway, also set its base URL and served model ID:
+
+```bash
+AGENT_SETTING_CONFIG=settings.openai.toml
+OPENAI_BASE_URL=https://inference.example.com/v1
+OPENAI_API_KEY="<your-gateway-key>"
+MODEL_NAME="<model-served-by-your-gateway>"
+```
+
+The profile, endpoint, model, and credentials must describe the same service. Use the appropriate provider profile rather than assuming every provider uses `OPENAI_API_KEY`.
+
+| Provider | Profile | Credential/configuration variables |
+| --- | --- | --- |
+| OpenAI / OpenAI-compatible gateway | `settings.openai.toml` | `OPENAI_API_KEY`, optional `OPENAI_BASE_URL`, `MODEL_NAME` |
+| Groq | `settings.groq.toml` | `GROQ_API_KEY`, `MODEL_NAME` |
+| WatsonX | `settings.watsonx.toml` | `WATSONX_APIKEY`, `WATSONX_URL`, project/space configuration; see [Models](/docs/configure/models) |
+| Other providers | Provider-specific profile | Follow [Models](/docs/configure/models) for the provider's variables and endpoint rules |
+
+Restart CUGA after changing `.env`, then run a short chat task to verify inference:
+
+```bash
+cuga start manager
+```
+
+For an explicit environment-file location, launch with `ENV_FILE`:
+
+```bash
+ENV_FILE=/absolute/path/to/cuga.env cuga start manager
+```
+
+`ENV_FILE` is loaded with override enabled. Ordinary `.env` discovery does not overwrite variables already exported in the process environment. Keep credentials out of version control.
+
+### Why a Manage edit may not change the connection
+
+In the default environment-driven setup, `force_env = true` ignores UI secret overrides. The current UI model factory also treats `mode = "local"` as environment-driven: it takes the provider from `agent.code.model` and ignores `db://`, `vault://`, and `aws://` credential references there.
+
+Update `.env` and the selected model profile for the default connection. Use the Vault workflow below when saved per-agent connections should supply the provider and credential reference. Setting only `force_env = false` while leaving `mode = "local"` does not switch the UI model factory to Vault-backed configuration.
+
+## Vault and production deployments
+
+Credential resolution and production persistence are separate settings:
+
+| Setting | Controls |
+| --- | --- |
+| `[secrets].mode = "local"`, `force_env = true` | Default inference credentials from the environment. This also works in production with deployment-injected environment variables. |
+| `[secrets].mode = "vault"`, `force_env = false` | Saved agent configuration and Vault credential resolution. |
+| `[storage].mode = "prod"` | Durable database storage for published configuration and other application data. It does not enable Vault or change credential resolution by itself. |
+
+To enable Vault-backed connections, configure the secret backend and disable forced environment resolution:
+
+```toml
+[secrets]
+mode = "vault"
+force_env = false
+vault_addr = "https://vault.example.com:8200"
+vault_auth_method = "token"
+vault_token_env = "VAULT_TOKEN"
+vault_mount = "secret"
+vault_kv_version = "2"
+vault_secret_path = "cuga/prod"
+```
+
+Provide `VAULT_TOKEN` through the deployment environment. See [Secrets & Vault](/docs/configure/secrets-vault) for Kubernetes authentication, CA certificates, and write controls. See [Storage](/docs/configure/storage) to enable production persistence separately.
+
+### Configure and publish in Manage
+
+1. Run `cuga start manager`, open **http://localhost:7860**, and select an agent.
+2. Open its LLM configuration. The current Manage selector offers **OpenAI**, **Groq**, and **LiteLLM**; TOML supports additional providers.
+3. Set the endpoint when required. LiteLLM needs the gateway base URL.
+4. Choose **API key** for a Bearer/API-key connection, then select **Use saved secret** and the appropriate Vault reference. See the custom-header limitation below before using **Auth header**.
+5. Enter the model ID, or use **List models**. Listing reads the selected agent's draft and supports OpenAI, Groq, and LiteLLM. A successful list request does not prove the selected model can run inference.
+6. Wait for **Draft saved**, test a task in draft chat, then **Publish**. Saving a draft alone does not update published chat.
+
+Vault references survive draft reloads without exposing plaintext credentials. If the deployment permits writing secrets, the secret manager can create a reference; otherwise provision the secret in Vault first.
+
+**Custom-header limitation:** **List models** honors `auth_header_name`, but the current inference factory does not use that field to select the credential header. OpenAI-compatible and LiteLLM inference can still send the resolved credential as `Authorization: Bearer ...`. A successful custom-header list request is therefore insufficient to validate chat. Use the OpenAI TOML `default_headers` configuration below for a custom-header inference endpoint, and verify a real task.
+
+### Advanced LLM parameters
+
+| Parameter | Use |
+| --- | --- |
+| `max_tokens` | Output budget. Leaving it unset preserves the TOML/provider default. Reasoning can consume part of this budget. |
+| `temperature`, `top_p`, `top_k` | Sampling controls, where supported by the model/provider. |
+| `frequency_penalty`, `presence_penalty`, `stop` | Repetition controls and stop sequences on compatible backends. |
+| `extra_params` | JSON generation parameters, such as `{"reasoning_effort": "high"}` where supported. Authentication and transport keys are stripped server-side. |
+
+Leave unsupported settings unset. Reasoning models can suppress temperature and other sampling parameters. For environment-driven deployments, tune the corresponding model TOML section; see [reasoning-effort profiles](/docs/configure/models#reasoning-effort-profiles).
+
+## SDK and supervisor model selection
+
+| Entry point | Model selection |
+| --- | --- |
+| `CugaAgent(model=...)` | Supplies a model instance directly through the SDK. |
+| Local sub-agent in supervisor YAML | Can set `model.provider` and `model.model_name`; export the matching credentials. For providers supporting the global override, `MODEL_NAME` takes precedence over `model_name`. |
+| `CugaSupervisor.from_yaml()` | The supervisor's own model uses system settings. The sub-agent model blocks do not override it. |
+
+For different model names per sub-agent, remove the global `MODEL_NAME` override from `.env` and the process environment, then set each YAML `model_name` explicitly. A model supplied under `model` in the model configuration takes precedence over the environment. See [CugaSupervisor](/docs/build/cuga-supervisor#from_yaml) for examples. Evolve currently requires [its own model configuration](/docs/build/memory#bundled-management-and-retention); an agent's Manage connection does not automatically configure the worker.
+
+## Gateway headers, timeouts, and TLS
+
+An OpenAI TOML model section can use environment references for gateway headers:
+
+```toml
+[agent.code.model]
+platform = "openai"
+model_name = "your-model"
+max_tokens = 8192
+
+[agent.code.model.default_headers]
+X-API-Key = "$GATEWAY_API_KEY"
+```
+
+Set `GATEWAY_API_KEY` in `.env` or the deployment environment. The OpenAI model factory resolves API-key/Bearer settings before `default_headers`: a configured `api_key`, `auth_token`, `apikey_name`, `auth_header`, or `LLM_AUTH_HEADER` can return before these custom headers are applied. Avoid competing resolved auth fields for this custom-header connection and test inference. LiteLLM does not forward non-Authorization headers from this helper. Keep header configuration separate from `extra_params`.
+
+For OpenAI, Azure, and OpenRouter, HTTP timeout resolution is:
+
+1. `timeout` in the model configuration.
+2. `CUGA_LLM_HTTP_TIMEOUT`.
+3. `LLM_HTTP_TIMEOUT`.
+4. `[connections].llm_http_timeout` (default `61` seconds).
+
+Other provider integrations can use different timeout handling. Model listing has a separate 10-second timeout. Neither is the sandbox execution deadline.
+
+For an internal CA, configure `ssl_ca_bundle` in the OpenAI-compatible model configuration or `CUGA_SSL_CA_BUNDLE` in the environment. Keep certificate verification enabled in shared deployments. [Server-side TLS](/docs/configure/authentication) is configured separately from inference TLS.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Environment changes have no effect | Restart CUGA; check the selected profile, `.env` location, exported variables, and `ENV_FILE`. |
+| Saved Manage connection has no effect | Check `secrets.mode`, `force_env`, and whether the agent's draft was published. Production storage alone does not enable saved Vault connections. |
+| **List models** fails | Supported listing provider, draft URL, auth type/header, and resolvable secret. LiteLLM listing uses `/v1/models` without duplicating `/v1`. |
+| Listing works but chat fails | Model ID, inference permissions/quota, generation parameters, and output budget. Test a short draft-chat task. |
+| Vault secret appears empty | Select the saved reference; masked/redacted responses do not contain plaintext. Check Vault read permissions. |
+| Timeout or certificate failure | Check the provider's HTTP timeout and inference CA bundle separately from tool deadlines and server TLS. |

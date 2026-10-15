@@ -124,12 +124,51 @@ print(result.thread_id)
 
 ### `from_yaml`
 
-Load supervisor and agents from a YAML configuration file. The model is taken from system settings (not from YAML).
+Load supervisor and agents from a YAML configuration file. The supervisor's own model is taken from system settings. Each local sub-agent can configure its own model in YAML.
 
 ```python
 supervisor = await CugaSupervisor.from_yaml("supervisor_config.yaml")
 result = await supervisor.invoke("Your task here")
 ```
+
+### Sub-agent models in YAML
+
+```yaml
+supervisor:
+  name: sales-supervisor
+  special_instructions: "Delegate to the appropriate specialist."
+
+agents:
+  - name: crm
+    description: "Customer records"
+    apps: [crm]
+    model:
+      provider: openai
+      model_name: gpt-4o
+      max_tokens: 8192
+```
+
+`provider` selects the sub-agent's backend; `model_name` selects its model when no higher-priority override applies. For OpenAI and other providers supporting the global override, `MODEL_NAME` from `.env` or the process environment wins over YAML `model_name`. Remove that global override when different sub-agents need different model names. Export the matching provider credentials. `CugaSupervisor.from_yaml()` does not set the supervisor model from this block. To supply the supervisor's own model directly, construct `CugaSupervisor(agents=..., model=...)`.
+
+### Registry and composition in Manage
+
+Create named agents, publish their individual tools/models/policies, then compose a supervisor from those agents in Manage. Referenced sub-agents use their own published configuration. Keep policies on the agent that should enforce them; playbooks and other policy collections are isolated per agent.
+
+### Caller identity and child checkpoints
+
+In a multi-user SDK service, pass a trusted caller identity:
+
+```python
+result = await supervisor.invoke(
+    "Look up my customer records",
+    thread_id="conversation-123",
+    user_id="authenticated-user-id",
+)
+```
+
+Child checkpoints are scoped by caller, parent thread, supervisor, and sub-agent memory scope. Obtain `user_id` from your authentication layer. Server integrations derive caller identity from the authenticated request.
+
+For a local ACP subprocess rather than a remote A2A endpoint, see [CUGA over ACP](/docs/run/cuga-as-acp).
 
 ## External Agents (A2A)
 

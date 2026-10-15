@@ -30,9 +30,6 @@ If Memory is unavailable, times out, or returns nothing, CUGA continues — it n
 Memory is used in **CugaLite**. Turn it on in `settings.toml`:
 
 ```toml
-[advanced_features]
-lite_mode = true
-
 [evolve]
 enabled = true
 mode = "auto"
@@ -125,6 +122,70 @@ Identify the common cities between my cuga_workspace/cities.txt and cuga_workspa
 | `lite_mode_only = true` | Memory only on the CugaLite path |
 
 ---
+
+## Experimental Memory workspace
+
+The supported full image includes the experimental memory-management workspace. When memory features are available, open **Memory** from chat navigation to inspect guidance, preferences, source conversations, and usage.
+
+| Control | Scope |
+| --- | --- |
+| Personal memory | Inspect your memory records, open authorized source conversations, edit supported metadata, and forget records. |
+| Personal memory preference | Turn retrieval and saving off for your conversations. Reading and personal deletion remain available while service memory is off. |
+| Service memory | Administrators control memory for the service; user preferences cannot override a disabled service. |
+| Episodic memory | Administrators control episodic processing/retrieval independently of semantic facts. |
+| Retention | Administrators manage rules, schedules, pending candidates, and activity when the backend exposes the required capabilities. |
+
+Memory records and preferences are scoped to the service and caller. Administrative access requires the server's Manage authorization; personal access uses Chat authorization. See [Authentication](/docs/configure/authentication).
+
+<img src="/images/product/memory.jpg" alt="CUGA Memory workspace showing illustrative memory records" />
+
+Illustrative sample data from the product UI; this screenshot does not show a live inference run. [Media provenance](https://github.com/cuga-project/cuga-agent/blob/3d2d97b907c34fb25b297e3331e915179f21a8b2/docs/readme/media.md).
+
+## Bundled management and retention
+
+Use the **full** image for the bundled Evolve HTTP worker. The slim image excludes Evolve and its PII subsystem. Configure a stable service instance ID and PostgreSQL for durable retention:
+
+```bash
+DYNACONF_SERVICE__INSTANCE_ID=cuga-production
+DYNACONF_EVOLVE__ENABLED=true
+DYNACONF_EVOLVE__MODE=direct
+DYNACONF_EVOLVE__URL=http://127.0.0.1:8201/sse
+CUGA_EMBEDDED_EVOLVE=true
+EVOLVE_BACKEND=postgres
+EVOLVE_PG_HOST=your-postgres-host
+EVOLVE_PG_PORT=5432
+EVOLVE_PG_USER=your-evolve-user
+EVOLVE_PG_PASSWORD=<your-evolve-password>
+EVOLVE_PG_DBNAME=evolve
+EVOLVE_MODEL_NAME=Azure/gpt-4o
+OPENAI_API_KEY=<your-evolve-model-key>
+OPENAI_BASE_URL=https://your-inference-endpoint.example.com
+```
+
+Choose an Evolve model/provider configuration compatible with your inference endpoint. **Evolve needs its own model configuration in this version**; configuring an agent's Manage LLM connection does not automatically configure the worker. See the [configuration guide](https://github.com/cuga-project/cuga-agent/blob/main/docs/readme/configuration-guide.md#use-bundled-memory-management-and-retention).
+
+The container supervisor starts the private worker and CUGA together, generates an internal API credential, and scopes Evolve to the service instance. Keep that private API internal. Registry-managed or explicit external Evolve endpoints remain external; an MCP-only integration can retrieve guidelines and save trajectories but does not expose the bundled native retention API.
+
+### Retention capabilities
+
+The UI reflects the backend's reported capabilities. Durable collection and source-deletion handling require PostgreSQL and the bundled native service. The standard policy contains these rules:
+
+| Rule | Default action |
+| --- | --- |
+| `orphaned-conversations` | Delete after the source conversation has been deleted for 7 days, where supported. |
+| `unused-guidelines` | Delete guidelines unused for 180 days; skip when access signals are missing. |
+| `stale-guidelines` | Flag guidelines older than 90 days. |
+| `old-sessions` | Delete trajectories older than 365 days with derived-record cascading. |
+
+Review rules and pending candidates before running retention. Schedules are stored and executed by Evolve; activity records the outcomes.
+
+<img src="/images/product/memory-retention.jpg" alt="CUGA administrator retention controls with illustrative data" />
+
+Retention controls shown with illustrative sample data from the same product capture.
+
+### Protection hooks
+
+The full image includes configured memory-write and model-egress protection hooks, including structured-identifier filtering and READI named-entity redaction. Check the workspace's compliance/capability status for the active deployment. The slim image does not include these Evolve hooks.
 
 ## Related
 

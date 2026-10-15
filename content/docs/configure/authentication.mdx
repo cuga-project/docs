@@ -64,6 +64,12 @@ role_token_source = "iam_proxy"
 
 `iam_proxy_ca_bundle` and `OIDC_CA_BUNDLE` are independent — set both if your proxy and IdP use different internal CAs.
 
+## Runtime identity and thread ownership
+
+Authenticated server runs bind identity from the logged-in caller rather than trusting an arbitrary `user_id` in the request body. Session knowledge and conversation access enforce ownership, and supervisor child checkpoints are scoped to the caller and parent thread.
+
+Persist both the conversation/config stores and knowledge session metadata across restarts. SDK services should pass trusted `user_id` values to supervisor invocations and authorize their own API boundaries. A caller-supplied thread ID alone is not an access grant.
+
 ## TLS termination
 
 When CUGA terminates TLS itself (i.e. there's no reverse proxy):

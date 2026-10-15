@@ -66,6 +66,16 @@ cuga knowledge --help   # ingest, search, and collection helpers
 cuga policy --help      # policy helpers
 ```
 
+## Purge a service instance
+
+Preview persisted database rows belonging to a service instance:
+
+```bash
+cuga purge service-instance --service-instance-id cuga-production --dry-run
+```
+
+Check the JSON `tables` counts before removing `--dry-run` to delete matching rows. The ID can also come from `DYNACONF_SERVICE__INSTANCE_ID`. This command operates on scoped rows in the configured database stores. Knowledge metadata, unscoped FTS sidecars, files, and external-service data are excluded. Each database commits independently, so a later failure can leave earlier stores purged. Back up data you need before deletion.
+
 ## Next steps
 
 - [Manage and publish](/docs/run/manage-publish)

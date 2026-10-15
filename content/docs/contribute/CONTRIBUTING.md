@@ -9,6 +9,8 @@ This repo is [cuga-agent](https://github.com/cuga-project/cuga-agent). Related e
 
 ## How to Contribute
 
+By default, cuga-agent issues are **team only**. External contributors can work on issues labeled `good first issue` or `help wanted` without prior approval; other issues require maintainer approval in the issue before starting work. Contributors without write access can have at most **3 open pull requests**, drafts included. See the [current cuga-agent contribution policy](https://github.com/cuga-project/cuga-agent/blob/main/CONTRIBUTING.md).
+
 1. Fork the repository to your own GitHub account. (not needed if you are CUGA team)
 2. Create a feature branch from `main` in your fork: `git checkout -b feature/<short-topic>` (see Branch Naming Convention below).
 3. Keep PRs small and focused (prefer < ~300 changed lines and limited file count).
@@ -43,6 +45,8 @@ git push -f
 ```
 
 where `<n>` is the number of commits missing signoffs.
+
+The required **DCO** check verifies that each signoff matches the commit author's name and email. Configure your author identity accordingly; merge commits and GitHub App bots are excluded from this check.
 
 ## Commit Messages: Conventional Commits
 

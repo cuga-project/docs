@@ -13,6 +13,40 @@ import { Steps, Step } from 'fumadocs-ui/components/steps';
 
 The [cuga-agent](https://github.com/cuga-project/cuga-agent) repo ships a Helm chart and helper scripts for running CUGA outside your laptop.
 
+## Docker images
+
+Build from the `cuga-agent` repository root:
+
+```bash
+docker build -f Dockerfile.ubi -t cuga:full .
+# Or build the smaller dependency set:
+docker build -f Dockerfile.ubi.slim -t cuga:slim .
+```
+
+| Capability | Full image | Slim image |
+| --- | --- | --- |
+| Core web/API agent, policies, action shortlisting | Included | Included |
+| Knowledge embeddings and retrieval | Included | Included |
+| Plain text and Markdown ingestion | Included | Included; Markdown uses plain-text chunking without Docling |
+| PDF/Office/HTML/image ingestion through Docling | Included | Unavailable; use the full image |
+| Evolve memory, PII hooks, READI | Included; requires configuration | Unavailable |
+
+The slim Dockerfile excludes the document-processing and Evolve dependency stacks. It preloads the remaining models and runs an offline verification during the build. Offline model assets do not remove the need to reach configured inference and tool endpoints.
+
+Run either locally built image with an environment file containing your model configuration:
+
+```bash
+docker volume create cuga-data
+docker run --rm --name cuga -p 7860:7860 \
+  --env-file .env \
+  -v cuga-data:/data/dbs \
+  cuga:slim
+```
+
+Open **http://localhost:7860**. The default container entry point starts Manage. Replace `cuga:slim` with `cuga:full` for document processing or configured memory. Set `CUGA_DEMO_MODE=knowledge` to start the knowledge demo instead. See [LLM connections](/docs/configure/llm-connections) and [bundled Memory setup](/docs/build/memory#bundled-management-and-retention).
+
+## Kubernetes with Helm
+
 ## What gets deployed
 
 | Component | Role |
