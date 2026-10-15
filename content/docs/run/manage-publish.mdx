@@ -29,6 +29,12 @@ Open **http://localhost:7860**. You get a manage UI where you can:
 Draft chat is for you. Published chat is for everyone else. Publish only when you are happy with the draft.
 </Callout>
 
+By default, configure inference through `.env`. Use the LLM panel for Vault-backed saved connections when `secrets.mode = "vault"` and `force_env = false`. Production storage alone does not change this. Follow [LLM connections](/docs/configure/llm-connections) for both workflows.
+
+<img src="/images/product/manager.jpg" alt="CUGA Manage UI with illustrative agent configuration" />
+
+Illustrative sample data from the product UI; this screenshot does not show a live inference run. [Media provenance](https://github.com/cuga-project/cuga-agent/blob/3d2d97b907c34fb25b297e3331e915179f21a8b2/docs/readme/media.md).
+
 Typical loop:
 
 <Steps>
