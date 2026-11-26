@@ -6,6 +6,7 @@
     "cuga-agent",
     "cuga-supervisor",
     "tools",
+    "mcp-apps",
     "policies",
     "knowledge",
     "memory",

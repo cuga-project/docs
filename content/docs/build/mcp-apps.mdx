@@ -1,0 +1,203 @@
+---
+title: Interactive tool forms (MCP Apps)
+description: Let an MCP tool ask the user to fill in a form in the CUGA chat before it returns its result.
+---
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Interactive tool forms (MCP Apps)
+
+A tool on an MCP server can show the user a form in the CUGA chat, wait for the user to fill it in,
+and then return the result to the agent. For example, a tool can ask for contact details, show a
+proposed table design for the user to edit, or collect an approval with comments.
+
+CUGA supports the [MCP Apps](https://modelcontextprotocol.io/docs/extensions/apps) standard, which
+grew out of [MCP-UI](https://mcpui.dev). There is nothing to turn on in CUGA: a tool opens a form
+when its MCP server declares one.
+
+<Callout type="info">
+Requires a CUGA version that includes MCP Apps support.
+</Callout>
+
+## How it works
+
+1. The agent calls a tool whose metadata names a UI resource (`_meta.ui.resourceUri = "ui://..."`).
+2. CUGA pauses the turn and shows the resource, an HTML page, in the chat.
+3. The page calls tools on its own server through CUGA, for example to validate what the user entered.
+4. When the user is done, the page tells CUGA what the agent should receive. The agent continues
+   with that as the result of the tool call from step 1.
+
+If the user closes the form instead, the agent is told the form was cancelled and asks how to continue.
+
+## Who can call which tool
+
+Each tool's `_meta.ui.visibility` says who may call it:
+
+| Visibility | The agent can call it | The form can call it |
+| --- | --- | --- |
+| `["model", "app"]` (default) | Yes | Yes |
+| `["model"]` | Yes | No |
+| `["app"]` | No, and it is not listed to the agent | Yes |
+
+Use `["app"]` for the form's own actions, such as "save" or "validate", so the agent never calls them itself.
+
+## Example: a contact details form
+
+This MCP server, written with [FastMCP](https://gofastmcp.com) (tested with FastMCP 4.1), has two tools:
+
+- `ask_contact_details` is called by the agent and opens the form.
+- `save_contact_details` is called only by the form. It checks the email address and returns the saved details.
+
+```python title="contact_form_server.py"
+from fastmcp import FastMCP
+from fastmcp.apps.config import AppConfig, ResourceCSP
+from fastmcp.tools import ToolResult
+from mcp.types import TextContent
+
+mcp = FastMCP("contact_form")
+FORM_URI = "ui://contact-form/form"
+
+FORM_HTML = """<!doctype html>
+<html>
+  <body>
+    <form id="form">
+      <p id="reason"></p>
+      <label>Name <input name="name" required></label>
+      <label>Email <input name="email" type="email" required></label>
+      <button>Submit</button>
+      <p id="message"></p>
+    </form>
+    <script type="module">
+      import { App } from "https://esm.sh/@modelcontextprotocol/ext-apps@1.7.5/app-with-deps";
+
+      const app = new App({ name: "contact-form", version: "1.0.0" });
+      // The result of ask_contact_details, the call that opened this form.
+      app.ontoolresult = (result) => {
+        document.getElementById("reason").textContent = result.structuredContent?.reason ?? "";
+      };
+      await app.connect();
+
+      document.getElementById("form").onsubmit = async (event) => {
+        event.preventDefault();
+        const values = Object.fromEntries(new FormData(event.target));
+        // Calls the app-only tool on this server, through CUGA.
+        const saved = await app.callServerTool({ name: "save_contact_details", arguments: values });
+        if (!saved.structuredContent?.ok) {
+          document.getElementById("message").textContent = saved.content[0].text;
+          return;
+        }
+        // What the agent receives as the result of ask_contact_details.
+        await app.updateModelContext({ structuredContent: saved.structuredContent });
+        // Finishes the form: CUGA resumes the agent.
+        await app.sendMessage({ role: "user", content: [{ type: "text", text: "Contact details submitted." }] });
+      };
+    </script>
+  </body>
+</html>
+"""
+
+
+@mcp.tool(app=AppConfig(resource_uri=FORM_URI, visibility=["model", "app"]))
+def ask_contact_details(reason: str) -> ToolResult:
+    """Ask the user for their name and email address in a form."""
+    return ToolResult(
+        content=[TextContent(type="text", text=f"Asked the user for contact details: {reason}")],
+        structured_content={"reason": reason},
+    )
+
+
+@mcp.tool(app=AppConfig(visibility=["app"]))
+def save_contact_details(name: str, email: str) -> ToolResult:
+    """Form action: check and save the details the user entered."""
+    if "@" not in email:
+        return ToolResult(
+            content=[TextContent(type="text", text="Enter a valid email address.")],
+            structured_content={"ok": False},
+        )
+    return ToolResult(
+        content=[TextContent(type="text", text=f"Saved contact details for {name}.")],
+        structured_content={"ok": True, "name": name, "email": email},
+    )
+
+
+@mcp.resource(FORM_URI, app=AppConfig(csp=ResourceCSP(resource_domains=["https://esm.sh"])))
+def contact_form() -> str:
+    return FORM_HTML
+
+
+if __name__ == "__main__":
+    mcp.run(transport="http", host="127.0.0.1", port=8220)
+```
+
+The form page loads the MCP Apps client library from `esm.sh`, so the resource declares that domain
+in its CSP (`resource_domains`). Without a declaration the form has no network access at all; you
+can also inline the library in the page instead.
+
+Run the server, then point CUGA at it:
+
+```bash
+python contact_form_server.py
+```
+
+```yaml title="mcp_servers.yaml"
+mcpServers:
+  contact_form:
+    url: http://127.0.0.1:8220/mcp
+    transport: http
+    description: Collect contact details from the user in a form.
+```
+
+```bash
+MCP_SERVERS_FILE=$PWD/mcp_servers.yaml cuga start demo
+```
+
+Open `http://localhost:7860/chat` and ask, for example, *"Call ask_contact_details to ask me for my
+contact details for the newsletter, then tell me what was saved."* The form appears in the chat.
+After you submit it, the agent continues and answers with the saved name and email address.
+
+## What the form sends back
+
+The page uses the MCP Apps client library (`@modelcontextprotocol/ext-apps`):
+
+| Call | What CUGA does |
+| --- | --- |
+| `app.ontoolresult` | Receives the result of the tool call that opened the form |
+| `app.callServerTool(...)` | Calls a tool on the form's own server (visibility must include `"app"`) |
+| `app.updateModelContext({ structuredContent })` | Stores what the agent receives as the tool's result |
+| `app.sendMessage({ role: "user", content })` | Finishes the form; the text is passed to the agent as the user's message |
+
+If the page sends no model context, the agent receives the result of the form's last tool call.
+
+## Where forms appear
+
+Forms appear only in the CUGA web chat. Everywhere else, including the Python SDK, API clients of
+`/stream`, channels and other agents, a tool with a UI returns its ordinary result and the run does
+not wait for a form. Design the tool's result so the agent can still act on it without the form.
+
+## Security
+
+- The form runs in a sandboxed iframe on a **different origin** from the chat, through a proxy page
+  that CUGA serves at `/mcp-apps/sandbox_proxy.html`.
+- The form's network access follows the resource's `_meta.ui.csp`. With no CSP declared, it has none.
+- The browser only names the interaction. Which server, resource and tools a form may reach is
+  decided by the CUGA server, and a form cannot call tools without `"app"` visibility.
+
+## Deployment
+
+Locally there is nothing to configure: CUGA serves the form from the other spelling of the same
+host (`localhost` and `127.0.0.1`). Behind a real domain, give the form its own origin that reaches
+the same CUGA server, and set:
+
+| Environment variable | Purpose |
+| --- | --- |
+| `CUGA_MCP_APPS_SANDBOX_ORIGIN` | Origin that serves `/mcp-apps/sandbox_proxy.html` for forms, for example `https://cuga-sandbox.example.com`. It must differ from the chat's origin. Without it, forms do not open on hosts other than `localhost` and `127.0.0.1`. |
+| `CUGA_MCP_APPS_HOST_ORIGINS` | Comma-separated chat origins allowed to embed that page, for example `https://cuga.example.com`. |
+
+## Limitations
+
+- Supported for MCP server tools in CugaLite, in both CodeAct and function-calling modes.
+- A form that is still open when the CUGA server restarts cannot be continued. Start the task again.
+
+## Related
+
+- [Tools](/docs/build/tools) — connect MCP servers to CUGA
+- [Tool approval](/docs/build/policies/tool-approval) — ask the user to confirm a tool call
